@@ -1,0 +1,71 @@
+<div id="principal">
+  <nav class="accesos-principales" aria-label="Accesos principales">{{{accesos}}}</nav>
+  <div class="tarjetas" id="contenedor-tarjetas">{{{tarjetas}}}</div>
+  <div class="dos-columnas">
+    <div class="caja">
+      <strong>Ventas de la semana</strong>
+      <div class="barras">{{{barras}}}</div>
+      <div class="etiquetas-barras">{{{etiquetas}}}</div>
+    </div>
+    <div class="caja">
+      <strong>Últimas ventas</strong>
+      <div id="ultimas-ventas"></div>
+    </div>
+  </div>
+  <div class="dos-columnas">
+    <div class="caja">
+      <strong>Pendientes</strong>
+      <ul class="lista-pendientes">{{{pendientes}}}</ul>
+    </div>
+    <div class="caja columna-doble">
+      <strong>Todas las funciones</strong>
+      <div class="texto-suave margen-superior">Cada pantalla a la que tienes acceso, por grupo.</div>
+      <div class="todas-funciones">{{{funciones}}}</div>
+    </div>
+  </div>
+</div>
+
+<template id="acceso-principal">
+  <a class="acceso-principal" href="{{enlace}}">
+    <span class="icono-acceso" aria-hidden="true">{{{icono}}}</span>
+    <span><strong>{{etiqueta}}</strong><small>{{detalle}}</small></span>
+  </a>
+</template>
+
+<template id="pendiente">
+  <li><a href="{{enlace}}">{{texto}}</a></li>
+</template>
+
+<template id="grupo-funciones">
+  <div class="grupo-funciones">
+    <div class="titulo-funciones"><span aria-hidden="true">{{{icono}}}</span>{{etiqueta}}</div>
+    {{{enlaces}}}
+  </div>
+</template>
+
+<template id="enlace-funcion">
+  <a href="{{enlace}}">{{etiqueta}}</a>
+</template>
+
+<template id="tarjeta-resumen">
+  <div class="caja resumen" data-indice="{{indice}}">
+    <div class="cabecera-tarjeta">
+      <span class="texto-suave">{{etiqueta}}</span>
+      <button type="button" class="agarre" aria-label="Mover la tarjeta {{etiqueta}} (arrastra o usa las flechas)" title="Arrastra o usa las flechas del teclado">
+        <svg width="12" height="16" viewBox="0 0 12 16" fill="currentColor" aria-hidden="true"><circle cx="3" cy="3" r="1.5"/><circle cx="9" cy="3" r="1.5"/><circle cx="3" cy="8" r="1.5"/><circle cx="9" cy="8" r="1.5"/><circle cx="3" cy="13" r="1.5"/><circle cx="9" cy="13" r="1.5"/></svg>
+      </button>
+    </div>
+    <div class="valor" data-hasta="{{valor}}" data-formato="{{formato}}">0</div>
+    <div class="pista"><div class="relleno" data-porcentaje="{{porcentaje}}"></div></div>
+    <div class="texto-suave margen-superior">{{detalle}}</div>
+  </div>
+</template>
+
+<template id="barra">
+  <i data-altura="{{altura}}" data-retraso="{{retraso}}" title="{{titulo}}" aria-label="{{titulo}}"></i>
+</template>
+
+<template id="etiqueta-barra">
+  <span>{{texto}}</span>
+</template>
+

@@ -1,0 +1,162 @@
+/* Panel (accesos principales, pendientes, todas las funciones) y formularios de tiendas, bodegas y empleados */
+.accesos-principales {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(165px, 1fr));
+  gap: var(--espacio-4);
+  margin-bottom: 16px;
+}
+
+.acceso-principal {
+  display: flex;
+  align-items: center;
+  gap: var(--espacio-4);
+  padding: 14px;
+  border: 1px solid var(--borde);
+  border-radius: var(--radio-lg);
+  background: var(--superficie);
+  color: var(--texto);
+  text-decoration: none;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.acceso-principal:hover {
+  background: var(--pasar);
+  border-color: var(--contorno);
+}
+
+.acceso-principal small {
+  display: block;
+  margin-top: 2px;
+  color: var(--suave);
+  font-size: var(--letra-xs);
+}
+
+.icono-acceso {
+  width: 40px;
+  height: 40px;
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radio-md);
+  background: var(--marca-suave);
+  color: var(--marca);
+}
+
+.lista-pendientes {
+  margin: 12px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.lista-pendientes li {
+  padding: 10px 0;
+  border-bottom: 1px solid var(--borde);
+}
+
+.lista-pendientes li:last-child {
+  border-bottom: 0;
+}
+
+.lista-pendientes a {
+  color: var(--texto);
+}
+
+.dos-columnas > .columna-doble {
+  flex-grow: 2;
+}
+
+.todas-funciones {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: var(--espacio-5);
+  margin-top: 14px;
+}
+
+.grupo-funciones {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espacio-1);
+}
+
+.titulo-funciones {
+  display: flex;
+  align-items: center;
+  gap: var(--espacio-3);
+  margin-bottom: 4px;
+  font-weight: 600;
+}
+
+.titulo-funciones svg {
+  width: 16px;
+  height: 16px;
+}
+
+.grupo-funciones a {
+  padding: 3px 0 3px 24px;
+  color: var(--suave);
+  text-decoration: none;
+}
+
+.grupo-funciones a:hover {
+  color: var(--texto);
+  text-decoration: underline;
+}
+
+/* Formularios de gestión */
+
+/* Matriz de stock por bodega y líneas del traslado */
+.matriz-stock td.numero,
+.matriz-stock th.numero {
+  text-align: right;
+}
+
+.lineas-traslado {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espacio-3);
+  margin: 12px 0;
+}
+
+.linea-traslado {
+  display: grid;
+  grid-template-columns: 1fr 100px auto;
+  gap: var(--espacio-3);
+  align-items: center;
+}
+
+/* Barra de avance de la meta: un <progress> con los colores del tema */
+.barra-avance {
+  display: block;
+  width: 100%;
+  height: 6px;
+  border: 0;
+  border-radius: var(--radio-sm);
+  background: var(--pista);
+  overflow: hidden;
+  appearance: none;
+}
+
+.barra-avance::-webkit-progress-bar {
+  background: var(--pista);
+}
+
+.barra-avance::-webkit-progress-value {
+  background: var(--barra);
+}
+
+.barra-avance::-moz-progress-bar {
+  background: var(--barra);
+}
+
+@media (max-width: 800px) {
+  .accesos-principales {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .acceso-principal {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--espacio-3);
+  }
+}

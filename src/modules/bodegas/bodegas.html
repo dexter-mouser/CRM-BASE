@@ -1,0 +1,100 @@
+<div id="principal">
+  <button type="button" class="boton" id="nueva-bodega" data-accion-cabecera>Nueva bodega</button>
+  <button type="button" class="boton primario" id="nuevo-traslado" data-accion-cabecera>Nuevo traslado</button>
+
+  <div id="formulario-bodega"></div>
+
+  <section class="caja panel-proceso" id="panel-traslado" aria-labelledby="titulo-traslado" hidden>
+    <strong id="titulo-traslado">Nuevo traslado</strong>
+    <div class="dos-columnas arriba margen-superior">
+      <div class="columna-angosta">
+        <label for="traslado-origen">Sale de</label>
+        <select id="traslado-origen" class="campo">{{{opcionesBodega}}}</select>
+        <label for="traslado-destino">Llega a</label>
+        <select id="traslado-destino" class="campo">{{{opcionesBodega}}}</select>
+        <label for="traslado-observaciones">Observaciones</label>
+        <input id="traslado-observaciones" class="campo" maxlength="300" autocomplete="off" placeholder="Opcional: quién lo lleva, vehículo">
+        {{{selector}}}
+      </div>
+      <div class="columna-ancha">
+        <div class="desplazable">
+          <table>
+            <tr><th>Código</th><th>Producto</th><th>Disponible</th><th>Cantidad</th><th></th></tr>
+            <tbody id="lineas-traslado"></tbody>
+          </table>
+        </div>
+        <div class="texto-suave margen-superior" id="sin-lineas-traslado">Aún no agregaste productos. Elige uno del buscador.</div>
+        <div class="acciones-fila margen-superior-grande">
+          <button type="button" class="boton primario" id="enviar-traslado">Enviar traslado</button>
+          <button type="button" class="boton" id="cancelar-traslado">Cancelar</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="caja separacion-inferior" aria-labelledby="titulo-lista-bodegas">
+    <strong id="titulo-lista-bodegas">Lista de bodegas</strong>
+    <div id="cuadricula-bodegas"></div>
+  </section>
+  <div id="ficha-bodega" class="separacion-inferior"></div>
+
+  <section class="caja separacion-inferior" aria-labelledby="titulo-stock">
+    <strong id="titulo-stock">Stock por bodega</strong>
+    <div id="cuadricula-stock"></div>
+  </section>
+
+  <section class="caja" id="traslados" aria-labelledby="titulo-traslados">
+    <strong id="titulo-traslados">Traslados</strong>
+    <div class="confirmacion" id="confirmar-anular-traslado" hidden>
+      <span id="texto-anular-traslado"></span>
+      <input id="motivo-anular-traslado" class="campo" maxlength="200" autocomplete="off" placeholder="Motivo">
+      <button type="button" class="boton peligro" id="anular-traslado-si">Anular traslado</button>
+      <button type="button" class="boton" id="anular-traslado-no">Cancelar</button>
+    </div>
+    <div id="cuadricula-traslados"></div>
+  </section>
+  <div id="ficha-traslado"></div>
+</div>
+
+<template id="acciones-bodega">
+  <div class="acciones-fila">
+    <button type="button" class="boton" data-ficha="{{id}}">Ficha</button>
+    {{{edicion}}}
+  </div>
+</template>
+
+<template id="botones-edicion-bodega">
+  <button type="button" class="boton" data-editar="{{id}}">Editar</button>
+  <button type="button" class="boton {{claseEstado}}" data-estado="{{id}}">{{textoEstado}}</button>
+</template>
+
+<template id="acciones-traslado">
+  <div class="acciones-fila">
+    <button type="button" class="boton" data-ficha-traslado="{{id}}">Ficha</button>
+    {{{pendiente}}}
+  </div>
+</template>
+
+<template id="acciones-traslado-pendiente">
+  <button type="button" class="boton primario" data-recibir="{{id}}">Recibir</button>
+  <button type="button" class="boton peligro" data-anular="{{id}}">Anular</button>
+</template>
+
+<template id="contenido-ficha-bodega">
+  <strong class="subtitulo-ficha">Productos con stock</strong>
+  <div data-cuadricula-ficha></div>
+</template>
+
+<template id="fila-linea-traslado">
+  <tr data-posicion="{{posicion}}">
+    <td>{{id}}</td>
+    <td class="celda-ancha">{{nombre}}</td>
+    <td>{{disponible}}</td>
+    <td><input class="campo campo-corto" data-campo="cantidad" data-numero="entero" inputmode="numeric" autocomplete="off" aria-label="Cantidad de {{nombre}}" value="{{cantidad}}"></td>
+    <td><button type="button" class="boton icono" data-quitar aria-label="Quitar {{nombre}}">{{{icono}}}</button></td>
+  </tr>
+</template>
+
+<template id="opcion">
+  <option value="{{valor}}">{{texto}}</option>
+</template>

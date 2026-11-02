@@ -1,0 +1,25 @@
+<template id="tabla-resumen">
+  <div class="desplazable">
+    <table class="tabla-resumen">
+      <thead><tr><!--{{{encabezados}}}--></tr></thead>
+      <tbody data-cuerpo-tabla></tbody>
+    </table>
+  </div>
+  <div class="texto-suave margen-superior" data-vacio-tabla hidden>{{vacio}}</div>
+</template>
+
+<template id="encabezado">
+  <th class="{{clase}}">{{titulo}}</th>
+</template>
+
+<template id="fila">
+  <tr class="{{clase}}"><!--{{{celdas}}}--></tr>
+</template>
+
+<template id="celda">
+  <td class="{{clase}}">{{texto}}</td>
+</template>
+
+<template id="celda-html">
+  <td class="{{clase}}">{{{contenido}}}</td>
+</template>

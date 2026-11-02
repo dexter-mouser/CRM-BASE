@@ -1,0 +1,61 @@
+<div id="principal">
+  <button type="button" class="boton primario" id="nueva-actividad" data-accion-cabecera>Nueva actividad</button>
+
+  <div id="formulario-actividad"></div>
+
+  <section class="caja separacion-inferior" aria-labelledby="titulo-tareas">
+    <strong id="titulo-tareas">Tareas pendientes</strong>
+    <div class="texto-suave" id="alcance-tareas"></div>
+    <div id="cuadricula-tareas"></div>
+  </section>
+
+  <section class="caja" aria-labelledby="titulo-historial">
+    <strong id="titulo-historial">Historial de actividades</strong>
+    <div class="confirmacion" id="confirmar-eliminar-actividad" hidden>
+      <span id="texto-eliminar-actividad"></span>
+      <button type="button" class="boton peligro" id="eliminar-actividad-si">Sí, eliminar</button>
+      <button type="button" class="boton" id="eliminar-actividad-no">Cancelar</button>
+    </div>
+    <div id="cuadricula-actividades"></div>
+  </section>
+
+  <div id="ficha-actividad"></div>
+</div>
+
+<template id="acciones-tarea">
+  <div class="acciones-fila">
+    <button type="button" class="boton" data-ficha="{{id}}">Ficha</button>
+    {{{editar}}}
+    {{{eliminar}}}
+    {{{completar}}}
+  </div>
+</template>
+
+<template id="acciones-actividad">
+  <div class="acciones-fila">
+    <button type="button" class="boton" data-ficha="{{id}}">Ficha</button>
+    {{{editar}}}
+    {{{eliminar}}}
+  </div>
+</template>
+
+<template id="boton-editar">
+  <button type="button" class="boton" data-editar="{{id}}">Editar</button>
+</template>
+
+<template id="boton-eliminar">
+  <button type="button" class="boton peligro" data-eliminar="{{id}}">Eliminar</button>
+</template>
+
+<template id="boton-completar">
+  <button type="button" class="boton primario" data-completar="{{id}}">Marcar hecha</button>
+</template>
+
+<template id="estado-tarea">
+  <span class="insignia {{clase}}">{{texto}}</span>
+</template>
+
+<template id="enlace-cliente">
+  <a href="clientes.html?ficha={{id}}">{{nombre}}</a>
+</template>
+

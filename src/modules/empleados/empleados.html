@@ -1,0 +1,48 @@
+<div id="principal">
+  <button type="button" class="boton primario" id="nuevo-empleado" data-accion-cabecera>Nuevo empleado</button>
+
+  <div class="tarjetas">{{{resumen}}}</div>
+
+  <div id="formulario-empleado"></div>
+
+  <section class="caja" aria-labelledby="titulo-lista-empleados">
+    <strong id="titulo-lista-empleados">Lista de empleados</strong>
+    <div class="confirmacion" id="confirmar-retiro" hidden>
+      <span id="texto-retiro"></span>
+      <button type="button" class="boton peligro" id="retiro-si">Sí, retirar</button>
+      <button type="button" class="boton" id="retiro-no">Cancelar</button>
+    </div>
+    <div id="cuadricula-empleados"></div>
+  </section>
+
+  <div id="ficha-empleado"></div>
+</div>
+
+<template id="tarjeta">
+  <div class="caja resumen">
+    <span class="texto-suave">{{etiqueta}}</span>
+    <div class="valor">{{valor}}</div>
+    <div class="texto-suave margen-superior">{{detalle}}</div>
+  </div>
+</template>
+
+<template id="avance">
+  <div title="{{titulo}}">
+    <div>{{texto}}</div>
+    <progress class="barra-avance" max="100" value="{{ancho}}"></progress>
+  </div>
+</template>
+
+<template id="acciones-empleado">
+  <div class="acciones-fila">
+    <button type="button" class="boton" data-ficha="{{id}}">Ficha</button>
+    {{{edicion}}}
+  </div>
+</template>
+
+<template id="botones-edicion">
+  <button type="button" class="boton" data-editar="{{id}}">Editar</button>
+  <button type="button" class="boton {{claseEstado}}" data-estado="{{id}}">{{textoEstado}}</button>
+</template>
+
+

@@ -1,0 +1,39 @@
+<template id="cuadricula-estructura">
+<div class="cuadricula-datos" role="grid" aria-label="{{titulo}}">
+  <div class="fila-cuadricula encabezado-cuadricula" role="row">{{{encabezados}}}</div>
+  <div class="fila-cuadricula fila-busqueda" role="row">{{{filtros}}}</div>
+  <div class="cuerpo-cuadricula"></div>
+</div>
+<div class="pie-cuadricula texto-suave">
+  <span class="resumen-cuadricula" role="status"></span>
+  <button type="button" class="boton-enlace ver-mas-cuadricula" hidden>Ver más</button>
+</div>
+</template>
+
+<template id="cuadricula-vacio">
+  <div class="vacio-cuadricula texto-suave">{{texto}}</div>
+</template>
+
+<template id="cuadricula-encabezado">
+  <div role="columnheader" class="{{clase}}">{{titulo}}</div>
+</template>
+
+<template id="cuadricula-filtro">
+  <div role="gridcell"><input class="campo" data-columna="{{clave}}" aria-label="Buscar por {{titulo}}" placeholder="Buscar" autocomplete="off"></div>
+</template>
+
+<template id="cuadricula-filtro-vacio">
+  <div role="gridcell"></div>
+</template>
+
+<template id="cuadricula-fila">
+  <div class="fila-cuadricula fila-dato" role="row">{{{celdas}}}</div>
+</template>
+
+<template id="cuadricula-celda">
+  <div role="gridcell" class="{{clase}}">{{texto}}</div>
+</template>
+
+<template id="cuadricula-celda-html">
+  <div role="gridcell" class="{{clase}}">{{{contenido}}}</div>
+</template>

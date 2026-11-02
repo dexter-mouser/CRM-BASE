@@ -1,0 +1,19 @@
+<aside id="menu-lateral" aria-label="Menú de la tienda"></aside>
+
+<template id="grupo-menu">
+  <div class="grupo-menu {{claseGrupo}}" data-grupo="{{id}}">
+    <button type="button" class="opcion-menu {{clase}}" aria-expanded="{{abierto}}" aria-controls="secciones-{{id}}" title="{{etiqueta}}">{{{icono}}}<span data-corta="{{corta}}">{{etiqueta}}</span><small class="cuenta-grupo" aria-hidden="true">{{cuenta}}</small><svg class="flecha-grupo" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></button>
+    <div class="secciones-grupo" id="secciones-{{id}}" role="group" aria-label="{{etiqueta}}" {{{oculto}}}>
+      <strong class="titulo-secciones">{{etiqueta}}</strong>
+      {{{secciones}}}
+    </div>
+  </div>
+</template>
+
+<template id="seccion-enlace">
+  <a class="opcion-seccion {{clase}}" href="{{enlace}}">{{etiqueta}}</a>
+</template>
+
+<template id="opcion-salir">
+  <button type="button" class="opcion-menu" id="cerrar-sesion" aria-label="Cerrar sesión" title="Cerrar sesión">{{{icono}}}<span data-corta="Salir">Cerrar sesión</span></button>
+</template>

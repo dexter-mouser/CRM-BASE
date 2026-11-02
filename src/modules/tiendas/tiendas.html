@@ -1,0 +1,29 @@
+<div id="principal">
+  <button type="button" class="boton primario" id="nueva-tienda" data-accion-cabecera>Nueva sucursal</button>
+
+  <div id="formulario-tienda"></div>
+
+  <section class="caja" aria-labelledby="titulo-lista-tiendas">
+    <strong id="titulo-lista-tiendas">Lista de sucursales</strong>
+    <div id="cuadricula-tiendas"></div>
+  </section>
+
+  <div id="ficha-tienda"></div>
+</div>
+
+<template id="acciones-tienda">
+  <div class="acciones-fila">
+    <button type="button" class="boton" data-ficha="{{id}}">Ficha</button>
+    {{{editar}}}
+  </div>
+</template>
+
+<template id="botones-edicion">
+  <button type="button" class="boton" data-editar="{{id}}">Editar</button>
+  <button type="button" class="boton {{claseEstado}}" data-estado="{{id}}">{{textoEstado}}</button>
+</template>
+
+<template id="estado-registro">
+  <span class="insignia {{clase}}">{{texto}}</span>
+</template>
+

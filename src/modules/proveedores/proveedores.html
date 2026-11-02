@@ -1,0 +1,110 @@
+<div id="principal">
+  <button type="button" class="boton" id="nuevo-proveedor" data-accion-cabecera>Nuevo proveedor</button>
+  <button type="button" class="boton primario" id="nueva-orden" data-accion-cabecera>Nueva orden de compra</button>
+
+  <div id="formulario-proveedor"></div>
+
+  <section class="caja panel-proceso" id="panel-orden" aria-labelledby="titulo-orden" hidden>
+    <strong id="titulo-orden">Nueva orden de compra</strong>
+    <span class="etiqueta-campo">Proveedor · busca por cualquier dato</span>
+    <div id="selector-proveedor-orden"></div>
+    <div class="dos-columnas arriba margen-superior">
+      <div class="columna-angosta">
+        <label for="orden-observaciones">Observaciones</label>
+        <input id="orden-observaciones" class="campo" maxlength="300" autocomplete="off" placeholder="Opcional: fecha de entrega, condiciones">
+        {{{selector}}}
+      </div>
+      <div class="columna-ancha">
+        <div class="desplazable">
+          <table>
+            <tr><th>Código</th><th>Producto</th><th>Cantidad</th><th>Costo unitario</th><th>Subtotal</th><th></th></tr>
+            <tbody id="lineas-orden"></tbody>
+          </table>
+        </div>
+        <div class="texto-suave margen-superior" id="sin-lineas-orden">Aún no agregaste productos. Elige uno del buscador.</div>
+        <div class="total-venta"><span>Total de la orden</span><strong id="total-orden">$ 0</strong></div>
+        <div class="acciones-fila">
+          <button type="button" class="boton primario" id="registrar-orden">Registrar orden</button>
+          <button type="button" class="boton" id="cancelar-orden">Cancelar</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="caja" aria-labelledby="titulo-lista-proveedores">
+    <strong id="titulo-lista-proveedores">Lista de proveedores</strong>
+    <div class="confirmacion" id="confirmar-eliminar" hidden>
+      <span id="texto-eliminar"></span>
+      <button type="button" class="boton peligro" id="eliminar-si">Sí, eliminar</button>
+      <button type="button" class="boton" id="eliminar-no">Cancelar</button>
+    </div>
+    <div id="cuadricula-proveedores"></div>
+  </section>
+  <div id="ficha-proveedor"></div>
+
+  <section class="caja margen-superior-grande" aria-labelledby="titulo-ordenes">
+    <strong id="titulo-ordenes">Órdenes de compra</strong>
+    <div class="confirmacion" id="confirmar-anular-orden" hidden>
+      <span id="texto-anular-orden"></span>
+      <input id="motivo-anular-orden" class="campo" maxlength="200" autocomplete="off" placeholder="Motivo">
+      <button type="button" class="boton peligro" id="anular-orden-si">Anular orden</button>
+      <button type="button" class="boton" id="anular-orden-no">Cancelar</button>
+    </div>
+    <div id="cuadricula-ordenes"></div>
+  </section>
+  <div id="ficha-orden"></div>
+</div>
+
+<template id="acciones-proveedor">
+  <div class="acciones-fila">
+    <button type="button" class="boton" data-ficha="{{id}}">Ficha</button>
+    {{{edicion}}}
+  </div>
+</template>
+
+<template id="botones-edicion-proveedor">
+  <button type="button" class="boton" data-editar="{{id}}">Editar</button>
+  <button type="button" class="boton peligro" data-eliminar="{{id}}">Eliminar</button>
+</template>
+
+<template id="contenido-ficha-proveedor">
+  <strong class="subtitulo-ficha">Facturas de compra</strong>
+  <div data-facturas></div>
+  <strong class="subtitulo-ficha">Pagos</strong>
+  <div data-pagos></div>
+  <strong class="subtitulo-ficha">Órdenes de compra</strong>
+  <div data-ordenes></div>
+</template>
+
+<template id="acciones-orden">
+  <div class="acciones-fila">
+    <button type="button" class="boton" data-ficha-orden="{{id}}">Ficha</button>
+    <button type="button" class="boton" data-comprobante-orden="{{id}}">Comprobante</button>
+    {{{abierta}}}
+  </div>
+</template>
+
+<template id="acciones-ficha-orden">
+  <button type="button" class="boton" data-comprobante-orden="{{id}}">Comprobante</button>
+  {{{abierta}}}
+</template>
+
+<template id="acciones-orden-abierta">
+  <a class="boton primario" href="inventario.html?seccion=compras&amp;orden={{id}}">Recibir</a>
+  <button type="button" class="boton peligro" data-anular-orden="{{id}}">Anular</button>
+</template>
+
+<template id="fila-linea-orden">
+  <tr data-posicion="{{posicion}}">
+    <td>{{id}}</td>
+    <td class="celda-ancha">{{nombre}}</td>
+    <td><input class="campo campo-corto" data-campo="cantidad" data-numero="entero" inputmode="numeric" autocomplete="off" aria-label="Cantidad de {{nombre}}" value="{{cantidad}}"></td>
+    <td><input class="campo campo-medio" data-campo="costoUnitario" data-numero="entero" inputmode="numeric" autocomplete="off" placeholder="0" aria-label="Costo unitario de {{nombre}}" value="{{costoUnitario}}"></td>
+    <td data-subtotal>{{subtotal}}</td>
+    <td><button type="button" class="boton icono" data-quitar aria-label="Quitar {{nombre}}">{{{icono}}}</button></td>
+  </tr>
+</template>
+
+<template id="opcion">
+  <option value="{{valor}}">{{texto}}</option>
+</template>

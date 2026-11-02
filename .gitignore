@@ -1,0 +1,8 @@
+# Grafo de conocimiento generado por graphify
+graphify-out/
+
+# Instrucciones locales para Claude Code
+CLAUDE.md
+
+# Traspaso local entre chats (contexto, plan, pendientes)
+CONTEXTO-CHAT.md

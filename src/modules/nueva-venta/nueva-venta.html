@@ -1,0 +1,147 @@
+<div id="principal">
+  <button type="button" class="boton" id="vista-previa-recibo" data-accion-cabecera>Vista previa <kbd>F8</kbd></button>
+
+  <div id="registro-venta">
+    <div class="aviso-origen caja separacion-inferior" id="aviso-origen" hidden>
+      <strong id="texto-origen"></strong>
+      <div class="texto-suave" id="detalle-origen"></div>
+    </div>
+
+    <!-- Fuera del documento: se cambia aquí pero no sale en la factura -->
+    <div class="barra-documento separacion-inferior">
+      <label for="lista-precio">Lista de precios</label>
+      <select id="lista-precio" class="campo">{{{opcionesLista}}}</select>
+    </div>
+
+    <section class="caja documento-registro" id="cuadricula-venta" aria-label="Documento de venta">
+      <div class="encabezado-documento">
+        <div class="bloque-documento" id="datos-cliente">
+          <h2 class="titulo-bloque">Cliente</h2>
+          <div id="selector-cliente"></div>
+          <div class="nota-cliente" id="ficha-cliente" aria-live="polite"></div>
+        </div>
+
+        <div class="bloque-documento">
+          <h2 class="titulo-bloque">Información general</h2>
+          <div class="campos-documento">
+            <div>
+              <label for="tipo-documento">Tipo de documento *</label>
+              <select id="tipo-documento" class="campo">
+                <option value="factura">Factura de venta</option>
+                <option value="remision">Remisión</option>
+                <option value="cotizacion">Cotización</option>
+              </select>
+            </div>
+            <div class="dato-documento"><span>Consecutivo</span><strong class="consecutivo-documento" id="consecutivo">{{consecutivo}}</strong></div>
+            <div class="dato-documento"><span>Fecha de emisión</span><strong>{{fecha}}</strong></div>
+            <div class="dato-documento"><span>Sucursal</span><strong>{{sucursal}}</strong></div>
+            <div class="dato-documento"><span>Vendedor</span><strong>{{vendedor}}</strong></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="bloque-documento">
+        <h2 class="titulo-bloque">Productos</h2>
+        <div class="desplazable">
+          <div class="cuadricula lineas-venta" role="grid" aria-label="Productos de la venta">
+            <div class="fila-cuadricula fila-busqueda" role="row">
+              <div role="columnheader"><input class="campo" data-filtro="id" aria-label="Buscar producto por código" placeholder="Código" autocomplete="off"></div>
+              <div role="columnheader"><input class="campo" data-filtro="referencia" aria-label="Buscar producto por referencia" placeholder="Referencia" autocomplete="off"></div>
+              <div role="columnheader"><input class="campo" data-filtro="nombre" aria-label="Buscar producto por descripción" placeholder="Descripción o código de barras" autocomplete="off"></div>
+              <div role="columnheader" class="titulo-columna numero-celda">Cantidad</div>
+              <div role="columnheader" class="titulo-columna numero-celda">Precio unitario</div>
+              <div role="columnheader" class="titulo-columna numero-celda">IVA</div>
+              <div role="columnheader" class="titulo-columna numero-celda">Total línea</div>
+              <div role="columnheader"><span class="solo-lector">Quitar</span></div>
+            </div>
+            <div class="resultados-cuadricula" id="resultados-cuadricula" role="listbox" aria-label="Productos encontrados" hidden></div>
+            <div id="lineas-venta"></div>
+          </div>
+        </div>
+        <div class="texto-suave" id="sin-lineas">Todavía no hay productos en la venta.</div>
+      </div>
+
+      <div class="pie-documento separado">
+        <div class="bloque-documento">
+          <h2 class="titulo-bloque">Método de pago</h2>
+          <div class="campos-documento" id="campos-pago">
+            <div id="campo-metodo">
+              <label for="metodo">Medio de pago *</label>
+              <select id="metodo" class="campo">{{{opcionesMetodo}}}</select>
+            </div>
+            <div id="campo-recibido">
+              <label for="monto-recibido">Monto recibido</label>
+              <input id="monto-recibido" class="campo" data-numero="entero" inputmode="numeric" autocomplete="off" placeholder="$ Valor">
+            </div>
+          </div>
+          <div class="texto-suave" id="sin-pago" hidden>Este documento no registra pago.</div>
+        </div>
+
+        <div class="bloque-documento">
+          <h2 class="titulo-bloque">Resumen</h2>
+          <div class="linea-resumen"><span>Productos</span><span id="resumen-lineas">0 líneas · 0 unidades</span></div>
+          <div class="linea-resumen"><span>Subtotal (sin IVA)</span><span id="subtotal-venta">$ 0</span></div>
+          <div id="iva-venta"></div>
+          <div class="linea-resumen total-documento"><span>Total a pagar</span><strong id="total-venta">$ 0</strong></div>
+          <div class="linea-resumen" id="fila-cambio"><span id="etiqueta-cambio">Cambio</span><strong id="cambio-venta">$ 0</strong></div>
+        </div>
+      </div>
+
+      <div class="bloque-documento separado">
+        <h2 class="titulo-bloque"><label for="observaciones" class="etiqueta-heredada">Mensaje personalizado</label></h2>
+        <textarea id="observaciones" class="campo mensaje-documento" maxlength="300" rows="2" placeholder="Mensaje al pie del comprobante">{{mensaje}}</textarea>
+      </div>
+    </section>
+
+    <div class="acciones-documento margen-superior-grande">
+      <button type="button" class="boton" id="vaciar-venta">Cancelar <kbd>F9</kbd></button>
+      <button type="button" class="boton primario" id="registrar-venta"><span id="texto-registrar">Emitir factura</span> <kbd>F4</kbd></button>
+    </div>
+  </div>
+
+  <section class="caja" id="venta-registrada" hidden>
+    <strong id="titulo-registrada">Documento registrado correctamente</strong>
+    <div class="texto-suave margen-superior" id="resumen-registrada"></div>
+    <div class="acciones-fila margen-superior-grande">
+      <button type="button" class="boton primario" id="ver-recibo">Ver comprobante</button>
+      <button type="button" class="boton" id="otra-venta">Registrar otro <kbd>F4</kbd></button>
+    </div>
+  </section>
+</div>
+
+
+<template id="nota-cliente">
+  <div class="texto-suave">{{texto}}</div>
+  {{{enlace}}}
+</template>
+
+<template id="linea-impuesto">
+  <div class="linea-resumen"><span>IVA {{tarifa}} %</span><span>{{valor}}</span></div>
+</template>
+
+<template id="nombre-fijo">{{nombre}}</template>
+
+<template id="nombre-generico">
+  <input class="campo campo-nombre-generico" data-campo="nombre" maxlength="80" autocomplete="off" placeholder="¿Qué se vende? Ej.: Cambio de pin de carga" aria-label="Descripción del producto genérico" value="{{nombre}}">
+</template>
+
+<template id="opcion-lista">
+  <option value="{{id}}">{{etiqueta}}</option>
+</template>
+
+<template id="opcion-metodo">
+  <option>{{metodo}}</option>
+</template>
+
+<template id="fila-linea">
+  <div class="fila-cuadricula fila-linea" role="row" data-posicion="{{posicion}}">
+    <div role="gridcell">{{id}}</div>
+    <div role="gridcell" class="texto-suave">{{referencia}}</div>
+    <div role="gridcell" class="texto-producto">{{{celdaNombre}}}</div>
+    <div role="gridcell"><input class="campo numero-celda" data-campo="cantidad" data-numero="entero" inputmode="numeric" autocomplete="off" aria-label="Cantidad de {{nombre}}" value="{{cantidad}}"></div>
+    <div role="gridcell"><input class="campo numero-celda" data-campo="valorUnitario" data-numero="entero" inputmode="numeric" autocomplete="off" placeholder="0" aria-label="Precio unitario de {{nombre}}" value="{{valorUnitario}}"></div>
+    <div role="gridcell" class="numero-celda texto-suave">{{iva}} %</div>
+    <div role="gridcell" class="numero-celda" data-subtotal>{{subtotal}}</div>
+    <div role="gridcell"><button type="button" class="boton icono" data-quitar aria-label="Quitar {{nombre}}">{{{icono}}}</button></div>
+  </div>
+</template>

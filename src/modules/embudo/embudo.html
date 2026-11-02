@@ -1,0 +1,72 @@
+<div id="principal">
+  <a class="boton primario" href="nueva-venta.html?tipo=cotizacion" id="nueva-cotizacion" data-accion-cabecera>Nueva cotización</a>
+
+  <section class="caja alerta-perfil separacion-inferior" id="alertas-embudo" hidden>
+    <strong id="titulo-alertas"></strong>
+    <div class="texto-suave">Estas cotizaciones vencieron sin cerrarse. Registra por qué se perdieron o pásalas a remisión o factura si el cliente aceptó.</div>
+  </section>
+
+  <div class="indicadores" id="resumen-embudo"></div>
+
+  <div class="tablero-embudo margen-superior-grande" id="tablero"></div>
+
+  <div id="panel-perdida" class="margen-superior-grande"></div>
+
+  <div id="ficha-oportunidad"></div>
+</div>
+
+<template id="columna-embudo">
+  <section class="columna-embudo" data-etapa="{{etapa}}" aria-label="{{titulo}}">
+    <div class="cabecera-columna"><strong>{{titulo}}</strong><span class="texto-suave">{{cantidad}} · {{valor}}</span></div>
+    {{{tarjetas}}}
+    {{{vacio}}}
+  </section>
+</template>
+
+<template id="tarjeta-oportunidad">
+  <article class="tarjeta-oportunidad {{clase}}">
+    <div class="fila-tarjeta"><strong>{{id}}</strong><span>{{total}}</span></div>
+    <a class="cliente-tarjeta" href="{{enlaceCliente}}">{{cliente}}</a>
+    <div class="texto-suave">{{productos}}</div>
+    <div class="texto-suave">Vendedor: {{usuario}} · {{vigencia}}</div>
+    {{{motivo}}}
+    <div class="acciones-fila">{{{acciones}}}</div>
+  </article>
+</template>
+
+<template id="acciones-abierta">
+  {{{negociar}}}
+  <a class="boton primario" href="nueva-venta.html?documento={{id}}&amp;tipo=factura">Facturar</a>
+  <a class="boton" href="nueva-venta.html?documento={{id}}&amp;tipo=remision">Remisión</a>
+  <button type="button" class="boton peligro" data-perder="{{id}}">Perdida</button>
+</template>
+
+<template id="boton-negociar">
+  <button type="button" class="boton" data-negociar="{{id}}">En negociación</button>
+</template>
+
+<template id="boton-ficha">
+  <button type="button" class="boton" data-ficha="{{id}}">Ficha</button>
+</template>
+
+<template id="acciones-ficha">
+  <button type="button" class="boton" data-ver="{{id}}">Comprobante</button>
+  {{{acciones}}}
+</template>
+
+<template id="enlace-cliente">
+  <a href="{{enlace}}">{{nombre}}</a>
+</template>
+
+<template id="motivo-tarjeta">
+  <div class="motivo-tarjeta">{{texto}}</div>
+</template>
+
+<template id="columna-vacia">
+  <div class="texto-suave columna-vacia">Sin oportunidades</div>
+</template>
+
+<template id="indicador">
+  <div class="caja indicador"><span class="texto-suave">{{etiqueta}}</span><strong>{{valor}}</strong></div>
+</template>
+

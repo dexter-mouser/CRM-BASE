@@ -1,0 +1,91 @@
+<template id="formulario-panel">
+  <section class="caja panel-proceso" aria-labelledby="titulo-{{clave}}" hidden>
+    <strong id="titulo-{{clave}}" data-titulo-formulario>{{titulo}}</strong>
+    {{{antes}}}
+    <div class="rejilla-campos" data-columnas="{{columnas}}">{{{campos}}}</div>
+    {{{despues}}}
+    <div class="acciones-fila margen-superior-grande">
+      <button type="button" class="boton primario" data-guardar-formulario>{{textoGuardar}}</button>
+      <button type="button" class="boton" data-cancelar-formulario>Cancelar</button>
+    </div>
+  </section>
+</template>
+
+<template id="formulario-incrustado">
+  <div class="formulario-incrustado">
+    {{{antes}}}
+    <div class="rejilla-campos" data-columnas="{{columnas}}">{{{campos}}}</div>
+    {{{despues}}}
+    <div class="acciones-fila margen-superior">
+      <button type="button" class="boton primario" data-guardar-formulario>{{textoGuardar}}</button>
+    </div>
+  </div>
+</template>
+
+<template id="campo-entrada">
+  <div class="campo-formulario {{clase}}" data-campo="{{clave}}">
+    <label for="{{id}}">{{etiqueta}}{{{marca}}}</label>
+    <input id="{{id}}" class="campo" type="{{tipo}}" {{{atributos}}} autocomplete="off">
+    {{{extra}}}
+    {{{ayuda}}}
+  </div>
+</template>
+
+<template id="campo-area">
+  <div class="campo-formulario {{clase}}" data-campo="{{clave}}">
+    <label for="{{id}}">{{etiqueta}}{{{marca}}}</label>
+    <textarea id="{{id}}" class="campo" rows="3" {{{atributos}}}></textarea>
+    {{{ayuda}}}
+  </div>
+</template>
+
+<template id="campo-seleccion">
+  <div class="campo-formulario {{clase}}" data-campo="{{clave}}">
+    <label for="{{id}}">{{etiqueta}}{{{marca}}}</label>
+    <select id="{{id}}" class="campo" {{{atributos}}}>{{{opciones}}}</select>
+    {{{ayuda}}}
+  </div>
+</template>
+
+<template id="campo-casilla">
+  <div class="campo-formulario campo-casilla {{clase}}" data-campo="{{clave}}">
+    <label class="casilla"><input type="checkbox" id="{{id}}" {{{atributos}}}> {{etiqueta}}</label>
+    {{{ayuda}}}
+  </div>
+</template>
+
+<template id="campo-casillas">
+  <div class="campo-formulario {{clase}}" data-campo="{{clave}}">
+    <span class="etiqueta-campo">{{etiqueta}}{{{marca}}}</span>
+    <div class="lista-casillas" id="{{id}}">{{{opciones}}}</div>
+    {{{ayuda}}}
+  </div>
+</template>
+
+<template id="sugerencias">
+  <datalist id="{{id}}">{{{opciones}}}</datalist>
+</template>
+
+<template id="opcion">
+  <option value="{{valor}}">{{texto}}</option>
+</template>
+
+<template id="opcion-casilla">
+  <label class="casilla"><input type="checkbox" value="{{valor}}"> {{texto}}</label>
+</template>
+
+<template id="ayuda">
+  <small class="ayuda-campo">{{texto}}</small>
+</template>
+
+<template id="marca-obligatorio">
+  <span class="marca-obligatorio" aria-hidden="true"> *</span>
+</template>
+
+<template id="campo-registro">
+  <div class="campo-formulario {{clase}}" data-campo="{{clave}}">
+    <span class="etiqueta-campo">{{etiqueta}}{{{marca}}}</span>
+    <div class="contenedor-selector" id="{{id}}"></div>
+    {{{ayuda}}}
+  </div>
+</template>

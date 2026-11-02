@@ -1,0 +1,49 @@
+/* Reportes y Caja: filtros, resumen de caja y etiquetas de la gráfica del panel */
+.filtros-reporte {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: var(--espacio-4) var(--espacio-5);
+}
+
+.filtros-reporte label {
+  margin-top: 0;
+}
+
+.resumen-caja {
+  display: grid;
+  gap: var(--espacio-3);
+  margin: 12px 0 0;
+}
+
+.resumen-caja div {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--espacio-4);
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--borde);
+}
+
+.resumen-caja dt {
+  color: var(--suave);
+}
+
+.resumen-caja dd {
+  margin: 0;
+  font-weight: 600;
+}
+
+/* Etiquetas de los días bajo la gráfica del panel */
+.etiquetas-barras {
+  display: flex;
+  gap: var(--espacio-4);
+  margin-top: 6px;
+}
+
+.etiquetas-barras span {
+  flex: 1;
+  font-size: var(--letra-xs);
+  text-align: center;
+  text-transform: capitalize;
+  color: var(--suave);
+}

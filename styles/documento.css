@@ -1,0 +1,226 @@
+/* Registro de un documento (venta o compra): un solo bloque con aspecto imprimible. Las secciones se separan con
+   espacio y líneas finas, sin recuadros marcados ni pasos numerados. */
+.documento-registro {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espacio-6);
+  padding: 28px 32px;
+}
+
+/* Dos bloques a la misma altura (cliente e información general; pago y resumen) que bajan uno tras otro si no caben */
+.encabezado-documento,
+.pie-documento {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--espacio-6) 40px;
+  padding-bottom: var(--espacio-6);
+  border-bottom: 1px solid var(--borde-suave);
+}
+
+.pie-documento {
+  padding-bottom: 0;
+  border-bottom: 0;
+}
+
+.paso-documento,
+.bloque-documento {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espacio-4);
+  flex: 1 1 360px;
+  min-width: 0;
+}
+
+.contenido-paso {
+  flex: 1;
+  min-width: 0;
+}
+
+/* Título de cada sección: mayúsculas pequeñas, sin descripción debajo */
+.etiqueta-paso,
+.titulo-bloque,
+.contenido-paso > label:first-child {
+  display: block;
+  margin: 0 0 var(--espacio-3);
+  font-size: var(--letra-xxs);
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--suave);
+}
+
+.etiqueta-paso .texto-suave {
+  display: none;
+}
+
+.numero-paso {
+  display: none;
+}
+
+.titulo-paso {
+  display: flex;
+  align-items: center;
+  gap: var(--espacio-3);
+  margin: 0;
+  padding-top: var(--espacio-6);
+  border-top: 1px solid var(--borde-suave);
+  font-size: var(--letra-xxs);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--suave);
+}
+
+.titulo-paso .texto-suave {
+  display: none;
+}
+
+/* Campos del documento en rejilla: etiqueta corta encima, valor debajo */
+.campos-documento {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: var(--espacio-4) var(--espacio-5);
+}
+
+.campos-documento label {
+  margin: 0 0 5px;
+}
+
+.dato-documento {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  min-width: 0;
+}
+
+.dato-documento > span:first-child {
+  font-size: var(--letra-xs);
+  color: var(--suave);
+}
+
+.dato-documento > strong {
+  min-height: 38px;
+  display: flex;
+  align-items: center;
+  font-weight: 600;
+}
+
+.consecutivo-documento {
+  font-size: var(--letra-xl);
+}
+
+/* Líneas del resumen: etiqueta a la izquierda, valor a la derecha */
+.linea-resumen {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: var(--espacio-4);
+}
+
+.linea-resumen > span:first-child {
+  color: var(--suave);
+}
+
+.linea-resumen > strong,
+.linea-resumen > span:last-child {
+  font-variant-numeric: tabular-nums;
+}
+
+.total-documento {
+  padding: var(--espacio-4) 0;
+  border-top: 1px solid var(--borde-suave);
+  border-bottom: 1px solid var(--borde-suave);
+}
+
+.total-documento > span:first-child {
+  color: var(--texto);
+  font-size: var(--letra-lg);
+  font-weight: 600;
+}
+
+.total-documento > strong {
+  font-size: var(--letra-titulo);
+  color: var(--color-grupo, var(--acento));
+}
+
+.linea-resumen.falta > strong {
+  color: var(--negativo);
+}
+
+/* Fuera del documento: lo que no se imprime (lista de precios arriba, botones abajo) */
+.barra-documento,
+.acciones-documento {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  align-items: center;
+  gap: var(--espacio-4);
+}
+
+.barra-documento label {
+  margin: 0;
+}
+
+.barra-documento .campo {
+  width: auto;
+  min-width: 200px;
+}
+
+.acciones-documento .boton {
+  min-height: 46px;
+  padding: 0 20px;
+  border-radius: var(--radio-lg);
+}
+
+.mensaje-documento {
+  min-height: 70px;
+  resize: vertical;
+  line-height: 1.5;
+}
+
+/* Nombre editable del producto genérico dentro de la línea */
+.campo-nombre-generico {
+  width: 100%;
+  border-color: var(--borde) !important;
+  background: var(--fondo-campo) !important;
+}
+
+.paso-documento .ficha-cliente {
+  grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+  margin-top: 10px;
+}
+
+.nota-cliente {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--espacio-3);
+}
+
+.nota-cliente:empty {
+  display: none;
+}
+
+/* Sección separada de la anterior por una línea fina */
+.separado {
+  padding-top: var(--espacio-6);
+  border-top: 1px solid var(--borde-suave);
+}
+
+/* Etiqueta dentro de un título: toma su letra y color */
+.etiqueta-heredada {
+  margin: 0;
+  font: inherit;
+  color: inherit;
+}
+
+/* En celular el documento usa menos margen interno */
+@media (max-width: 800px) {
+  .documento-registro {
+    padding: 18px 16px;
+  }
+
+  .encabezado-documento,
+  .pie-documento {
+    gap: var(--espacio-6);
+  }
+}

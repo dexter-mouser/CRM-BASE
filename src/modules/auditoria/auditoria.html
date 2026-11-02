@@ -1,0 +1,14 @@
+<div id="principal">
+  <button type="button" class="boton" id="descargar-auditoria" data-accion-cabecera>Exportar CSV</button>
+
+  <section class="caja" aria-labelledby="titulo-registro-auditoria">
+    <strong id="titulo-registro-auditoria">Registro</strong>
+    <div class="texto-suave">Escribe debajo de cada columna para filtrar.</div>
+    <div id="cuadricula-auditoria"></div>
+  </section>
+  <div id="ficha-auditoria"></div>
+</div>
+
+<template id="accion-registro">
+  <button type="button" class="boton" data-ficha="{{id}}">Ficha</button>
+</template>

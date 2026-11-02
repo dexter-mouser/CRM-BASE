@@ -1,0 +1,15 @@
+/* Punto de entrada de los estilos: importa cada archivo en orden. */
+@import url('tono.css');
+@import url('base.css');
+@import url('layout.css');
+@import url('components.css');
+@import url('animations.css');
+@import url('cuadricula.css');
+@import url('recibo.css');
+@import url('ajustes.css');
+@import url('roles.css');
+@import url('reportes.css');
+@import url('acceso.css');
+@import url('crm.css');
+@import url('gestion.css');
+@import url('documento.css');

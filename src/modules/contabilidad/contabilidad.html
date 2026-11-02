@@ -1,0 +1,62 @@
+<div id="principal">
+  {{{reabrir}}}
+
+  {{{contenido}}}
+
+  <section class="caja margen-superior-grande" aria-labelledby="titulo-dias-cerrados">
+    <strong id="titulo-dias-cerrados">Días cerrados</strong>
+    <div id="cuadricula-cierres"></div>
+  </section>
+  <div id="ficha-cierre"></div>
+</div>
+
+<template id="al-dia">
+  <section class="caja">
+    <strong>La contabilidad está al día</strong>
+    <div class="texto-suave">{{detalle}}</div>
+  </section>
+</template>
+
+<template id="dia-pendiente">
+  <section class="caja" aria-labelledby="titulo-pendiente">
+    <strong id="titulo-pendiente">Día por cerrar: {{dia}}</strong>
+    <div class="texto-suave">{{pendientes}}</div>
+    <dl class="resumen-caja">{{{lineas}}}</dl>
+    <div class="acciones-fila margen-superior-grande">
+      <button type="button" class="boton primario" id="cerrar-dia">Cerrar contabilidad de {{dia}}</button>
+      {{{cerrarTodos}}}
+    </div>
+    <div class="confirmacion" id="confirmar-cierre" hidden>
+      <span id="texto-cierre"></span>
+      <button type="button" class="boton primario" id="confirmar-cierre-si">Sí, cerrar</button>
+      <button type="button" class="boton" id="confirmar-cierre-no">Cancelar</button>
+    </div>
+  </section>
+</template>
+
+<template id="boton-cerrar-todos">
+  <button type="button" class="boton" id="cerrar-todos">Cerrar los {{cantidad}} días pendientes</button>
+</template>
+
+<template id="linea-resumen">
+  <div><dt>{{etiqueta}}</dt><dd>{{valor}}</dd></div>
+</template>
+
+<template id="reabrir-dia">
+  <button type="button" class="boton" id="abrir-reabrir" data-accion-cabecera>Reabrir último día</button>
+  <section class="caja panel-proceso" id="panel-reabrir" aria-labelledby="titulo-reabrir" hidden>
+    <strong id="titulo-reabrir">Reabrir el último día cerrado ({{dia}})</strong>
+    <div class="texto-suave">Permiso especial. Solo se reabre el último día cerrado, el motivo es obligatorio y la acción queda en la auditoría.</div>
+    <label for="motivo-reabrir">Motivo</label>
+    <input id="motivo-reabrir" class="campo" maxlength="200" autocomplete="off" placeholder="Por qué se reabre">
+    <div class="acciones-fila margen-superior-grande">
+      <button type="button" class="boton peligro" id="reabrir-dia-boton">Reabrir {{dia}}</button>
+      <button type="button" class="boton" id="cancelar-reabrir">Cancelar</button>
+    </div>
+  </section>
+</template>
+
+
+<template id="accion-cierre">
+  <button type="button" class="boton" data-ficha="{{dia}}">Ficha</button>
+</template>

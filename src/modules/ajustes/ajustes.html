@@ -1,0 +1,119 @@
+<div id="principal">
+  <section class="caja seccion-ajustes" aria-labelledby="titulo-tienda">
+    <div>
+      <strong id="titulo-tienda">Negocio</strong>
+      <div class="texto-suave">Estos datos aparecen en el recibo.</div>
+    </div>
+    <div>
+      <div id="formulario-tienda"></div>
+    </div>
+  </section>
+
+  <section class="caja seccion-ajustes" aria-labelledby="titulo-apariencia">
+    <div>
+      <strong id="titulo-apariencia">Apariencia</strong>
+      <div class="texto-suave">Se aplica al instante y se recuerda en este dispositivo.</div>
+    </div>
+    <div>
+      <label id="etiqueta-tema">Tema</label>
+      <div class="segmentado" role="group" aria-labelledby="etiqueta-tema">
+        <button type="button" data-opcion-tema="claro" aria-pressed="false">Claro</button>
+        <button type="button" data-opcion-tema="oscuro" aria-pressed="false">Oscuro</button>
+        <button type="button" data-opcion-tema="automatico" aria-pressed="false">Automático</button>
+      </div>
+      <label id="etiqueta-menu">Menú lateral</label>
+      <div class="segmentado" role="group" aria-labelledby="etiqueta-menu">
+        <button type="button" data-opcion-menu="abierto" aria-pressed="false">Expandido</button>
+        <button type="button" data-opcion-menu="recogido" aria-pressed="false">Recogido</button>
+      </div>
+    </div>
+  </section>
+
+  <section class="caja seccion-ajustes" aria-labelledby="titulo-ventas">
+    <div>
+      <strong id="titulo-ventas">Ventas</strong>
+      <div class="texto-suave">Qué se puede elegir y qué se permite al registrar una venta.</div>
+    </div>
+    <div>
+      <label id="etiqueta-metodos">Medios de pago disponibles</label>
+      <div class="lista-casillas" role="group" aria-labelledby="etiqueta-metodos">{{{metodos}}}</div>
+      <label class="interruptor">
+        <input type="checkbox" role="switch" id="permitir-sin-existencias">
+        <span class="interruptor-pista"></span>
+        <span>Permitir vender sin existencias (el stock puede quedar en negativo)</span>
+      </label>
+    </div>
+  </section>
+
+  <section class="caja seccion-ajustes" aria-labelledby="titulo-recibo">
+    <div>
+      <strong id="titulo-recibo">Recibo</strong>
+      <div class="texto-suave">Cómo se ve el recibo de cada venta.</div>
+    </div>
+    <div>
+      <div id="formulario-recibo"></div>
+      <div class="margen-superior-grande">
+        <label class="interruptor">
+          <input type="checkbox" role="switch" id="mostrar-datos-tienda">
+          <span class="interruptor-pista"></span>
+          <span>Mostrar los datos del negocio en el recibo</span>
+        </label>
+      </div>
+      <div class="acciones-fila margen-superior-grande">
+        <button type="button" class="boton" id="ver-recibo-ejemplo">Ver recibo de ejemplo</button>
+      </div>
+    </div>
+  </section>
+
+  <section class="caja seccion-ajustes" aria-labelledby="titulo-copia">
+    <div>
+      <strong id="titulo-copia">Copia de seguridad</strong>
+      <div class="texto-suave">Guarda todos los datos en un archivo o restáuralos desde uno. Antes de restaurar se valida todo el archivo.</div>
+    </div>
+    <div>
+      <div class="acciones-fila">
+        <button type="button" class="boton primario" id="descargar-copia">Descargar copia</button>
+        <label class="boton" for="cargar-copia">Restaurar desde archivo</label>
+        <input id="cargar-copia" type="file" accept="application/json,.json" hidden>
+      </div>
+      <div class="confirmacion" id="confirmar-copia" hidden>
+        <span id="texto-copia"></span>
+        <button type="button" class="boton peligro" id="confirmar-copia-si">Sí, restaurar</button>
+        <button type="button" class="boton" id="confirmar-copia-no">Cancelar</button>
+      </div>
+      <div class="acciones-fila margen-superior-grande">
+        <select id="tabla-csv" class="campo" aria-label="Tabla a exportar">
+          <option value="ventas">Ventas</option>
+          <option value="devoluciones">Devoluciones y anulaciones</option>
+          <option value="clientes">Clientes</option>
+          <option value="pagos">Pagos</option>
+          <option value="contabilidad">Días cerrados</option>
+          <option value="auditoria">Auditoría</option>
+        </select>
+        <button type="button" class="boton" id="descargar-tabla">Exportar CSV</button>
+      </div>
+    </div>
+  </section>
+
+  <section class="caja seccion-ajustes" aria-labelledby="titulo-datos">
+    <div>
+      <strong id="titulo-datos">Datos de prueba</strong>
+      <div class="texto-suave">Los ajustes, roles y personas no cambian.</div>
+    </div>
+    <div>
+      <div class="texto-suave">Vuelve el inventario, las ventas, los clientes, los pagos, la caja y la contabilidad a los datos de ejemplo iniciales.</div>
+      <div class="acciones-fila margen-superior-grande">
+        <button type="button" class="boton peligro" id="restablecer">Restablecer datos de prueba</button>
+      </div>
+      <div class="confirmacion" id="confirmar-restablecer" hidden>
+        <span>¿Seguro? Se perderán los datos actuales de inventario, ventas, clientes, pagos, caja y contabilidad.</span>
+        <button type="button" class="boton peligro" id="confirmar-restablecer-si">Sí, restablecer</button>
+        <button type="button" class="boton" id="confirmar-restablecer-no">Cancelar</button>
+      </div>
+    </div>
+  </section>
+</div>
+
+<template id="casilla-metodo">
+  <label class="casilla"><input type="checkbox" data-metodo="{{metodo}}"> {{metodo}}</label>
+</template>

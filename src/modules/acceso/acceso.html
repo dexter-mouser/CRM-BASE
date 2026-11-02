@@ -1,0 +1,44 @@
+<div id="principal">
+  <div class="acceso-marca">{{{logo}}}</div>
+  <h1>Ingresa a tu tienda</h1>
+  <div class="texto-suave">Ventas, inventario y caja en un solo lugar.</div>
+
+  <div class="pestanas" aria-label="Forma de ingreso">
+    <button type="button" data-pestana="correo" aria-pressed="true">Correo</button>
+    <button type="button" data-pestana="clave" aria-pressed="false">Usuario y clave</button>
+  </div>
+
+  <form id="f-correo" novalidate>
+    <label for="correo">Correo</label>
+    <input id="correo" class="campo" type="email" autocomplete="email" inputmode="email" placeholder="nombre@generico.com">
+    <button class="boton primario ancho" type="submit">Ingresar con correo</button>
+  </form>
+
+  <form id="f-clave" novalidate hidden>
+    <label for="usuario">Usuario</label>
+    <input id="usuario" class="campo" autocomplete="username" autocapitalize="none" spellcheck="false">
+    <label for="clave">Clave</label>
+    <div class="clave-fila">
+      <input id="clave" class="campo" type="password" autocomplete="current-password">
+      <button type="button" class="boton ver" id="ver"></button>
+    </div>
+    <button class="boton primario ancho" type="submit">Ingresar</button>
+  </form>
+
+  <label class="casilla margen-superior-grande"><input type="checkbox" id="recordar"> Mantener la sesión en este dispositivo</label>
+  <div class="error" id="error" role="alert"></div>
+
+  <div class="demo texto-suave">
+    <strong>Acceso de prueba</strong>
+    <div class="cuentas-prueba" id="cuentas-prueba">{{{cuentas}}}</div>
+    <div class="texto-suave" id="copiado" role="status"></div>
+    Usuario: <code>admin</code> · Clave: <code>admin123</code>
+  </div>
+</div>
+
+<template id="cuenta-prueba">
+  <div class="cuenta-prueba">
+    <span><code>{{correo}}</code> <small>{{rol}}</small></span>
+    <button type="button" class="boton" data-copiar="{{correo}}" aria-label="Copiar el correo {{correo}}">Copiar</button>
+  </div>
+</template>

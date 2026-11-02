@@ -1,0 +1,6 @@
+{
+  "name": "crm-tiendas",
+  "private": true,
+  "type": "module",
+  "scripts": { "start": "npx serve ." }
+}

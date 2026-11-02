@@ -1,0 +1,25 @@
+<div id="principal">
+  <button type="button" class="boton primario" id="nuevo-abono" data-accion-cabecera data-seccion="abonos">Registrar abono</button>
+  <button type="button" class="boton primario" id="nuevo-pago" data-accion-cabecera data-seccion="proveedores">Registrar pago</button>
+
+  <div id="panel-abono" data-seccion="abonos"></div>
+
+  <div id="panel-pago" data-seccion="proveedores"></div>
+
+  <section class="caja" aria-labelledby="titulo-historial-pagos">
+    <strong id="titulo-historial-pagos">{{tituloHistorial}}</strong>
+    <div id="cuadricula-pagos"></div>
+  </section>
+  <div id="ficha-pago"></div>
+</div>
+
+<template id="accion-pago">
+  <div class="acciones-fila">
+    <button type="button" class="boton" data-ficha="{{id}}">Ficha</button>
+    <button type="button" class="boton" data-comprobante="{{id}}">Comprobante</button>
+  </div>
+</template>
+
+<template id="comprobante-pago">
+  <button type="button" class="boton" data-comprobante="{{id}}">Comprobante</button>
+</template>

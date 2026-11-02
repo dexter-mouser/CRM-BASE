@@ -1,0 +1,113 @@
+<div id="principal">
+  <a class="boton" id="ver-auditoria-roles" href="auditoria.html?modulo=roles" data-accion-cabecera>Ver cambios en Auditoría</a>
+  <button type="button" class="boton primario" id="nuevo-rol" data-accion-cabecera>Nuevo rol</button>
+
+  <div id="formulario-rol"></div>
+
+  <div class="disposicion-roles">
+    <section class="caja" aria-label="Roles">
+      <div id="lista-roles">{{{roles}}}</div>
+    </section>
+
+    <div class="columna-roles">
+      <section class="caja" aria-labelledby="rol-titulo">
+        <div class="cabecera-flex">
+          <div>
+            <h2 id="rol-titulo"></h2>
+            <div class="texto-suave" id="rol-descripcion-actual"></div>
+          </div>
+          <div class="acciones-fila">
+            <button type="button" class="boton" id="editar-rol">Editar rol</button>
+            <button type="button" class="boton peligro" id="eliminar-rol">Eliminar</button>
+          </div>
+        </div>
+        <div class="confirmacion" id="confirmar-eliminar-rol" hidden>
+          <span id="texto-eliminar-rol"></span>
+          <button type="button" class="boton peligro" id="eliminar-rol-si">Sí, eliminar</button>
+          <button type="button" class="boton" id="eliminar-rol-no">Cancelar</button>
+        </div>
+        <div class="desplazable margen-superior-grande">
+          <table>
+            <thead>
+              <tr><th>Módulo</th><!--{{{encabezados}}}--></tr>
+            </thead>
+            <tbody id="matriz-permisos"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="caja" aria-labelledby="titulo-vista-previa">
+        <h2 id="titulo-vista-previa">Así lo ve este rol</h2>
+        <div class="texto-suave">Menú que aparece a quien tiene este rol y lo que puede hacer en cada módulo. Se actualiza al marcar permisos.</div>
+        <div class="vista-previa-rol" id="vista-previa-rol"></div>
+      </section>
+
+      <section class="caja" aria-labelledby="titulo-personas">
+        <div class="cabecera-flex">
+          <h2 id="titulo-personas">Usuarios</h2>
+          <button type="button" class="boton" id="agregar-persona">Agregar usuario</button>
+        </div>
+        <div id="formulario-persona"></div>
+        <div id="cuadricula-personas"></div>
+        <div id="ficha-persona"></div>
+      </section>
+    </div>
+  </div>
+</div>
+
+<template id="encabezado-accion">
+  <th class="centro">{{etiqueta}}</th>
+</template>
+
+<template id="tarjeta-rol">
+  <button type="button" class="tarjeta-rol" data-rol="{{id}}" aria-current="{{actual}}">
+    <span><strong>{{nombre}}</strong> {{{insignia}}}</span>
+    <small class="texto-suave">{{personas}}</small>
+  </button>
+</template>
+
+<template id="insignia-protegido">
+  <span class="insignia suave">Protegido</span>
+</template>
+
+<template id="fila-permiso">
+  <tr><td>{{modulo}}</td><!--{{{celdas}}}--></tr>
+</template>
+
+<template id="celda-permiso">
+  <td class="centro"><input type="checkbox" data-modulo="{{modulo}}" data-accion="{{accion}}" aria-label="{{descripcion}}" {{{estado}}}></td>
+</template>
+
+<template id="celda-vacia">
+  <td class="centro sin-permiso" aria-label="No aplica">–</td>
+</template>
+
+<template id="opcion-rol">
+  <option value="{{id}}" {{{seleccion}}}>{{nombre}}</option>
+</template>
+
+<template id="celda-rol-persona">
+  <select class="campo" data-persona="{{id}}" aria-label="Rol de {{nombre}}">{{{opciones}}}</select>
+</template>
+
+<template id="celda-activo-persona">
+  <label class="interruptor interruptor-solo">
+    <input type="checkbox" role="switch" data-activo="{{id}}" aria-label="Activo: {{nombre}}" {{{marcado}}}>
+    <span class="interruptor-pista"></span>
+  </label>
+</template>
+
+<template id="accion-persona">
+  <button type="button" class="boton" data-ficha="{{id}}">Ficha</button>
+</template>
+
+<template id="vista-previa-modulo">
+  <div class="modulo-previa {{clase}}">
+    <strong>{{nombre}}</strong>
+    <span class="texto-suave">{{{acciones}}}</span>
+  </div>
+</template>
+
+<template id="vista-previa-accion">
+  <span class="insignia suave">{{etiqueta}}</span>
+</template>

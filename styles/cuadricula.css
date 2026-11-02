@@ -1,0 +1,194 @@
+/* Cuadrícula de documentos (venta y compra): la fila de títulos son las casillas de búsqueda; resultados y
+   líneas comparten las mismas columnas. Cada columna crece entre un mínimo y un máximo. */
+.cuadricula {
+  --columnas: minmax(52px, 84px) minmax(72px, 104px) minmax(140px, 1.6fr) minmax(70px, 96px) minmax(48px, 64px)
+    minmax(64px, 84px) minmax(84px, 112px) minmax(80px, 104px) 40px;
+  position: relative;
+  min-width: 640px;
+}
+
+.cuadricula.lineas-venta {
+  --columnas: minmax(52px, 80px) minmax(72px, 120px) minmax(160px, 1fr) minmax(64px, 90px) minmax(90px, 120px)
+    minmax(44px, 64px) minmax(90px, 120px) 40px;
+}
+
+.fila-cuadricula {
+  display: grid;
+  grid-template-columns: var(--columnas);
+  align-items: center;
+  gap: var(--espacio-3);
+  padding: 6px 4px;
+  border-bottom: 1px solid var(--borde-suave);
+}
+
+.encabezado-cuadricula {
+  font-size: var(--letra-sm);
+  font-weight: 600;
+  color: var(--suave);
+}
+
+.fila-busqueda {
+  padding-bottom: 10px;
+  border-bottom-color: var(--borde);
+}
+
+.fila-busqueda .titulo-columna {
+  font-size: var(--letra-sm);
+  font-weight: 600;
+  color: var(--suave);
+}
+
+.fila-busqueda .campo,
+.fila-linea .campo {
+  min-width: 0;
+  min-height: 34px;
+  padding: 6px 10px;
+}
+
+.fila-linea .campo {
+  border-color: transparent;
+  background: transparent;
+}
+
+.fila-linea .campo:hover,
+.fila-linea .campo:focus {
+  border-color: var(--borde);
+  background: var(--fondo-campo);
+}
+
+.numero-celda {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.relleno-resto {
+  grid-column: 4 / -1;
+}
+
+.texto-producto {
+  overflow-wrap: anywhere;
+}
+
+/* Panel que se abre justo debajo de la fila de búsqueda, sin mover las líneas */
+.resultados-cuadricula {
+  position: absolute;
+  left: 0;
+  right: 0;
+  z-index: 15;
+  overflow: hidden;
+  border-radius: 0 0 var(--radio-md) var(--radio-md);
+  background: var(--superficie);
+  box-shadow: 0 0 0 1px var(--contorno), var(--sombra-2);
+}
+
+.resultados-cuadricula[hidden] {
+  display: none;
+}
+
+.fila-resultado {
+  cursor: pointer;
+}
+
+.fila-resultado:hover,
+.fila-resultado.activa {
+  background: var(--activo);
+}
+
+.aviso-cuadricula,
+.cabecera-recientes {
+  padding: 8px 12px;
+}
+
+.cabecera-recientes {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+/* Últimas búsquedas */
+.recientes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--espacio-2);
+  padding: 0 12px 12px;
+}
+
+.recientes-selector {
+  align-items: center;
+  padding: 8px 0 0;
+}
+
+.recientes-selector:empty {
+  display: none;
+}
+
+.reciente {
+  padding: 5px 10px;
+  border: 1px solid var(--contorno);
+  border-radius: var(--radio-pildora);
+  background: var(--superficie);
+  color: var(--texto);
+  font: inherit;
+  cursor: pointer;
+}
+
+.reciente:hover {
+  background: var(--pasar);
+}
+
+.boton-enlace {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--suave);
+  font: inherit;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+/* Cuadrícula de datos reutilizable (components/cuadricula-datos) */
+.cuadricula-datos {
+  --columnas: repeat(4, minmax(0, 1fr));
+}
+
+.cuadricula-datos .fila-dato:hover {
+  background: var(--pasar);
+}
+
+.cuadricula-datos [role="gridcell"] {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.cuadricula-datos .campo {
+  width: 100%;
+  min-width: 0;
+}
+
+.vacio-cuadricula,
+.pie-cuadricula {
+  padding: 10px 8px;
+}
+
+.pie-cuadricula {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+/* Botones de acción de cada fila (Ficha, Editar, Eliminar…): compactos para que quepan en la columna */
+.cuadricula-datos .acciones-fila {
+  flex-wrap: wrap;
+  gap: var(--espacio-2);
+}
+
+.cuadricula-datos .acciones-fila .boton {
+  padding: 6px 10px;
+  border-color: transparent;
+  background: var(--pasar);
+  font-size: var(--letra-sm);
+}
+
+.cuadricula-datos .acciones-fila .boton:hover {
+  background: var(--activo);
+}

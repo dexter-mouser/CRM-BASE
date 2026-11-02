@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="es" data-protegida>
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self'; connect-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'">
+  <meta name="referrer" content="no-referrer">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="robots" content="noindex">
+  <title>Contabilidad – Genérico</title>
+  <link rel="icon" href="../assets/logos/icono.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../styles/style.css">
+  <script src="../src/core/previo.js"></script>
+</head>
+<body data-vista="contabilidad">
+  <div id="aplicacion">
+    <div id="ranura-encabezado" data-ranura></div>
+    <div class="fila">
+      <div id="ranura-menu" data-ranura></div>
+      <main id="vista" tabindex="-1"></main>
+    </div>
+  </div>
+  <div id="aviso" role="status" aria-live="polite"></div>
+  <script type="module" src="../src/main.js"></script>
+</body>
+</html>

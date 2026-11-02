@@ -1,0 +1,985 @@
+/* Componentes: botones, campos, cajas, tablas y tarjetas */
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+a:focus-visible,
+label:focus-within {
+  outline: 2px solid var(--texto);
+  outline-offset: 2px;
+}
+
+/* Botones */
+.boton {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--espacio-2);
+  padding: 9px 14px;
+  border: 1px solid var(--contorno);
+  border-radius: var(--radio-md);
+  background: var(--superficie);
+  color: var(--texto);
+  font-family: inherit;
+  font-size: var(--letra-sm);
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.boton:hover {
+  background: var(--pasar);
+}
+
+.boton.primario {
+  background: var(--acento);
+  border-color: var(--acento);
+  color: var(--acento-texto);
+}
+
+.boton.ancho {
+  width: 100%;
+  justify-content: center;
+  margin-top: 16px;
+}
+
+.boton.icono {
+  padding: 9px;
+}
+
+.boton.archivo {
+  margin: 0;
+  color: var(--texto);
+}
+
+/* Formularios */
+.campo {
+  width: 100%;
+  min-height: 38px;
+  padding: 8px 12px;
+  border: 1px solid var(--borde);
+  border-radius: var(--radio-md);
+  background: var(--fondo-campo);
+  color: var(--texto);
+  font: inherit;
+}
+
+.campo::placeholder {
+  color: var(--suave);
+}
+
+.campo:focus {
+  border-color: var(--color-grupo, var(--acento));
+}
+
+label {
+  display: block;
+  margin: 12px 0 4px;
+  font-size: var(--letra-xs);
+  color: var(--suave);
+}
+
+/* Cajas y textos */
+.caja {
+  min-width: 0;
+  padding: 20px;
+  border: 1px solid var(--borde-suave);
+  border-radius: var(--radio-xl);
+  background: var(--superficie);
+}
+
+.texto-suave {
+  font-size: var(--letra-sm);
+  color: var(--suave);
+}
+
+.separacion-inferior {
+  margin-bottom: 16px;
+}
+
+.separacion-inferior-grande {
+  margin-bottom: 20px;
+}
+
+.margen-superior {
+  margin-top: 8px;
+}
+
+/* Rejillas */
+.tarjetas,
+.dos-columnas {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--espacio-5);
+  margin-bottom: 16px;
+}
+
+.dos-columnas > * {
+  flex: 1 1 320px;
+}
+
+.dos-columnas.arriba {
+  align-items: flex-start;
+}
+
+.columna-ancha {
+  flex: 4 1 480px;
+}
+
+.columna-angosta {
+  flex: 1 1 220px;
+}
+
+.acciones {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--espacio-3);
+  margin-bottom: 16px;
+}
+
+/* Tarjetas de resumen del panel */
+.resumen {
+  flex: 1 1 200px;
+  cursor: grab;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.cabecera-tarjeta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.agarre {
+  padding: 4px;
+  border: 0;
+  border-radius: var(--radio-sm);
+  background: none;
+  color: var(--suave);
+  cursor: grab;
+  touch-action: none;
+}
+
+.agarre:hover {
+  background: var(--pasar);
+}
+
+.valor {
+  margin: 6px 0 12px;
+  font-size: var(--letra-xxl);
+  font-weight: 700;
+}
+
+.pista {
+  height: 6px;
+  border-radius: var(--radio-sm);
+  background: var(--pista);
+}
+
+.relleno {
+  width: 0;
+  height: 6px;
+  border-radius: var(--radio-sm);
+  background: var(--barra);
+  transition: width 0.9s cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+
+/* Arrastrar y soltar: la tarjeta levantada sigue al puntero y el hueco marca el destino */
+.resumen.arrastrando {
+  z-index: 20;
+  cursor: grabbing;
+  box-shadow: var(--sombra-3);
+  border-color: var(--texto);
+}
+
+.hueco {
+  flex: 1 1 200px;
+  border: 2px dashed var(--contorno);
+  border-radius: var(--radio-lg);
+  background: var(--pasar);
+}
+
+body.arrastre-activo {
+  cursor: grabbing;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+/* Tablas */
+.alinear-derecha {
+  text-align: right;
+}
+
+.desplazable {
+  overflow-x: auto;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+th,
+td {
+  padding: 11px 10px;
+  border-bottom: 1px solid var(--borde-suave);
+  text-align: left;
+  white-space: nowrap;
+}
+
+th {
+  border-bottom-color: var(--borde);
+}
+
+th {
+  font-size: var(--letra-sm);
+  font-weight: 600;
+  color: var(--suave);
+}
+
+td .campo {
+  min-width: 90px;
+  padding: 6px 8px;
+}
+
+.insignia {
+  padding: 2px 8px;
+  border: 1px solid var(--negativo);
+  border-radius: var(--radio-pildora);
+  font-size: var(--letra-xs);
+  color: var(--negativo);
+}
+.margen-superior-grande {
+  margin-top: 16px;
+}
+
+/* Botón de tema: la luna se ve en modo claro y el sol en modo oscuro */
+.icono-sol {
+  display: none;
+}
+
+:root[data-tema="oscuro"] .icono-sol {
+  display: block;
+}
+
+:root[data-tema="oscuro"] .icono-luna {
+  display: none;
+}
+
+/* Selector de productos con filtro */
+.resultados {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espacio-2);
+  max-height: 320px;
+  margin-top: 8px;
+  overflow: auto;
+}
+
+.resultado {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 2px var(--espacio-3);
+  padding: 8px 10px;
+  border: 1px solid var(--borde);
+  border-radius: var(--radio-md);
+  background: var(--superficie);
+  color: var(--texto);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.resultado:hover {
+  background: var(--pasar);
+}
+
+.resultado-id {
+  font-weight: 600;
+  color: var(--suave);
+}
+
+.resultado-nombre {
+  font-weight: 600;
+}
+
+.resultado .texto-suave {
+  grid-column: 1 / -1;
+}
+
+/* Líneas de venta y de factura */
+.celda-ancha {
+  min-width: 180px;
+  white-space: normal;
+}
+
+td .campo.campo-corto {
+  width: 72px;
+  min-width: 0;
+}
+
+td .campo.campo-medio {
+  width: 104px;
+  min-width: 0;
+}
+
+.total-venta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: 16px 0;
+  padding-top: 12px;
+  border-top: 1px solid var(--borde);
+  font-size: var(--letra-lg);
+}
+
+.acciones-fila {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--espacio-3);
+}
+
+/* Botón de acción destructiva */
+.boton.peligro {
+  border-color: var(--negativo);
+  color: var(--negativo);
+}
+
+.boton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.insignia.suave {
+  border-color: var(--contorno);
+  color: var(--suave);
+}
+
+/* Selector segmentado: una sola opción activa */
+.segmentado {
+  display: inline-flex;
+  margin-bottom: 8px;
+  border: 1px solid var(--contorno);
+  border-radius: var(--radio-md);
+  overflow: hidden;
+}
+
+.segmentado button {
+  padding: 8px 14px;
+  border: 0;
+  background: var(--superficie);
+  color: var(--texto);
+  font: inherit;
+  cursor: pointer;
+}
+
+.segmentado button + button {
+  border-left: 1px solid var(--contorno);
+}
+
+.segmentado button[aria-pressed="true"] {
+  background: var(--acento);
+  color: var(--acento-texto);
+}
+
+/* Casilla con texto e interruptor */
+.casilla,
+.interruptor {
+  display: flex;
+  align-items: center;
+  gap: var(--espacio-3);
+  margin: 0;
+  font-size: var(--letra-md);
+  color: var(--texto);
+  cursor: pointer;
+}
+
+.interruptor input {
+  position: absolute;
+  opacity: 0;
+}
+
+.interruptor-pista {
+  position: relative;
+  flex: none;
+  width: 38px;
+  height: 22px;
+  border-radius: var(--radio-pildora);
+  background: var(--contorno);
+  transition: background 0.15s;
+}
+
+.interruptor-pista::after {
+  content: "";
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--superficie);
+  transition: transform 0.15s;
+}
+
+.interruptor input:checked + .interruptor-pista {
+  background: var(--acento);
+}
+
+.interruptor input:checked + .interruptor-pista::after {
+  transform: translateX(16px);
+}
+
+.interruptor input:focus-visible + .interruptor-pista {
+  outline: 2px solid var(--texto);
+  outline-offset: 2px;
+}
+
+.interruptor-solo {
+  justify-content: center;
+}
+
+/* Confirmación en línea antes de una acción destructiva */
+.confirmacion {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--espacio-3);
+  margin-top: 12px;
+  padding: 10px 12px;
+  border: 1px solid var(--negativo);
+  border-radius: var(--radio-md);
+}
+
+.confirmacion[hidden] {
+  display: none;
+}
+
+.casilla input,
+td input[type="checkbox"] {
+  accent-color: var(--acento);
+}
+
+/* Atajos de teclado: la tecla va dentro del botón de la acción */
+.boton kbd {
+  margin-left: 6px;
+  background: transparent;
+  color: inherit;
+  opacity: 0.8;
+}
+
+.boton.primario kbd {
+  border-color: currentColor;
+}
+
+.aviso-origen {
+  border-color: var(--acento);
+}
+
+kbd {
+  padding: 1px 6px;
+  border: 1px solid var(--borde);
+  border-bottom-width: 2px;
+  border-radius: var(--radio-sm);
+  font: inherit;
+  font-size: 0.75rem;
+  background: var(--superficie, transparent);
+}
+
+/* Registrar venta: el cliente es lo primero que se llena */
+.ficha-cliente {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+  gap: var(--espacio-3);
+  align-self: center;
+}
+
+.dato-cliente {
+  display: grid;
+  gap: 2px;
+  padding: 10px 12px;
+  border-radius: var(--radio-md);
+  background: var(--pasar);
+}
+
+.dato-cliente span {
+  color: var(--suave);
+  font-size: var(--letra-xs);
+}
+
+.dato-cliente.con-deuda strong {
+  color: var(--negativo);
+}
+
+/* Formulario declarativo (components/formulario): rejilla de campos de 2, 3 o 4 columnas; en celular, una */
+.rejilla-campos {
+  display: grid;
+  grid-template-columns: repeat(var(--columnas-campos, 3), minmax(0, 1fr));
+  gap: 0 var(--espacio-4);
+  align-items: start;
+}
+
+.rejilla-campos[data-columnas="1"] { --columnas-campos: 1; }
+.rejilla-campos[data-columnas="2"] { --columnas-campos: 2; }
+.rejilla-campos[data-columnas="4"] { --columnas-campos: 4; }
+
+.campo-formulario {
+  min-width: 0;
+}
+
+.campo-formulario.ancho-completo {
+  grid-column: 1 / -1;
+}
+
+.campo-formulario.ancho-2 {
+  grid-column: span 2;
+}
+
+.campo-casilla {
+  align-self: end;
+  padding: var(--espacio-3) 0;
+}
+
+.etiqueta-campo {
+  display: block;
+  margin: 12px 0 4px;
+  font-size: var(--letra-xs);
+  color: var(--suave);
+}
+
+.ayuda-campo {
+  display: block;
+  margin-top: 4px;
+  font-size: var(--letra-xs);
+  color: var(--suave);
+}
+
+.marca-obligatorio {
+  color: var(--negativo);
+}
+
+.formulario-incrustado {
+  margin-bottom: var(--espacio-5);
+  padding: 14px;
+  border: 1px solid var(--borde);
+  border-radius: var(--radio-md);
+  background: var(--pasar);
+}
+
+@media (max-width: 800px) {
+  .rejilla-campos {
+    grid-template-columns: 1fr;
+  }
+
+  .campo-formulario.ancho-2 {
+    grid-column: auto;
+  }
+}
+
+/* Cabecera flexible: título a la izquierda y acciones a la derecha (fichas, roles, cobro en efectivo) */
+.cabecera-flex {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: var(--espacio-4);
+  margin-bottom: 14px;
+}
+
+.cabecera-flex h1,
+.cabecera-flex h2 {
+  margin: 0;
+}
+
+/* Casillas en fila (métodos de pago, tiendas con acceso) */
+.lista-casillas {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--espacio-3) var(--espacio-5);
+  margin-bottom: 14px;
+}
+
+/* Indicadores: cifras destacadas en cajas */
+.indicadores {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--espacio-5);
+  margin-bottom: 16px;
+}
+
+.indicador {
+  flex: 1 1 200px;
+  display: flex;
+  flex-direction: column;
+  gap: var(--espacio-1);
+}
+
+.indicador strong {
+  font-size: var(--letra-xxl);
+}
+
+/* --- Estructura común de cada sección (cabecera destacada, proceso nuevo y ficha) --- */
+
+/* Cabecera destacada */
+.cabecera-seccion {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--espacio-5) var(--espacio-6);
+  margin-bottom: 18px;
+  padding: 22px 24px 22px 28px;
+  overflow: hidden;
+  /* clip: la marca de agua sobresale y el navegador no debe desplazar la cabecera al enfocar sus botones */
+  overflow: clip;
+  border: 1px solid var(--borde);
+  border-radius: var(--radio-xl);
+  background:
+    radial-gradient(circle at 100% 0%, color-mix(in srgb, var(--color-grupo, var(--acento)) 16%, transparent) 0, transparent 60%),
+    linear-gradient(120deg, var(--superficie) 50%, color-mix(in srgb, var(--color-grupo, var(--acento)) 7%, var(--superficie)));
+}
+
+.cabecera-seccion::before {
+  content: '';
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 6px;
+  background: var(--color-grupo, var(--acento));
+}
+
+.marca-agua-cabecera {
+  position: absolute;
+  right: -18px;
+  bottom: -34px;
+  color: var(--color-grupo, var(--texto));
+  opacity: 0.12;
+  pointer-events: none;
+}
+
+.marca-agua-cabecera svg {
+  width: 150px;
+  height: 150px;
+  stroke-width: 1.2;
+}
+
+.texto-cabecera {
+  position: relative;
+  flex: 1 1 360px;
+  min-width: 0;
+}
+
+.grupo-cabecera {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--espacio-3);
+  margin-bottom: 8px;
+  color: var(--color-grupo, var(--suave));
+  font-size: var(--letra-xxs);
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.icono-cabecera {
+  width: 26px;
+  height: 26px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radio-sm);
+  background: var(--color-grupo, var(--acento));
+  color: var(--superficie);
+}
+
+.icono-cabecera svg {
+  width: 15px;
+  height: 15px;
+}
+
+.cabecera-seccion h1 {
+  margin: 0;
+  font-size: var(--letra-titulo);
+  font-weight: 800;
+  line-height: 1.15;
+  letter-spacing: -0.6px;
+}
+
+.complemento-titulo {
+  margin-left: 10px;
+  color: var(--suave);
+  font-weight: 600;
+  font-size: 0.7em;
+  letter-spacing: 0;
+}
+
+.complemento-titulo::before {
+  content: '· ';
+}
+
+.descripcion-cabecera {
+  max-width: 72ch;
+  margin: 8px 0 0;
+  color: var(--suave);
+  font-size: var(--letra-lg);
+  line-height: 1.5;
+}
+
+.acciones-cabecera {
+  position: relative;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--espacio-3);
+}
+
+.acciones-cabecera[hidden] {
+  display: none;
+}
+
+/* Formulario de nuevo proceso (se abre con el botón de la cabecera) */
+.panel-proceso {
+  position: relative;
+  margin-bottom: 16px;
+  border-left: 4px solid var(--color-grupo, var(--acento));
+  animation: aparecer-proceso 0.2s ease-out;
+}
+
+.panel-proceso[hidden] {
+  display: none;
+}
+
+.panel-proceso > strong:first-child {
+  display: block;
+  margin-bottom: 4px;
+  font-size: var(--letra-lg);
+}
+
+@keyframes aparecer-proceso {
+  from { opacity: 0; transform: translateY(-6px); }
+  to { opacity: 1; transform: none; }
+}
+
+/* Ficha del registro */
+.ficha-registro,
+.ficha-cliente-completa {
+  margin-top: 16px;
+  border-top: 4px solid var(--color-grupo, var(--acento));
+  animation: aparecer-proceso 0.2s ease-out;
+}
+
+.ficha-registro .cabecera-flex h2 {
+  margin: 2px 0 4px;
+  font-size: var(--letra-xl);
+}
+
+.etiqueta-ficha {
+  color: var(--color-grupo, var(--suave));
+  font-size: var(--letra-xxs);
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.acciones-ficha-registro {
+  flex-wrap: wrap;
+}
+
+.ficha-registro .indicadores {
+  margin: 4px 0 14px;
+}
+
+.datos-registro {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+  gap: var(--espacio-4) var(--espacio-5);
+  margin: 0 0 14px;
+  padding: 14px;
+  border: 1px solid var(--borde);
+  border-radius: var(--radio-md);
+  background: var(--pasar);
+}
+
+.datos-registro div {
+  min-width: 0;
+}
+
+.datos-registro .dato-ancho {
+  grid-column: 1 / -1;
+}
+
+.datos-registro dt {
+  color: var(--suave);
+  font-size: var(--letra-xs);
+}
+
+.datos-registro dd {
+  margin: 2px 0 0;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+.contenido-ficha:empty {
+  display: none;
+}
+
+.subtitulo-ficha {
+  display: block;
+  margin: 14px 0 6px;
+}
+
+@media (max-width: 800px) {
+  .cabecera-seccion {
+    padding: 18px 16px 18px 20px;
+  }
+
+  .cabecera-seccion h1 {
+    font-size: var(--letra-xxl);
+  }
+
+  .descripcion-cabecera {
+    font-size: var(--letra-md);
+  }
+
+  .acciones-cabecera {
+    width: 100%;
+  }
+
+  .acciones-cabecera > * {
+    flex: 1 1 auto;
+    text-align: center;
+  }
+}
+
+.datos-registro a {
+  color: var(--texto);
+}
+
+/* Toques de color: insignias e indicadores toman el color del grupo o el de estado */
+.insignia.informativa {
+  border-color: transparent;
+  background: var(--marca-suave);
+  color: var(--marca);
+}
+
+.insignia.exito {
+  border-color: transparent;
+  background: var(--exito-suave);
+  color: var(--exito);
+}
+
+.ficha-registro .indicador strong,
+.ficha-cliente-completa .indicador strong {
+  color: var(--color-grupo, var(--texto));
+}
+
+.ficha-registro .indicador strong.texto-negativo,
+.ficha-cliente-completa .indicador strong.texto-negativo {
+  color: var(--negativo);
+}
+
+/* Selector de un registro (components/selector-registro): el elegido arriba y una casilla de búsqueda por columna */
+.selector-registro {
+  min-width: 0;
+  border: 1px solid var(--borde-suave);
+  border-radius: var(--radio-lg);
+  background: var(--superficie);
+  overflow: hidden;
+  container-type: inline-size;
+}
+
+.fila-selector {
+  display: grid;
+  grid-template-columns: var(--columnas-selector);
+  align-items: center;
+  gap: var(--espacio-3);
+  padding: 6px 8px;
+}
+
+.fila-selector > * {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.encabezado-selector {
+  font-size: var(--letra-xs);
+  font-weight: 600;
+  color: var(--suave);
+  border-bottom: 1px solid var(--borde);
+}
+
+.fila-elegida {
+  min-height: 40px;
+  font-weight: 600;
+  background: color-mix(in srgb, var(--color-grupo, var(--acento)) 9%, var(--superficie));
+  box-shadow: inset 3px 0 0 var(--color-grupo, var(--acento));
+}
+
+.fila-elegida.sin-registro {
+  background: var(--superficie);
+  box-shadow: inset 3px 0 0 var(--negativo);
+}
+
+.sin-elegir {
+  grid-column: 1 / -1;
+  font-weight: 400;
+}
+
+.fila-busqueda-selector {
+  border-top: 1px solid var(--borde);
+  background: var(--pasar);
+}
+
+.fila-busqueda-selector .campo {
+  padding: 6px 8px;
+}
+
+.resultados-selector {
+  max-height: 320px;
+  overflow-y: auto;
+  border-top: 1px solid var(--borde);
+}
+
+.resultados-selector[hidden] {
+  display: none;
+}
+
+.resultado-selector {
+  border-bottom: 1px solid var(--borde);
+  cursor: pointer;
+}
+
+.resultado-selector:hover,
+.resultado-selector.activa {
+  background: var(--activo);
+}
+
+.aviso-selector {
+  padding: 8px 12px;
+  font-size: var(--letra-xs);
+}
+
+.contenedor-selector {
+  margin-top: 4px;
+}
+
+/* En un espacio angosto (celular o un bloque a media página) cada fila se vuelve una tarjeta con el nombre de cada dato */
+@container (max-width: 900px) {
+  .fila-selector {
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  }
+
+  .encabezado-selector {
+    display: none;
+  }
+
+  .fila-elegida [data-titulo]::before,
+  .resultado-selector [data-titulo]::before {
+    content: attr(data-titulo);
+    display: block;
+    font-size: var(--letra-xxs);
+    font-weight: 400;
+    color: var(--suave);
+  }
+
+  .fila-busqueda-selector > div:empty {
+    display: none;
+  }
+}

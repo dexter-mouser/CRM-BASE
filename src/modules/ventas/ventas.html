@@ -1,0 +1,148 @@
+<div id="principal">
+  <a class="boton primario" href="nueva-venta.html?tipo=factura" id="nueva-factura" data-accion-cabecera data-seccion="facturas">Nueva factura</a>
+  <a class="boton" href="nueva-venta.html?tipo=remision" id="nueva-remision" data-accion-cabecera data-seccion="documentos">Nueva remisión</a>
+  <a class="boton primario" href="nueva-venta.html?tipo=cotizacion" id="nueva-cotizacion" data-accion-cabecera data-seccion="documentos">Nueva cotización</a>
+  <button type="button" class="boton primario" id="nueva-nota" data-accion-cabecera data-seccion="notas">Nueva nota</button>
+
+  <section class="caja panel-proceso" id="panel-nueva-nota" aria-labelledby="titulo-nueva-nota" data-seccion="notas">
+    <strong id="titulo-nueva-nota">Nueva nota de devolución o de anulación</strong>
+    <div class="texto-suave">Elige la factura y qué quieres hacer; luego indicas las cantidades y el motivo.</div>
+    <div class="rejilla-campos margen-superior">
+      <div class="campo-formulario ancho-completo">
+        <span class="etiqueta-campo">Factura · busca por cualquier dato</span>
+        <div class="contenedor-selector" id="selector-nota-factura"></div>
+      </div>
+      <div>
+        <label for="nota-tipo">Tipo de nota</label>
+        <select id="nota-tipo" class="campo">
+          <option value="devolucion">Devolución (ND)</option>
+          <option value="anulacion">Anulación (NA)</option>
+        </select>
+      </div>
+    </div>
+    <div class="acciones-fila margen-superior-grande">
+      <button type="button" class="boton primario" id="continuar-nota">Continuar</button>
+      <button type="button" class="boton" id="cancelar-nota">Cancelar</button>
+    </div>
+  </section>
+
+  <div id="zona-devolucion"></div>
+
+  <section class="caja" aria-labelledby="titulo-facturas" data-seccion="facturas">
+    <strong id="titulo-facturas">Facturas de venta</strong>
+    <div id="cuadricula-facturas"></div>
+  </section>
+  <div id="ficha-factura" data-seccion="facturas"></div>
+
+  <section class="caja" aria-labelledby="titulo-documentos" data-seccion="documentos">
+    <strong id="titulo-documentos">Remisiones y cotizaciones</strong>
+    <div id="cuadricula-documentos"></div>
+  </section>
+  <div id="ficha-documento" data-seccion="documentos"></div>
+
+  <section class="caja" aria-labelledby="titulo-notas" data-seccion="notas">
+    <strong id="titulo-notas">Notas de devolución y de anulación</strong>
+    <div id="cuadricula-notas"></div>
+  </section>
+  <div id="ficha-nota" data-seccion="notas"></div>
+</div>
+
+<template id="acciones-factura">
+  <div class="acciones-fila">
+    <button type="button" class="boton" data-ficha-factura="{{id}}">Ficha</button>
+    <button type="button" class="boton" data-recibo="{{id}}">Comprobante</button>
+    {{{acciones}}}
+  </div>
+</template>
+
+<template id="acciones-venta">
+  <button type="button" class="boton" data-devolver="{{id}}">Devolver</button>
+  <button type="button" class="boton peligro" data-anular="{{id}}">Anular</button>
+</template>
+
+<template id="acciones-documento">
+  <div class="acciones-fila">
+    <button type="button" class="boton" data-ficha-documento="{{id}}">Ficha</button>
+    <button type="button" class="boton" data-documento="{{id}}">Comprobante</button>
+    {{{acciones}}}
+  </div>
+</template>
+
+<template id="acciones-documento-pendiente">
+  <a class="boton primario" href="nueva-venta.html?documento={{id}}&amp;tipo=factura">Facturar</a>
+  {{{pasarARemision}}}
+  <button type="button" class="boton peligro" data-anular-documento="{{id}}">Anular</button>
+</template>
+
+<template id="accion-pasar-remision">
+  <a class="boton" href="nueva-venta.html?documento={{id}}&amp;tipo=remision">Pasar a remisión</a>
+</template>
+
+<template id="acciones-nota">
+  <div class="acciones-fila">
+    <button type="button" class="boton" data-ficha-nota="{{id}}">Ficha</button>
+    <button type="button" class="boton" data-comprobante="{{id}}">Comprobante</button>
+    <button type="button" class="boton" data-recibo="{{ventaId}}">Ver factura</button>
+  </div>
+</template>
+
+<template id="panel-devolucion">
+  <section class="caja separacion-inferior" aria-labelledby="titulo-devolucion">
+    <strong id="titulo-devolucion">{{titulo}}</strong>
+    <div class="texto-suave">{{descripcion}}</div>
+    <div class="desplazable">
+      <table>
+        <thead><tr><th>Producto</th><th>Precio unitario</th><th>Disponibles</th><th>{{columnaCantidad}}</th></tr></thead>
+        <tbody><!--{{{filas}}}--></tbody>
+      </table>
+    </div>
+    <label for="motivo-devolucion">Motivo (obligatorio)</label>
+    <input id="motivo-devolucion" class="campo" maxlength="200" autocomplete="off" placeholder="Por qué se hace">
+    <div class="acciones-fila margen-superior-grande">
+      <button type="button" class="boton {{claseBoton}}" id="confirmar-devolucion">{{textoBoton}}</button>
+      <button type="button" class="boton" id="cancelar-devolucion">Cancelar</button>
+    </div>
+  </section>
+</template>
+
+<template id="contenido-ficha-venta">
+  <strong class="subtitulo-ficha">Productos</strong>
+  <div data-items></div>
+  {{{extra}}}
+</template>
+
+<template id="extra-notas-factura">
+  <strong class="subtitulo-ficha">Notas de la factura</strong>
+  <div data-notas></div>
+</template>
+
+<template id="acciones-ficha-factura">
+  <button type="button" class="boton" data-recibo="{{id}}">Comprobante</button>
+  {{{acciones}}}
+</template>
+
+<template id="acciones-ficha-documento">
+  <button type="button" class="boton" data-documento="{{id}}">Comprobante</button>
+  {{{acciones}}}
+</template>
+
+<template id="acciones-ficha-nota">
+  <button type="button" class="boton" data-comprobante="{{id}}">Comprobante</button>
+  <button type="button" class="boton" data-recibo="{{ventaId}}">Ver factura</button>
+</template>
+
+<template id="insignia">
+  <span class="insignia {{clase}}">{{texto}}</span>
+</template>
+
+
+<template id="fila-devolver-item">
+  <tr>
+    <td>{{nombre}}</td><td>{{valorUnitario}}</td><td>{{disponibles}}</td>
+    <td><input class="campo" data-cantidad-producto="{{productoId}}" data-numero="entero" inputmode="numeric" autocomplete="off" placeholder="0" aria-label="Cantidad a devolver de {{nombre}}"></td>
+  </tr>
+</template>
+
+<template id="fila-anular-item">
+  <tr><td>{{nombre}}</td><td>{{valorUnitario}}</td><td>{{disponibles}}</td><td>{{disponibles}}</td></tr>
+</template>

@@ -1,0 +1,36 @@
+/* Ajustes: secciones con título a la izquierda y controles a la derecha */
+.seccion-ajustes {
+  display: grid;
+  grid-template-columns: minmax(0, 240px) minmax(0, 1fr);
+  gap: var(--espacio-6);
+  margin-bottom: 14px;
+}
+
+.seccion-ajustes > div:first-child strong {
+  display: block;
+  margin-bottom: 2px;
+  font-size: var(--letra-lg);
+}
+
+.seccion-ajustes label:first-child {
+  margin-top: 0;
+}
+
+@media (max-width: 800px) {
+  .seccion-ajustes {
+    grid-template-columns: 1fr;
+    gap: var(--espacio-4);
+  }
+}
+
+/* En Ajustes el formulario incrustado ya está dentro de su sección: sin marco propio */
+.seccion-ajustes .formulario-incrustado {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+}
+
+.seccion-ajustes .campo-formulario:first-child label {
+  margin-top: 0;
+}

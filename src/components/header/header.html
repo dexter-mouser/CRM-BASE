@@ -1,0 +1,36 @@
+<header>
+  <button type="button" class="boton icono" id="alternar-menu" aria-label="Mostrar u ocultar menú lateral"></button>
+  <a class="marca" href="panel.html" aria-label="Genérico, ir al panel"></a>
+  <form class="buscador-pantallas" id="buscador-pantallas" role="search">
+    <label for="buscar-pantalla" class="solo-lector">Buscar pantalla</label>
+    <span class="icono-buscador" id="icono-buscador" aria-hidden="true"></span>
+    <input id="buscar-pantalla" list="lista-pantallas" autocomplete="off" placeholder="Buscar pantalla">
+    <kbd>Ctrl K</kbd>
+    <datalist id="lista-pantallas"></datalist>
+  </form>
+  <div class="espacio-flexible"></div>
+  <label class="selector-tienda" id="contenedor-tienda">
+    <span class="solo-lector">Sucursal activa</span>
+    <select id="tienda-activa"></select>
+  </label>
+  <a class="boton primario boton-vender" href="nueva-venta.html" id="boton-vender"><span id="icono-vender" aria-hidden="true"></span><span>Vender</span></a>
+  <div class="contenedor-alertas">
+    <button type="button" class="boton icono" id="boton-alertas" aria-label="Alertas" aria-expanded="false" aria-controls="lista-alertas"></button>
+    <span class="contador-alertas" id="contador-alertas" hidden></span>
+    <div class="lista-alertas caja" id="lista-alertas" hidden></div>
+  </div>
+  <button type="button" class="boton icono" id="alternar-tema" aria-label="Cambiar entre modo claro y oscuro"></button>
+  <div class="avatar" id="usuario" role="img"></div>
+</header>
+
+<template id="opcion-pantalla">
+  <option value="{{texto}}"></option>
+</template>
+
+<template id="opcion-tienda">
+  <option value="{{id}}" {{seleccion}}>{{nombre}}</option>
+</template>
+
+<template id="alerta">
+  <a class="alerta" href="{{enlace}}"><strong>{{titulo}}</strong><span class="texto-suave">{{detalle}}</span></a>
+</template>

@@ -1,0 +1,15 @@
+<template id="cabecera-seccion">
+  <section class="cabecera-seccion" data-grupo="{{grupoId}}" aria-labelledby="titulo-seccion">
+    <span class="marca-agua-cabecera" aria-hidden="true">{{{iconoGrande}}}</span>
+    <div class="texto-cabecera">
+      <span class="grupo-cabecera"><span class="icono-cabecera" aria-hidden="true">{{{icono}}}</span>{{grupo}}</span>
+      <h1 id="titulo-seccion">{{titulo}}{{{complemento}}}</h1>
+      <p class="descripcion-cabecera">{{descripcion}}</p>
+    </div>
+    <div class="acciones-cabecera"></div>
+  </section>
+</template>
+
+<template id="complemento-titulo">
+  <span class="complemento-titulo">{{texto}}</span>
+</template>

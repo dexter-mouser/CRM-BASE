@@ -1,0 +1,12 @@
+<template id="fila-resultado">
+  <div class="fila-cuadricula fila-resultado" role="option" id="resultado-{{posicion}}" data-id="{{id}}">
+    <div>{{id}}</div>
+    <div class="texto-suave">{{referencia}}</div>
+    <div class="texto-producto">{{nombre}}</div>
+    <div class="texto-suave relleno-resto">Stock {{existencias}} · clic o Enter para agregar</div>
+  </div>
+</template>
+
+<template id="busqueda-reciente">
+  <button type="button" class="reciente" data-columna="{{columna}}" data-texto="{{texto}}"><span class="texto-suave">{{etiquetaColumna}}:</span> {{texto}}</button>
+</template>

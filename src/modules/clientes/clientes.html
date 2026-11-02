@@ -1,0 +1,75 @@
+<div id="principal">
+  <button type="button" class="boton primario" id="nuevo-cliente" data-accion-cabecera>Nuevo cliente</button>
+
+  <div id="formulario-cliente"></div>
+
+  <section class="caja" aria-labelledby="titulo-lista-clientes">
+    <strong id="titulo-lista-clientes">Lista de clientes</strong>
+    <div class="confirmacion" id="confirmar-eliminar-cliente" hidden>
+      <span id="texto-eliminar-cliente"></span>
+      <button type="button" class="boton peligro" id="eliminar-cliente-si">Sí, eliminar</button>
+      <button type="button" class="boton" id="eliminar-cliente-no">Cancelar</button>
+    </div>
+    <div id="cuadricula-clientes"></div>
+  </section>
+
+  <section class="caja ficha-registro ficha-cliente-completa" id="ficha" aria-labelledby="titulo-ficha" hidden>
+    <div class="cabecera-flex">
+      <div>
+        <span class="etiqueta-ficha">Ficha del cliente</span>
+        <h2 id="titulo-ficha"></h2>
+        <div class="texto-suave" id="subtitulo-ficha"></div>
+        <div class="etiquetas-cliente" id="etiquetas-ficha"></div>
+      </div>
+      <div class="acciones-fila acciones-ficha-registro">
+        <button type="button" class="boton primario" id="editar-ficha">Editar</button>
+        <button type="button" class="boton" id="cerrar-ficha">Cerrar ficha</button>
+      </div>
+    </div>
+    <div class="indicadores" id="indicadores-ficha"></div>
+
+    <div class="pestanas-ficha segmentado" role="tablist" aria-label="Secciones de la ficha">
+      <button type="button" role="tab" data-seccion="actividades" aria-pressed="true">Seguimiento</button>
+      <button type="button" role="tab" data-seccion="compras" aria-pressed="false">Compras</button>
+      <button type="button" role="tab" data-seccion="cartera" aria-pressed="false">Cartera</button>
+      <button type="button" role="tab" data-seccion="documentos" aria-pressed="false">Cotizaciones y remisiones</button>
+      <button type="button" role="tab" data-seccion="pagos" aria-pressed="false">Abonos</button>
+      <button type="button" role="tab" data-seccion="devoluciones" aria-pressed="false">Devoluciones</button>
+    </div>
+
+    <div data-panel="actividades">
+      <div id="nueva-actividad" hidden></div>
+      <div id="cuadricula-actividades"></div>
+    </div>
+    <div data-panel="compras" hidden><div id="cuadricula-compras"></div></div>
+    <div data-panel="cartera" hidden><div id="cuadricula-cartera"></div></div>
+    <div data-panel="documentos" hidden><div id="cuadricula-documentos-cliente"></div></div>
+    <div data-panel="pagos" hidden><div id="cuadricula-abonos"></div></div>
+    <div data-panel="devoluciones" hidden><div id="cuadricula-devoluciones-cliente"></div></div>
+  </section>
+</div>
+
+<template id="acciones-cliente">
+  <div class="acciones-fila">
+    <button type="button" class="boton" data-ficha="{{id}}">Ficha</button>
+    <button type="button" class="boton" data-editar="{{id}}">Editar</button>
+    <button type="button" class="boton peligro" data-eliminar="{{id}}">Eliminar</button>
+  </div>
+</template>
+
+<template id="deuda-con-saldo">
+  <span class="insignia">{{valor}}</span>
+</template>
+
+<template id="etiqueta-cliente">
+  <span class="etiqueta-cliente">{{texto}}</span>
+</template>
+
+<template id="indicador">
+  <div class="caja indicador"><span class="texto-suave">{{etiqueta}}</span><strong class="{{clase}}">{{valor}}</strong></div>
+</template>
+
+<template id="accion-tarea">
+  <button type="button" class="boton" data-completar="{{id}}">Marcar hecha</button>
+</template>
+

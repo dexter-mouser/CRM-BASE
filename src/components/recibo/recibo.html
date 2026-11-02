@@ -1,0 +1,61 @@
+<dialog id="recibo" class="recibo-dialogo" aria-labelledby="recibo-titulo">
+  <div class="recibo-formato" role="group" aria-label="Formato de impresión">
+    <button type="button" class="boton" data-formato="tirilla" aria-pressed="true">Tirilla 80 mm</button>
+    <button type="button" class="boton" data-formato="carta" aria-pressed="false">Hoja carta</button>
+  </div>
+  <div class="recibo" id="contenido-recibo"></div>
+  <div class="recibo-acciones">
+    <button type="button" class="boton primario" id="imprimir-recibo">Imprimir</button>
+    <button type="button" class="boton" id="cerrar-recibo">Cerrar</button>
+  </div>
+</dialog>
+
+<template id="recibo-cuerpo">
+  <div class="recibo-encabezado">
+    <div class="recibo-marca">{{tienda}}</div>
+    {{{datosTienda}}}
+    <div id="recibo-titulo">{{titulo}}</div>
+    <div class="recibo-suave">{{subtitulo}}</div>
+  </div>
+  {{{sello}}}
+  <div class="recibo-datos">{{{datos}}}</div>
+  <div class="recibo-lineas">{{{lineas}}}</div>
+  <div class="recibo-totales">{{{totales}}}</div>
+  {{{notas}}}
+  <div class="recibo-firmas">{{{firmas}}}</div>
+  <div class="recibo-pie">{{pie}}</div>
+</template>
+
+<template id="recibo-dato-tienda">
+  <div class="recibo-suave">{{texto}}</div>
+</template>
+
+<template id="recibo-dato">
+  <div><span>{{etiqueta}}</span><span>{{valor}}</span></div>
+</template>
+
+<template id="recibo-linea">
+  <div class="recibo-linea">
+    <div>
+      <div class="recibo-nombre">{{nombre}}</div>
+      <div class="recibo-suave">{{detalle}}</div>
+    </div>
+    <span>{{valor}}</span>
+  </div>
+</template>
+
+<template id="recibo-total">
+  <div class="recibo-total {{clase}}"><span>{{etiqueta}}</span><span>{{valor}}</span></div>
+</template>
+
+<template id="recibo-sello">
+  <div class="recibo-sello">{{texto}}</div>
+</template>
+
+<template id="recibo-nota">
+  <div class="recibo-nota">{{texto}}</div>
+</template>
+
+<template id="recibo-firma">
+  <div class="recibo-firma"><span>{{texto}}</span></div>
+</template>

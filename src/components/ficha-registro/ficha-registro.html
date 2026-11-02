@@ -1,0 +1,48 @@
+<template id="ficha-registro">
+  <section class="caja ficha-registro" aria-labelledby="titulo-{{clave}}">
+    <div class="cabecera-flex">
+      <div>
+        <span class="etiqueta-ficha">{{etiqueta}}</span>
+        <h2 id="titulo-{{clave}}">{{titulo}}</h2>
+        <div class="texto-suave">{{subtitulo}}</div>
+        {{{insignias}}}
+      </div>
+      <div class="acciones-fila acciones-ficha-registro">
+        {{{acciones}}}
+        {{{editar}}}
+        <button type="button" class="boton" data-cerrar-ficha>Cerrar ficha</button>
+      </div>
+    </div>
+    {{{indicadores}}}
+    {{{datos}}}
+    <div class="contenido-ficha">{{{contenido}}}</div>
+  </section>
+</template>
+
+<template id="boton-editar">
+  <button type="button" class="boton primario" data-editar-ficha>Editar</button>
+</template>
+
+<template id="indicadores">
+  <div class="indicadores">{{{lista}}}</div>
+</template>
+
+<template id="indicador">
+  <div class="caja indicador"><span class="texto-suave">{{etiqueta}}</span><strong class="{{clase}}">{{valor}}</strong></div>
+</template>
+
+<template id="datos">
+  <dl class="datos-registro">{{{lista}}}</dl>
+</template>
+
+<template id="dato">
+  <div class="{{clase}}"><dt>{{etiqueta}}</dt><dd>{{valor}}</dd></div>
+</template>
+
+<template id="dato-html">
+  <div class="{{clase}}"><dt>{{etiqueta}}</dt><dd>{{{valor}}}</dd></div>
+</template>
+
+<template id="subtitulo-ficha">
+  <strong class="subtitulo-ficha">{{texto}}</strong>
+</template>

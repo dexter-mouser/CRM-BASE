@@ -1,0 +1,173 @@
+<div id="principal">
+  <button type="button" class="boton" id="descargar-csv" data-accion-cabecera data-seccion="productos">Descargar CSV</button>
+  <label class="boton archivo" data-accion-cabecera data-seccion="productos">Cargar CSV<input type="file" id="cargar-csv" accept=".csv,text/csv" hidden></label>
+  <button type="button" class="boton primario" id="nuevo-producto" data-accion-cabecera data-seccion="productos">Nuevo producto</button>
+  <button type="button" class="boton primario" id="ingresar-compra" data-accion-cabecera data-seccion="compras">Ingresar compra</button>
+
+  <section class="caja panel-proceso documento-registro" id="panel-factura" aria-labelledby="titulo-panel-factura" data-seccion="compras">
+    <strong id="titulo-panel-factura">Ingresar factura de compra</strong>
+    <div class="aviso-origen caja separacion-inferior" id="aviso-orden" hidden><strong id="texto-orden"></strong></div>
+
+    <div class="encabezado-documento">
+      <div class="paso-documento paso-registro">
+        <span class="numero-paso">1</span>
+        <div class="contenido-paso">
+          <span class="etiqueta-paso">Proveedor <span class="texto-suave">· busca por cualquier dato</span></span>
+          <div id="selector-proveedor-compra"></div>
+        </div>
+      </div>
+      <div class="paso-documento">
+        <span class="numero-paso">2</span>
+        <div class="contenido-paso">
+          <label for="factura-numero">Factura del proveedor</label>
+          <input id="factura-numero" class="campo" autocomplete="off" placeholder="N° de la factura">
+          <label for="factura-fecha">Fecha</label>
+          <input id="factura-fecha" class="campo" type="date" value="{{hoy}}">
+        </div>
+      </div>
+      <div class="paso-documento">
+        <span class="numero-paso">3</span>
+        <div class="contenido-paso">
+          <label for="factura-bodega">Entra a la bodega</label>
+          <select id="factura-bodega" class="campo">{{{opcionesBodegaFactura}}}</select>
+          <div class="texto-suave">El stock de la cuadrícula es el de esta bodega.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="titulo-paso"><span class="numero-paso">4</span><strong>Productos</strong><span class="texto-suave">Busca escribiendo en la casilla debajo de cada columna · Enter agrega</span></div>
+    <div class="cuadricula" role="grid" aria-label="Productos de la factura de compra">
+      <div class="fila-cuadricula fila-busqueda" role="row">
+        <div role="columnheader"><input class="campo" data-filtro="id" aria-label="Buscar producto por código" placeholder="Código" autocomplete="off"></div>
+        <div role="columnheader"><input class="campo" data-filtro="referencia" aria-label="Buscar producto por referencia" placeholder="Referencia" autocomplete="off"></div>
+        <div role="columnheader"><input class="campo" data-filtro="nombre" aria-label="Buscar producto por descripción" placeholder="Descripción" autocomplete="off"></div>
+        <div role="columnheader"><input class="campo" data-filtro="costo" data-numero="entero" inputmode="numeric" aria-label="Buscar producto por costo actual" placeholder="Costo actual" autocomplete="off"></div>
+        <div role="columnheader"><input class="campo" data-filtro="existencias" data-numero="entero-negativo" aria-label="Buscar producto por stock" placeholder="Stock" autocomplete="off"></div>
+        <div role="columnheader" class="titulo-columna">Cantidad</div>
+        <div role="columnheader" class="titulo-columna">Costo unitario</div>
+        <div role="columnheader" class="titulo-columna">Total línea</div>
+        <div role="columnheader"><span class="solo-lector">Quitar</span></div>
+      </div>
+      <div class="resultados-cuadricula" id="resultados-cuadricula" role="listbox" aria-label="Productos encontrados" hidden></div>
+      <div id="lineas-factura"></div>
+    </div>
+    <div class="texto-suave margen-superior" id="sin-lineas-factura">Aún no agregaste productos. Busca arriba y elige uno.</div>
+    <div class="total-venta"><span>Total de la factura</span><strong id="total-factura">$ 0</strong></div>
+
+    <div class="titulo-paso"><span class="numero-paso">5</span><strong>Registrar</strong></div>
+    <div class="acciones-fila">
+      <button type="button" class="boton primario" id="registrar-factura">Registrar factura</button>
+      <button type="button" class="boton" id="vaciar-factura">Vaciar</button>
+      <button type="button" class="boton" id="cancelar-factura">Cancelar</button>
+    </div>
+  </section>
+
+  <section class="caja" aria-labelledby="titulo-facturas-compra" data-seccion="compras">
+    <strong id="titulo-facturas-compra">Facturas de compra</strong>
+    <div id="cuadricula-facturas-compra"></div>
+  </section>
+  <div id="ficha-factura-compra" data-seccion="compras"></div>
+
+  <div id="formulario-producto" data-seccion="productos"></div>
+
+  <section class="caja" aria-labelledby="titulo-lista-productos" data-seccion="productos">
+    <strong id="titulo-lista-productos">Lista de productos</strong>
+    <div class="texto-suave">{{{lugarStock}}}</div>
+    <div class="confirmacion" id="confirmar-eliminar-producto" hidden>
+      <span id="texto-eliminar-producto"></span>
+      <button type="button" class="boton peligro" id="eliminar-producto-si">Sí, eliminar</button>
+      <button type="button" class="boton" id="eliminar-producto-no">Cancelar</button>
+    </div>
+    <div id="cuadricula-productos"></div>
+  </section>
+  <div id="ficha-producto" data-seccion="productos"></div>
+
+  <section class="caja" id="panel-kardex" aria-labelledby="titulo-kardex" data-seccion="kardex">
+    <strong id="titulo-kardex">Consultar kardex</strong>
+    <div class="rejilla-campos margen-superior">
+      <div class="campo-formulario ancho-completo">
+        <span class="etiqueta-campo">Producto · busca por cualquier dato</span>
+        <div class="contenedor-selector" id="selector-kardex"></div>
+      </div>
+      <div>
+        <label for="kardex-bodega">Bodega</label>
+        <select id="kardex-bodega" class="campo">{{{opcionesBodegaKardex}}}</select>
+      </div>
+    </div>
+    <div class="texto-suave margen-superior" id="resumen-kardex"></div>
+    <div id="cuadricula-kardex"></div>
+  </section>
+</div>
+
+
+<template id="opcion-elegida">
+  <option value="{{valor}}" {{seleccion}}>{{texto}}</option>
+</template>
+
+<template id="opcion">
+  <option value="{{valor}}">{{texto}}</option>
+</template>
+
+<template id="acciones-producto">
+  <div class="acciones-fila">
+    <button type="button" class="boton" data-ficha="{{id}}">Ficha</button>
+    {{{editar}}}
+    {{{eliminar}}}
+  </div>
+</template>
+
+<template id="boton-editar-producto">
+  <button type="button" class="boton" data-editar="{{id}}">Editar</button>
+</template>
+
+<template id="boton-eliminar-producto">
+  <button type="button" class="boton peligro" data-eliminar="{{id}}">Eliminar</button>
+</template>
+
+<template id="enlace-kardex">
+  <a class="boton" href="inventario.html?seccion=kardex&amp;producto={{id}}">Ver kardex</a>
+</template>
+
+<template id="estado-producto">
+  <span class="insignia {{clase}}">{{texto}}</span>
+</template>
+
+<template id="stock-producto">
+  {{texto}} {{{insignia}}}
+</template>
+
+<template id="contenido-ficha-producto">
+  <strong class="subtitulo-ficha">Stock por bodega</strong>
+  <div data-stock></div>
+</template>
+
+<template id="contenido-ficha-factura">
+  <strong class="subtitulo-ficha">Productos</strong>
+  <div data-items></div>
+</template>
+
+<template id="accion-factura-compra">
+  <div class="acciones-fila">
+    <button type="button" class="boton" data-ficha-factura="{{indice}}">Ficha</button>
+    <button type="button" class="boton" data-factura="{{indice}}">Comprobante</button>
+  </div>
+</template>
+
+<template id="comprobante-factura-compra">
+  <button type="button" class="boton" data-factura="{{indice}}">Comprobante</button>
+</template>
+
+<template id="fila-linea-factura">
+  <div class="fila-cuadricula fila-linea" role="row" data-posicion="{{posicion}}">
+    <div role="gridcell">{{id}}</div>
+    <div role="gridcell">{{referencia}}</div>
+    <div role="gridcell" class="texto-producto">{{nombre}}</div>
+    <div role="gridcell">{{costoActual}}</div>
+    <div role="gridcell">{{existencias}}</div>
+    <div role="gridcell"><input class="campo" data-campo="cantidad" data-numero="entero" inputmode="numeric" autocomplete="off" aria-label="Cantidad de {{nombre}}" value="{{cantidad}}"></div>
+    <div role="gridcell"><input class="campo" data-campo="costoUnitario" data-numero="entero" inputmode="numeric" autocomplete="off" placeholder="0" aria-label="Costo unitario de {{nombre}}" value="{{costoUnitario}}"></div>
+    <div role="gridcell" data-subtotal>{{subtotal}}</div>
+    <div role="gridcell"><button type="button" class="boton icono" data-quitar aria-label="Quitar {{nombre}}">{{{icono}}}</button></div>
+  </div>
+</template>
+

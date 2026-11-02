@@ -1,0 +1,114 @@
+/* Pantalla de ingreso (index.html) */
+.pagina-acceso {
+  display: flex;
+  overflow: auto;
+  padding: 24px;
+}
+
+#acceso {
+  width: 100%;
+  max-width: 400px;
+  margin: auto;
+}
+
+.acceso-caja {
+  padding: 32px 28px;
+  border: 1px solid var(--borde);
+  border-radius: var(--radio-lg);
+  background: var(--superficie);
+}
+
+.acceso-caja h1 {
+  font-size: var(--letra-xl);
+}
+
+.acceso-marca {
+  margin-bottom: 24px;
+}
+
+.acceso-marca .logo {
+  font-size: var(--letra-xxl);
+}
+
+.pestanas {
+  display: flex;
+  gap: var(--espacio-1);
+  margin: 20px 0 4px;
+  padding: 4px;
+  border-radius: var(--radio-md);
+  background: var(--pista);
+}
+
+.pestanas button {
+  flex: 1;
+  padding: 8px;
+  border: 0;
+  border-radius: var(--radio-sm);
+  background: none;
+  color: var(--suave);
+  font-family: inherit;
+  font-size: var(--letra-sm);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.pestanas button[aria-pressed="true"] {
+  background: var(--superficie);
+  color: var(--texto);
+}
+
+.clave-fila {
+  position: relative;
+}
+
+.clave-fila .campo {
+  padding-right: 64px;
+}
+
+.clave-fila .ver {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  bottom: 4px;
+  padding: 0 10px;
+  font-size: var(--letra-xs);
+}
+
+.error {
+  min-height: 20px;
+  margin-top: 12px;
+  font-size: var(--letra-sm);
+  color: var(--negativo);
+}
+
+.demo {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid var(--borde);
+  line-height: 1.7;
+}
+
+.cuentas-prueba {
+  display: grid;
+  gap: var(--espacio-2);
+  margin: 8px 0;
+}
+
+.cuenta-prueba {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--espacio-3);
+}
+
+.demo code {
+  font: inherit;
+  font-weight: 600;
+  color: var(--texto);
+}
+
+.pagina-acceso #alternar-tema {
+  position: fixed;
+  top: calc(16px + env(safe-area-inset-top, 0px));
+  right: 16px;
+}

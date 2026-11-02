@@ -1,0 +1,64 @@
+/* Animaciones: entrada de vistas, barras y esqueletos de carga */
+.barras {
+  display: flex;
+  align-items: flex-end;
+  gap: var(--espacio-4);
+  height: 180px;
+  margin-top: 16px;
+}
+
+.barras i {
+  flex: 1;
+  border-radius: var(--radio-sm) var(--radio-sm) 0 0;
+  background: var(--barra);
+  transform-origin: bottom;
+  animation: crecer 0.9s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+}
+
+.vista {
+  animation: subir 0.45s ease both;
+}
+
+.sin-animacion {
+  animation: none !important;
+}
+
+.esqueleto {
+  flex: 1 1 200px;
+  height: 110px;
+  border-radius: var(--radio-lg);
+  background: linear-gradient(90deg, var(--pista), var(--pasar), var(--pista));
+  background-size: 200% 100%;
+  animation: brillo 1.2s infinite;
+}
+
+.esqueleto.alto {
+  height: 240px;
+}
+
+@keyframes subir {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+}
+
+@keyframes crecer {
+  from {
+    transform: scaleY(0);
+  }
+}
+
+@keyframes brillo {
+  to {
+    background-position: -200% 0;
+  }
+}
+
+/* Respeta la preferencia del dispositivo de reducir animaciones */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation: none !important;
+    transition: none !important;
+  }
+}

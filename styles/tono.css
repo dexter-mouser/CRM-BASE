@@ -1,0 +1,114 @@
+/* Tono de la interfaz: única fuente de colores, tamaños, radios, letras y sombras.
+   Cada tienda puede sobrescribir los colores de marca desde Ajustes (sin tocar código).
+   --acento es el color de marca (botones principales, selección); cada grupo del menú tiene su color. */
+:root {
+  /* Espaciado */
+  --espacio-1: 4px;
+  --espacio-2: 6px;
+  --espacio-3: 8px;
+  --espacio-4: 12px;
+  --espacio-5: 16px;
+  --espacio-6: 24px;
+  /* Radios */
+  --radio-sm: 6px;
+  --radio-md: 10px;
+  --radio-lg: 14px;
+  --radio-xl: 18px;
+  --radio-pildora: 999px;
+  /* Letras */
+  --letra-xxs: 11px;
+  --letra-xs: 12px;
+  --letra-sm: 13px;
+  --letra-md: 14px;
+  --letra-lg: 16px;
+  --letra-xl: 20px;
+  --letra-xxl: 24px;
+  --letra-titulo: 30px;
+  /* Sombras */
+  --sombra-1: 0 6px 14px rgb(0 0 0 / 0.08);
+  --sombra-2: 0 14px 30px rgb(0 0 0 / 0.16);
+  --sombra-3: 0 18px 40px rgb(0 0 0 / 0.28);
+  --sombra-arriba: 0 -10px 30px rgb(0 0 0 / 0.16);
+
+  /* Colores del tema claro */
+  --fondo: #f1f1f0;
+  --superficie: #ffffff;
+  --borde: #e4e4e2;
+  --texto: #1f1f1e;
+  --suave: #6b6b68;
+  --acento: #4553c9;
+  --acento-texto: #ffffff;
+  --marca: #4553c9;
+  --marca-suave: #eceefc;
+  --exito: #1d7f55;
+  --exito-suave: #e5f4ec;
+  /* Color de cada grupo del menú */
+  --grupo-inicio: #4553c9;
+  --grupo-ventas: #12855f;
+  --grupo-clientes: #c4651c;
+  --grupo-inventario: #1f73b8;
+  --grupo-finanzas: #7a4cbc;
+  --grupo-administracion: #56657a;
+  --barra: #4553c9;
+  --pista: #ececea;
+  --pasar: #f4f4f2;
+  --activo: #eeeeec;
+  --negativo: #9b2c2c;
+  --contorno: #d6d6d3;
+  /* Divisiones suaves (filas, bloques de un documento) y fondo de los campos */
+  --borde-suave: #ececea;
+  --fondo-campo: #f7f7f5;
+  /* Billetes y monedas (tonos apagados; se mezclan con la superficie en claro y oscuro) */
+  --billete-2000: #4f8fa8;
+  --billete-5000: #a07a4f;
+  --billete-10000: #b85c5c;
+  --billete-20000: #c28a3a;
+  --billete-50000: #8a5c9e;
+  --billete-100000: #5f8f5a;
+  --moneda: #b9a26a;
+  box-sizing: border-box;
+  padding-top: env(safe-area-inset-top, 0px);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+  color-scheme: light;
+}
+
+/* Tema oscuro: tema.js y previo.js escriben siempre data-tema="claro|oscuro" (el automático se resuelve
+   con el dispositivo), así que basta un solo bloque */
+:root[data-tema="oscuro"] {
+  --sombra-1: 0 6px 14px rgb(0 0 0 / 0.3);
+  --sombra-2: 0 14px 30px rgb(0 0 0 / 0.4);
+  --fondo: #161615;
+  --superficie: #222221;
+  --borde: #333331;
+  --texto: #ececea;
+  --suave: #a3a39f;
+  --acento: #8d97f2;
+  --acento-texto: #12142b;
+  --marca: #8d97f2;
+  --marca-suave: #262a48;
+  --exito: #5cc796;
+  --exito-suave: #1d3329;
+  --grupo-inicio: #8d97f2;
+  --grupo-ventas: #4cc497;
+  --grupo-clientes: #f0a463;
+  --grupo-inventario: #6cb2ec;
+  --grupo-finanzas: #b690ea;
+  --grupo-administracion: #9eabbd;
+  --barra: #8d97f2;
+  --pista: #333331;
+  --pasar: #2a2a29;
+  --activo: #2f2f2e;
+  --negativo: #f0a0a0;
+  --contorno: #444442;
+  --borde-suave: #2a2a28;
+  --fondo-campo: #1c1c1b;
+  color-scheme: dark;
+}
+
+/* Cada elemento marcado con su grupo (menú, cabecera y contenido) toma el color de ese grupo */
+[data-grupo="inicio"] { --color-grupo: var(--grupo-inicio); }
+[data-grupo="ventas"] { --color-grupo: var(--grupo-ventas); }
+[data-grupo="clientes"] { --color-grupo: var(--grupo-clientes); }
+[data-grupo="inventario"] { --color-grupo: var(--grupo-inventario); }
+[data-grupo="finanzas"] { --color-grupo: var(--grupo-finanzas); }
+[data-grupo="administracion"] { --color-grupo: var(--grupo-administracion); }

@@ -1,0 +1,19 @@
+<div id="selector">
+  <label for="buscar-producto">Buscar producto</label>
+  <input id="buscar-producto" class="campo" autocomplete="off" placeholder="ID, nombre, referencia, costo o stock">
+  <div class="recientes recientes-selector" id="recientes-productos"></div>
+  <div class="texto-suave margen-superior" id="conteo-productos" aria-live="polite"></div>
+  <div class="resultados" id="resultados-productos"></div>
+</div>
+
+<template id="resultado-producto">
+  <button type="button" class="resultado" data-id="{{id}}">
+    <span class="resultado-id">{{id}}</span>
+    <span class="resultado-nombre">{{nombre}}</span>
+    <span class="texto-suave">Ref. {{referencia}} · Costo {{costo}} · Stock {{existencias}}</span>
+  </button>
+</template>
+
+<template id="busqueda-reciente-simple">
+  <button type="button" class="reciente" data-texto="{{texto}}">{{texto}}</button>
+</template>

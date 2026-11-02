@@ -1,0 +1,208 @@
+/* Recibo: vista previa en pantalla e impresión (ancho de 80 mm, como un recibo de punto de venta) */
+.recibo-dialogo {
+  width: min(360px, 94vw);
+  padding: 0;
+  border: 1px solid var(--borde);
+  border-radius: 14px;
+  background: var(--superficie);
+  color: var(--texto);
+}
+
+.recibo-dialogo::backdrop {
+  background: rgba(0, 0, 0, 0.45);
+}
+
+.recibo {
+  padding: 22px 20px;
+  font-family: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+  font-size: 13px;
+}
+
+.recibo-encabezado {
+  padding-bottom: 12px;
+  border-bottom: 1px dashed var(--contorno);
+  text-align: center;
+}
+
+.recibo-marca {
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+}
+
+.recibo-suave {
+  font-size: 12px;
+  color: var(--suave);
+}
+
+.recibo-datos {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 12px 0;
+  border-bottom: 1px dashed var(--contorno);
+}
+
+.recibo-datos div,
+.recibo-linea,
+.recibo-total {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.recibo-lineas {
+  padding: 12px 0;
+  border-bottom: 1px dashed var(--contorno);
+}
+
+.recibo-linea + .recibo-linea {
+  margin-top: 8px;
+}
+
+.recibo-nombre {
+  font-weight: 700;
+}
+
+.recibo-total {
+  padding-top: 12px;
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.recibo-pie {
+  margin-top: 16px;
+  text-align: center;
+}
+
+.recibo-acciones {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  padding: 12px 16px;
+  border-top: 1px solid var(--borde);
+}
+
+@media print {
+  body.imprimiendo-recibo #aplicacion,
+  body.imprimiendo-recibo #aviso {
+    display: none !important;
+  }
+
+  body.imprimiendo-recibo .recibo-dialogo {
+    position: absolute;
+    inset: 0 auto auto 0;
+    width: 72mm;
+    margin: 0;
+    border: 0;
+    border-radius: 0;
+    background: #fff;
+    color: #000;
+  }
+
+  body.imprimiendo-recibo .recibo-dialogo::backdrop {
+    background: none;
+  }
+
+  body.imprimiendo-recibo .recibo-dialogo.recibo-carta {
+    width: 100%;
+  }
+
+  body.imprimiendo-recibo .recibo-acciones,
+  body.imprimiendo-recibo .recibo-formato {
+    display: none;
+  }
+
+  body.imprimiendo-recibo .recibo-suave {
+    color: #444;
+  }
+
+  body.imprimiendo-recibo .recibo-encabezado,
+  body.imprimiendo-recibo .recibo-datos,
+  body.imprimiendo-recibo .recibo-lineas {
+    border-color: #000;
+  }
+
+}
+
+/* Formato de hoja carta (vista previa) */
+.recibo-dialogo.recibo-carta {
+  width: min(720px, 96vw);
+}
+
+.recibo-formato {
+  display: flex;
+  gap: 8px;
+  padding: 10px 14px 0;
+}
+
+.recibo-formato .boton {
+  flex: 1;
+  padding: 6px 10px;
+  font-size: 0.82rem;
+}
+
+.recibo-formato .boton[aria-pressed="true"] {
+  border-color: var(--acento);
+  font-weight: 600;
+}
+
+.recibo-totales {
+  margin-top: 4px;
+}
+
+.recibo-lineas:empty {
+  display: none;
+}
+
+.recibo-total-suave {
+  font-weight: 400;
+  font-size: 0.85rem;
+  border-top: 0;
+  padding-top: 2px;
+  padding-bottom: 2px;
+}
+
+.recibo-sello {
+  margin: 8px auto 0;
+  padding: 2px 14px;
+  width: fit-content;
+  border: 2px solid var(--negativo);
+  border-radius: 4px;
+  color: var(--negativo);
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  transform: rotate(-4deg);
+}
+
+.recibo-nota {
+  margin-top: 8px;
+  font-size: 0.8rem;
+  line-height: 1.35;
+}
+
+.recibo-firmas {
+  display: flex;
+  gap: 24px;
+  margin-top: 28px;
+}
+
+.recibo-firmas:empty {
+  display: none;
+}
+
+.recibo-firma {
+  flex: 1;
+  padding-top: 4px;
+  border-top: 1px solid currentColor;
+  text-align: center;
+  font-size: 0.75rem;
+}
+
+@media print {
+  body.imprimiendo-recibo .recibo-sello {
+    border-color: #000;
+    color: #000;
+  }
+}

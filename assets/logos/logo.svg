@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 260 64" role="img" aria-label="Genérico">
+<style>
+.g{fill:none;stroke:#ececea;stroke-width:6;stroke-linecap:round;stroke-linejoin:round}
+.anillo{fill:none;stroke:#a3a39f;stroke-width:1.2;opacity:.55}.punto{fill:#a3a39f}
+text{font:700 32px system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;letter-spacing:-.5px;fill:#1f1f1e}
+</style>
+<rect x="4" y="4" width="56" height="56" rx="16" fill="#2b2b2a"/>
+<circle cx="32" cy="32" r="22" class="anillo"/><circle cx="47.6" cy="16.4" r="2.4" class="punto"/><path class="g" d="M43.5 22.4A15 15 0 1 0 47 32H34"/>
+<text x="76" y="43" textLength="176" lengthAdjust="spacingAndGlyphs">Genérico</text>
+</svg>

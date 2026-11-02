@@ -1,0 +1,189 @@
+/* Pantallas del CRM: ficha del cliente, seguimiento, embudo de ventas, proveedores y alertas del encabezado */
+
+.texto-negativo {
+  color: var(--negativo);
+}
+
+/* Etiquetas del cliente */
+.etiquetas-cliente {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--espacio-2);
+  margin-top: 8px;
+}
+
+.etiqueta-cliente {
+  display: inline-block;
+  margin: 1px 4px 1px 0;
+  padding: 2px 9px;
+  border: 1px solid var(--borde);
+  border-radius: var(--radio-pildora);
+  background: var(--pasar);
+  font-size: var(--letra-xs);
+  font-weight: 600;
+}
+
+/* Ficha completa */
+.ficha-cliente-completa .indicadores {
+  margin: 12px 0;
+}
+
+.pestanas-ficha {
+  display: inline-flex;
+  flex-wrap: wrap;
+  margin: 4px 0 12px;
+}
+
+/* Embudo de ventas */
+.tablero-embudo {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(220px, 1fr));
+  gap: var(--espacio-4);
+  overflow-x: auto;
+}
+
+.columna-embudo {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espacio-3);
+  min-height: 160px;
+  padding: 12px;
+  border: 1px solid var(--borde);
+  border-radius: var(--radio-lg);
+  background: var(--pasar);
+}
+
+.cabecera-columna {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: var(--espacio-3);
+}
+
+.columna-embudo[data-etapa="ganada"] .cabecera-columna strong::before,
+.columna-embudo[data-etapa="perdida"] .cabecera-columna strong::before {
+  content: '';
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  margin-right: 6px;
+  border-radius: 50%;
+  background: var(--billete-100000);
+}
+
+.columna-embudo[data-etapa="perdida"] .cabecera-columna strong::before {
+  background: var(--negativo);
+}
+
+.tarjeta-oportunidad {
+  display: grid;
+  gap: var(--espacio-2);
+  padding: 12px;
+  border: 1px solid var(--borde);
+  border-radius: var(--radio-md);
+  background: var(--superficie);
+  font-size: var(--letra-sm);
+}
+
+.tarjeta-oportunidad.vencida {
+  border-color: var(--negativo);
+  box-shadow: inset 3px 0 0 var(--negativo);
+}
+
+.fila-tarjeta {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--espacio-3);
+}
+
+.cliente-tarjeta {
+  color: var(--texto);
+  font-weight: 600;
+}
+
+.motivo-tarjeta {
+  padding: 6px 8px;
+  border-radius: var(--radio-sm);
+  background: var(--pasar);
+  font-size: var(--letra-xs);
+}
+
+.tarjeta-oportunidad .acciones-fila {
+  flex-wrap: wrap;
+  gap: var(--espacio-2);
+}
+
+.tarjeta-oportunidad .boton {
+  padding: 6px 10px;
+  font-size: var(--letra-xs);
+}
+
+.columna-vacia {
+  padding: 12px 0;
+  text-align: center;
+}
+
+.alerta-perfil {
+  border-color: var(--negativo);
+  box-shadow: inset 4px 0 0 var(--negativo);
+}
+
+/* Alertas del encabezado */
+.contenedor-alertas {
+  position: relative;
+}
+
+.contador-alertas {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  min-width: 18px;
+  padding: 0 5px;
+  border-radius: var(--radio-pildora);
+  background: var(--negativo);
+  color: var(--superficie);
+  font-size: var(--letra-xxs);
+  font-weight: 700;
+  line-height: 18px;
+  text-align: center;
+  pointer-events: none;
+}
+
+.lista-alertas {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  z-index: 30;
+  display: grid;
+  gap: var(--espacio-1);
+  width: min(360px, 90vw);
+  max-height: 60vh;
+  overflow-y: auto;
+  padding: 8px;
+  box-shadow: var(--sombra-2);
+}
+
+.alerta {
+  display: grid;
+  gap: 2px;
+  padding: 10px;
+  border-radius: var(--radio-md);
+  color: var(--texto);
+  text-decoration: none;
+  font-size: var(--letra-sm);
+}
+
+.alerta:hover {
+  background: var(--pasar);
+}
+
+/* Reportes */
+.fila-total td {
+  border-top: 2px solid var(--borde);
+  font-weight: 700;
+}
+
+.iva-venta {
+  margin: -8px 0 12px;
+  text-align: right;
+}

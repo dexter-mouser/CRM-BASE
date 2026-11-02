@@ -1,0 +1,22 @@
+// Carga perezosa: cada módulo se descarga solo cuando se visita
+export const rutas = {
+  panel: () => import('../modules/panel/panel.js'),
+  'nueva-venta': () => import('../modules/nueva-venta/nueva-venta.js'),
+  ventas: () => import('../modules/ventas/ventas.js'),
+  ajustes: () => import('../modules/ajustes/ajustes.js'),
+  clientes: () => import('../modules/clientes/clientes.js'),
+  caja: () => import('../modules/caja/caja.js'),
+  contabilidad: () => import('../modules/contabilidad/contabilidad.js'),
+  auditoria: () => import('../modules/auditoria/auditoria.js'),
+  pagos: () => import('../modules/pagos/pagos.js'),
+  reportes: () => import('../modules/reportes/reportes.js'),
+  roles: () => import('../modules/roles/roles.js'),
+  inventario: () => import('../modules/inventario/inventario.js'),
+  seguimiento: () => import('../modules/seguimiento/seguimiento.js'),
+  embudo: () => import('../modules/embudo/embudo.js'),
+  proveedores: () => import('../modules/proveedores/proveedores.js'),
+  tiendas: () => import('../modules/tiendas/tiendas.js'),
+  bodegas: () => import('../modules/bodegas/bodegas.js'),
+  empleados: () => import('../modules/empleados/empleados.js'),
+  placeholder: () => import('../modules/placeholder/placeholder.js'),
+};

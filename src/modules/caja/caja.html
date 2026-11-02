@@ -1,0 +1,58 @@
+<div id="principal">
+  {{{contenido}}}
+  <section class="caja margen-superior-grande" aria-labelledby="titulo-cierres">
+    <strong id="titulo-cierres">Cierres anteriores</strong>
+    <div id="cuadricula-cierres"></div>
+  </section>
+  <div id="ficha-cierre"></div>
+</div>
+
+<template id="sin-tienda">
+  <section class="caja">
+    <strong>Elige una sucursal</strong>
+    <div class="texto-suave">Con "Todas las sucursales" solo ves los cierres de todas. Elige una sucursal en el menú superior para abrir, mover o cerrar su caja.</div>
+  </section>
+</template>
+
+<template id="caja-cerrada">
+  <section class="caja" aria-labelledby="titulo-abrir">
+    <strong id="titulo-abrir">Caja cerrada</strong>
+    <div class="texto-suave">Escribe el efectivo con el que empiezas el día (puede ser 0).</div>
+    <div id="formulario-abrir-caja"></div>
+  </section>
+</template>
+
+<template id="caja-abierta">
+  <button type="button" class="boton" id="abrir-cierre" data-accion-cabecera>Cerrar caja</button>
+  <button type="button" class="boton primario" id="nuevo-movimiento" data-accion-cabecera>Registrar movimiento</button>
+
+  <div id="panel-movimiento"></div>
+
+  <div id="panel-cierre"></div>
+
+  <section class="caja" aria-labelledby="titulo-resumen">
+    <strong id="titulo-resumen">Caja abierta desde {{apertura}}</strong>
+    <dl class="resumen-caja">{{{lineas}}}</dl>
+    <div class="total-venta"><span>Efectivo esperado en caja</span><strong>{{esperado}}</strong></div>
+  </section>
+
+  <section class="caja margen-superior-grande" aria-labelledby="titulo-movimientos">
+    <strong id="titulo-movimientos">Movimientos de esta caja</strong>
+    <div id="cuadricula-movimientos"></div>
+  </section>
+</template>
+
+
+
+<template id="accion-cierre">
+  <button type="button" class="boton" data-ficha="{{id}}">Ficha</button>
+</template>
+
+<template id="contenido-ficha-cierre">
+  <strong class="subtitulo-ficha">Ingresos y egresos manuales</strong>
+  <div data-movimientos></div>
+</template>
+
+<template id="linea-resumen">
+  <div><dt>{{etiqueta}}</dt><dd>{{valor}}</dd></div>
+</template>

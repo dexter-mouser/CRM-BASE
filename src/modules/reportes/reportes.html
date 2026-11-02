@@ -1,0 +1,75 @@
+<div id="principal">
+  <button type="button" class="boton" id="descargar-ventas" data-accion-cabecera>Descargar ventas CSV</button>
+
+  <section class="caja" aria-label="Rango de fechas">
+    <div class="filtros-reporte">
+      <div>
+        <label for="fecha-desde">Desde</label>
+        <input id="fecha-desde" class="campo" type="date" value="{{desde}}">
+      </div>
+      <div>
+        <label for="fecha-hasta">Hasta</label>
+        <input id="fecha-hasta" class="campo" type="date" value="{{hasta}}">
+      </div>
+      <div class="acciones-fila">
+        <button type="button" class="boton" data-rango="hoy">Hoy</button>
+        <button type="button" class="boton" data-rango="semana">Últimos 7 días</button>
+        <button type="button" class="boton" data-rango="mes">Este mes</button>
+      </div>
+    </div>
+  </section>
+
+  <div class="indicadores margen-superior-grande" id="indicadores"></div>
+  <div class="indicadores" id="indicadores-clientes"></div>
+
+  <div class="dos-columnas arriba">
+    <section class="caja">
+      <strong>Ventas por vendedor</strong>
+      <div id="por-vendedor"></div>
+    </section>
+    <section class="caja">
+      <strong>Clientes inactivos (más de 60 días sin comprar)</strong>
+      <div id="inactivos"></div>
+    </section>
+  </div>
+
+  <section class="caja margen-superior-grande">
+    <strong>Cartera por antigüedad</strong>
+    <div class="texto-suave">Saldo de las facturas a crédito según los días de vencidas. Los abonos se aplican primero a la factura más antigua.</div>
+    <div id="cartera"></div>
+  </section>
+
+  <div class="dos-columnas arriba">
+    <section class="caja">
+      <strong>Ventas por medio de pago</strong>
+      <div id="por-metodo"></div>
+    </section>
+    <section class="caja">
+      <strong>Productos más vendidos</strong>
+      <div id="mas-vendidos"></div>
+    </section>
+  </div>
+
+  <div class="dos-columnas arriba">
+    <section class="caja">
+      <strong>Stock bajo (en o por debajo del mínimo)</strong>
+      <div id="stock-bajo"></div>
+    </section>
+    <section class="caja">
+      <strong>Clientes con deuda</strong>
+      <div id="deudas"></div>
+    </section>
+  </div>
+</div>
+
+<template id="indicador">
+  <div class="caja indicador"><span class="texto-suave">{{etiqueta}}</span><strong>{{valor}}</strong></div>
+</template>
+
+<template id="enlace-cliente">
+  <a href="clientes.html?ficha={{id}}">{{nombre}}</a>
+</template>
+
+<template id="total-cartera">
+  <strong>{{total}}</strong>
+</template>

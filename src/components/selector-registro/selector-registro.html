@@ -1,0 +1,36 @@
+<template id="selector-estructura">
+  <div class="selector-registro" data-selector="{{clave}}">
+    <div class="fila-selector encabezado-selector" aria-hidden="true">{{{encabezados}}}</div>
+    <div class="fila-selector fila-elegida" data-elegido aria-live="polite"></div>
+    <div class="fila-selector fila-busqueda-selector">{{{filtros}}}</div>
+    <div class="resultados-selector" role="listbox" aria-label="{{etiqueta}} encontrados" data-resultados hidden></div>
+  </div>
+</template>
+
+<template id="selector-encabezado">
+  <div class="{{clase}}">{{titulo}}</div>
+</template>
+
+<template id="selector-filtro">
+  <input class="campo" data-filtro-selector="{{clave}}" aria-label="Buscar {{etiqueta}} por {{titulo}}" placeholder="{{titulo}}" autocomplete="off">
+</template>
+
+<template id="selector-celda">
+  <div class="{{clase}}" data-titulo="{{titulo}}">{{texto}}</div>
+</template>
+
+<template id="selector-celda-html">
+  <div class="{{clase}}" data-titulo="{{titulo}}">{{{contenido}}}</div>
+</template>
+
+<template id="selector-resultado">
+  <div class="fila-selector resultado-selector" role="option" id="{{idOpcion}}" data-id="{{id}}">{{{celdas}}}</div>
+</template>
+
+<template id="selector-sin-elegir">
+  <div class="texto-suave sin-elegir">{{texto}}</div>
+</template>
+
+<template id="selector-aviso">
+  <div class="aviso-selector texto-suave">{{texto}}</div>
+</template>
