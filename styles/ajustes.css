@@ -34,3 +34,24 @@
 .seccion-ajustes .campo-formulario:first-child label {
   margin-top: 0;
 }
+
+/* Logo de la marca: vista previa y botones para cambiarlo */
+.fila-logo {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--espacio-3);
+}
+
+.vista-logo {
+  min-width: 0;
+  max-width: 100%;
+  margin-right: var(--espacio-4);
+}
+
+/* Catálogos de cada sección, uno debajo de otro */
+.catalogos-ajustes {
+  display: grid;
+  gap: var(--espacio-6);
+  margin-top: var(--espacio-6);
+}

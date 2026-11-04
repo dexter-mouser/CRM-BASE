@@ -1,4 +1,5 @@
-// Reglas de negocio de Clientes. La deuda sale de las ventas a "Crédito" menos las devoluciones y los abonos registrados en Pagos.
+// Reglas de negocio de Clientes. La deuda sale de las ventas con un medio de pago de tipo crédito menos las devoluciones
+// y los abonos registrados en Pagos.
 // Ventas, devoluciones y abonos se relacionan con el cliente por su ID (no por el nombre), así cambiar el nombre no afecta la deuda.
 // Cada cliente tiene un cupo de crédito y un plazo en días; cada factura a crédito vence a ese plazo.
 import { estado, guardarEstado } from '../core/store.js';
@@ -6,9 +7,10 @@ import { siguienteCodigo } from '../core/codigos.js';
 import { exigirPermiso } from '../core/autorizacion.js';
 import { validarCliente } from '../core/validacion.js';
 import { registrarAuditoria } from './auditoria.service.js';
+import { esCredito, exigirElemento, rangosCartera, rangoPorDias } from './catalogos.service.js';
 
 const normalizar = (texto) => String(texto).normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().trim();
-const METODO_CREDITO = 'Crédito';
+const aCredito = (registro) => esCredito(registro.metodoId);
 const DIA_MS = 86_400_000;
 
 export const buscarCliente = (id) => estado.clientes.find((cliente) => cliente.id === id);
@@ -20,10 +22,10 @@ export const ventasDeCliente = (cliente) => estado.ventas.filter((venta) => vent
 
 export function deudaDeCliente(cliente) {
   const credito = ventasDeCliente(cliente)
-    .filter((venta) => venta.metodo === METODO_CREDITO)
+    .filter(aCredito)
     .reduce((acumulado, venta) => acumulado + venta.total, 0);
   const devuelto = estado.devoluciones
-    .filter((devolucion) => devolucion.metodo === METODO_CREDITO && devolucion.clienteId === cliente.id)
+    .filter((devolucion) => aCredito(devolucion) && devolucion.clienteId === cliente.id)
     .reduce((acumulado, devolucion) => acumulado + devolucion.total, 0);
   const abonos = estado.pagos
     .filter((pago) => pago.tipo === 'abono' && pago.terceroId === cliente.id)
@@ -38,28 +40,13 @@ export const cupoDisponible = (cliente) => Math.max(0, (cliente.limiteCredito ??
 
 // --- Cartera -----------------------------------------------------------------------------------------------
 // Fecha de vencimiento de una factura a crédito: su fecha más el plazo con que se vendió
-export const vencimientoDe = (venta) => new Date(new Date(venta.fecha).getTime() + (venta.plazoDias ?? 30) * DIA_MS).toISOString();
-
-export const RANGOS_CARTERA = [
-  { id: 'corriente', etiqueta: 'Por vencer' },
-  { id: 'd30', etiqueta: '1 a 30 días' },
-  { id: 'd60', etiqueta: '31 a 60 días' },
-  { id: 'd90', etiqueta: '61 a 90 días' },
-  { id: 'mas90', etiqueta: 'Más de 90 días' },
-];
-
-const rangoPorDias = (diasVencida) => {
-  if (diasVencida <= 0) return 'corriente';
-  if (diasVencida <= 30) return 'd30';
-  if (diasVencida <= 60) return 'd60';
-  return diasVencida <= 90 ? 'd90' : 'mas90';
-};
+export const vencimientoDe = (venta) => new Date(new Date(venta.fecha).getTime() + venta.plazoDias * DIA_MS).toISOString();
 
 // Facturas a crédito con saldo de un cliente. Las devoluciones bajan su propia factura y los abonos se
 // aplican primero a la factura más antigua (como se acostumbra al cobrar cartera).
 export function facturasPendientes(cliente, ahora = Date.now()) {
   const facturas = ventasDeCliente(cliente)
-    .filter((venta) => venta.metodo === METODO_CREDITO)
+    .filter(aCredito)
     .map((venta) => {
       const devuelto = estado.devoluciones.filter((nota) => nota.ventaId === venta.id).reduce((suma, nota) => suma + nota.total, 0);
       return { venta, saldo: venta.total - devuelto };
@@ -81,7 +68,7 @@ export function facturasPendientes(cliente, ahora = Date.now()) {
 // Cartera por antigüedad: una fila por cliente con deuda y el saldo repartido en cada rango
 export function carteraPorEdades(ahora = Date.now()) {
   return estado.clientes.map((cliente) => {
-    const fila = { id: cliente.id, nombre: cliente.nombre, total: 0, ...Object.fromEntries(RANGOS_CARTERA.map((rango) => [rango.id, 0])) };
+    const fila = { id: cliente.id, nombre: cliente.nombre, total: 0, ...Object.fromEntries(rangosCartera().map((rango) => [rango.id, 0])) };
     facturasPendientes(cliente, ahora).forEach((factura) => {
       fila[factura.rango] += factura.saldo;
       fila.total += factura.saldo;
@@ -94,6 +81,11 @@ export function carteraPorEdades(ahora = Date.now()) {
 // Limpia y valida los datos; ni el nombre ni el documento pueden repetirse entre clientes
 function prepararDatos(datos, idActual) {
   const limpios = validarCliente(datos);
+  // Los datos de catálogo deben estar activos; al editar se acepta el que ya tenía aunque se haya desactivado
+  const actual = buscarCliente(idActual) ?? { etiquetas: [] };
+  exigirElemento('tiposPersona', limpios.tipoPersona, 'Elige el tipo de persona', actual.tipoPersona);
+  if (limpios.tipoDocumento) exigirElemento('tiposDocumento', limpios.tipoDocumento, 'Elige el tipo de documento', actual.tipoDocumento);
+  limpios.etiquetas.forEach((etiqueta) => exigirElemento('etiquetasCliente', etiqueta, 'Una de las etiquetas ya no está disponible', actual.etiquetas.includes(etiqueta) ? etiqueta : ''));
   const otros = estado.clientes.filter((cliente) => cliente.id !== idActual);
   if (otros.some((cliente) => normalizar(cliente.nombre) === normalizar(limpios.nombre))) throw new Error(`Ya existe un cliente llamado ${limpios.nombre}`);
   if (limpios.documento && otros.some((cliente) => cliente.documento === limpios.documento && cliente.tipoDocumento === limpios.tipoDocumento)) {

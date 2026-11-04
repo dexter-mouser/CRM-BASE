@@ -1,6 +1,6 @@
 import { buscar } from '../../core/dom.js';
 import { estado, guardarEstado } from '../../core/store.js';
-import { aPesos, fechaDeHoy } from '../../core/format.js';
+import { aPesos, fechaDeHoy, formatoFecha } from '../../core/format.js';
 import { sesionActual } from '../../core/sesion.js';
 import { cargarHtml, seccion, repetir } from '../../core/template.js';
 import { resumirItems, estaAnulada } from '../../services/ventas.service.js';
@@ -77,7 +77,7 @@ export async function dibujar(contexto) {
   ];
   const tarjetas = estado.orden.map((indice) => ({ indice, ...metricas[indice], porcentaje: porcentajes[indice] }));
 
-  const formatoDia = new Intl.DateTimeFormat('es-CO', { weekday: 'short' });
+  const formatoDia = formatoFecha({ weekday: 'short' });
   const barras = semana.map((dia, posicion) => ({
     altura: mayorDia > 0 ? Math.max(ALTURA_MINIMA_BARRA, Math.round((dia.total / mayorDia) * ALTURA_MAXIMA_BARRA)) : ALTURA_MINIMA_BARRA,
     retraso: posicion * 60,

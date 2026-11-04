@@ -29,19 +29,58 @@
     </div>
   </section>
 
-  <section class="caja seccion-ajustes" aria-labelledby="titulo-ventas">
+  <section class="caja seccion-ajustes" aria-labelledby="titulo-marca">
     <div>
-      <strong id="titulo-ventas">Ventas</strong>
-      <div class="texto-suave">Qué se puede elegir y qué se permite al registrar una venta.</div>
+      <strong id="titulo-marca">Marca y moneda</strong>
+      <div class="texto-suave">Nombre, logo y color que se ven en el encabezado y el ingreso; moneda y formato de cifras y fechas.</div>
     </div>
     <div>
-      <label id="etiqueta-metodos">Medios de pago disponibles</label>
-      <div class="lista-casillas" role="group" aria-labelledby="etiqueta-metodos">{{{metodos}}}</div>
+      <div id="formulario-marca"></div>
+      <div class="fila-logo margen-superior-grande">
+        <span class="vista-logo" id="vista-logo"></span>
+        <label class="boton" for="cargar-logo">Cambiar logo</label>
+        <input id="cargar-logo" type="file" accept="image/png,image/jpeg,image/webp,image/svg+xml" hidden>
+        <button type="button" class="boton" id="quitar-logo">Usar el logo de Genérico</button>
+        <span class="texto-suave">PNG, JPG, WEBP o SVG de hasta 200 KB.</span>
+      </div>
+      <div id="formulario-moneda" class="margen-superior-grande"></div>
+    </div>
+  </section>
+
+  <section class="caja seccion-ajustes" aria-labelledby="titulo-ventas">
+    <div>
+      <strong id="titulo-ventas">Ventas y documentos</strong>
+      <div class="texto-suave">Medios de pago, IVA, listas de precio, prefijos, vigencias y plazos. El primer elemento activo de cada lista es el que aparece elegido al registrar.</div>
+    </div>
+    <div>
       <label class="interruptor">
         <input type="checkbox" role="switch" id="permitir-sin-existencias">
         <span class="interruptor-pista"></span>
         <span>Permitir vender sin existencias (el stock puede quedar en negativo)</span>
       </label>
+      <div id="formulario-ventas" class="margen-superior-grande"></div>
+      <div class="catalogos-ajustes" data-catalogos="ventas"></div>
+    </div>
+  </section>
+
+  <section class="caja seccion-ajustes" aria-labelledby="titulo-crm">
+    <div>
+      <strong id="titulo-crm">CRM</strong>
+      <div class="texto-suave">Embudo, seguimiento, etiquetas y datos de los clientes, cartera y clientes inactivos.</div>
+    </div>
+    <div>
+      <div id="formulario-crm"></div>
+      <div class="catalogos-ajustes" data-catalogos="crm"></div>
+    </div>
+  </section>
+
+  <section class="caja seccion-ajustes" aria-labelledby="titulo-inventario">
+    <div>
+      <strong id="titulo-inventario">Inventario</strong>
+      <div class="texto-suave">Categorías y unidades de medida de los productos.</div>
+    </div>
+    <div>
+      <div class="catalogos-ajustes" data-catalogos="inventario"></div>
     </div>
   </section>
 
@@ -98,15 +137,15 @@
   <section class="caja seccion-ajustes" aria-labelledby="titulo-datos">
     <div>
       <strong id="titulo-datos">Datos de prueba</strong>
-      <div class="texto-suave">Los ajustes, roles y personas no cambian.</div>
+      <div class="texto-suave">Los datos del negocio, la marca, el recibo, los roles y las personas no cambian.</div>
     </div>
     <div>
-      <div class="texto-suave">Vuelve el inventario, las ventas, los clientes, los pagos, la caja y la contabilidad a los datos de ejemplo iniciales.</div>
+      <div class="texto-suave">Vuelve el inventario, las ventas, los clientes, los pagos, la caja, la contabilidad y los catálogos a los datos de ejemplo iniciales.</div>
       <div class="acciones-fila margen-superior-grande">
         <button type="button" class="boton peligro" id="restablecer">Restablecer datos de prueba</button>
       </div>
       <div class="confirmacion" id="confirmar-restablecer" hidden>
-        <span>¿Seguro? Se perderán los datos actuales de inventario, ventas, clientes, pagos, caja y contabilidad.</span>
+        <span>¿Seguro? Se perderán los datos actuales de inventario, ventas, clientes, pagos, caja, contabilidad y catálogos.</span>
         <button type="button" class="boton peligro" id="confirmar-restablecer-si">Sí, restablecer</button>
         <button type="button" class="boton" id="confirmar-restablecer-no">Cancelar</button>
       </div>
@@ -114,6 +153,6 @@
   </section>
 </div>
 
-<template id="casilla-metodo">
-  <label class="casilla"><input type="checkbox" data-metodo="{{metodo}}"> {{metodo}}</label>
+<template id="contenedor-catalogo">
+  <div data-catalogo="{{clave}}"></div>
 </template>

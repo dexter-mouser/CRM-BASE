@@ -9,6 +9,7 @@ import { cargarPlantillasFicha, crearFicha } from '../../components/ficha-regist
 import { refrescarAlertas } from '../../components/header/header.js';
 import { cargarPlantillasFormulario, montarFormulario } from '../../components/formulario/formulario.js';
 import { COLUMNAS_CLIENTE, clientesParaElegir } from '../../components/selector-registro/registros.js';
+import { nombreDe, opcionesDe, primeroActivo } from '../../services/catalogos.service.js';
 
 let documento;
 let plantillasCuadricula;
@@ -70,7 +71,7 @@ export function montar(raiz, contexto) {
         clave: 'clienteId', etiqueta: 'Cliente', tipo: 'registro', obligatorio: true, valor: '', plural: 'clientes', vacio: 'Elige el cliente',
         columnas: COLUMNAS_CLIENTE, registros: clientesConDatos,
       },
-      { clave: 'tipo', etiqueta: 'Tipo', tipo: 'seleccion', valor: 'llamada', opciones: () => Object.entries(servicioActividades.TIPOS_ACTIVIDAD), alCambiar: mostrarCamposTarea },
+      { clave: 'tipo', etiqueta: 'Tipo', tipo: 'seleccion', obligatorio: true, valor: () => primeroActivo('tiposActividad'), opciones: (actividad) => opcionesDe('tiposActividad', actividad?.tipo), alCambiar: mostrarCamposTarea },
       { clave: 'descripcion', etiqueta: 'Descripción', maximo: 300, obligatorio: true, ejemplo: 'Qué se habló o qué hay que hacer' },
       { clave: 'vence', etiqueta: 'Fecha de la tarea', tipo: 'fecha', valor: fechaDeHoy, obligatorio: true },
       {
@@ -156,7 +157,7 @@ export function montar(raiz, contexto) {
       id: actividad.id,
       fecha: aFecha(actividad.fecha),
       cliente: nombreCliente(actividad.clienteId),
-      tipo: servicioActividades.TIPOS_ACTIVIDAD[actividad.tipo],
+      tipo: nombreDe('tiposActividad', actividad.tipo),
       descripcion: actividad.descripcion + (actividad.resultado ? ` · ${actividad.resultado}` : ''),
       responsable: actividad.responsable,
       estado: estadoDe(actividad).texto,
@@ -169,9 +170,9 @@ export function montar(raiz, contexto) {
     const actividad = buscarActividad(id);
     if (!actividad) return null;
     return {
-      etiqueta: `Ficha de ${servicioActividades.TIPOS_ACTIVIDAD[actividad.tipo].toLowerCase()}`,
+      etiqueta: `Ficha de ${nombreDe('tiposActividad', actividad.tipo).toLowerCase()}`,
       titulo: `${actividad.id} · ${nombreCliente(actividad.clienteId)}`,
-      subtitulo: `${servicioActividades.TIPOS_ACTIVIDAD[actividad.tipo]} · ${estadoDe(actividad).texto}`,
+      subtitulo: `${nombreDe('tiposActividad', actividad.tipo)} · ${estadoDe(actividad).texto}`,
       datos: [
         { etiqueta: 'Cliente', valor: repetir(documento, 'enlace-cliente', [{ id: actividad.clienteId, nombre: nombreCliente(actividad.clienteId) }]), html: true },
         { etiqueta: 'Registrada', valor: aFecha(actividad.fecha) },

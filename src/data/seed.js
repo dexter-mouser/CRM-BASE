@@ -19,32 +19,32 @@ const dentroDe = (dias, hora = 9) => {
 };
 
 // --- Productos: costo y tres precios de venta (1 surtido, 2 por mayor, 3 al detal), todos con IVA incluido -----
-const producto = (id, referencia, nombre, categoria, costo, precioSurtido, precioMayor, precioDetal, stockMinimo, iva = 19) =>
-  ({ id, referencia, nombre, categoria, costo, precioSurtido, precioMayor, precioDetal, iva, stockMinimo, existencias: 0, generico: false });
+const producto = (id, referencia, nombre, categoriaId, costo, precioSurtido, precioMayor, precioDetal, stockMinimo, iva = 19) =>
+  ({ id, referencia, nombre, categoriaId, unidadId: 'unidad', costo, precioSurtido, precioMayor, precioDetal, iva, stockMinimo, existencias: 0, generico: false });
 
 const PRODUCTOS = [
-  producto('1', 'VT-IP15', 'Vidrio templado 9D iPhone 15', 'Vidrios templados', 2500, 3500, 5000, 15000, 30),
-  producto('2', 'VT-A54', 'Vidrio templado 9D Samsung A54', 'Vidrios templados', 2300, 3200, 4500, 15000, 30),
-  producto('3', 'VT-CER-67', 'Vidrio cerámico mate universal 6,7"', 'Vidrios templados', 3000, 4000, 6000, 18000, 20),
-  producto('4', 'ES-IP15-SIL', 'Estuche de silicona iPhone 15', 'Estuches', 6000, 8000, 11000, 28000, 15),
-  producto('5', 'ES-A54-ANT', 'Estuche antigolpes Samsung A54', 'Estuches', 5500, 7500, 10000, 25000, 15),
-  producto('6', 'ES-RN13-TR', 'Estuche transparente Redmi Note 13', 'Estuches', 3000, 4200, 6000, 18000, 15),
-  producto('7', 'ES-BIL-65', 'Estuche billetera universal 6,5"', 'Estuches', 7000, 9500, 13000, 32000, 10),
-  producto('8', 'AU-TWS-01', 'Audífonos Bluetooth TWS con estuche de carga', 'Audífonos', 22000, 27000, 35000, 69000, 10),
-  producto('9', 'AU-CAB-35', 'Audífonos de cable 3,5 mm con micrófono', 'Audífonos', 4500, 6000, 8500, 19000, 15),
-  producto('10', 'AU-DIA-BT', 'Diadema Bluetooth plegable', 'Audífonos', 28000, 34000, 45000, 89000, 5),
-  producto('11', 'CG-20W-C', 'Cargador rápido 20 W USB-C', 'Cargadores', 9000, 11500, 15000, 35000, 15),
-  producto('12', 'CG-CAR-2P', 'Cargador de carro doble puerto', 'Cargadores', 7000, 9000, 12000, 28000, 10),
-  producto('13', 'CB-CC-1M', 'Cable USB-C a USB-C 1 m', 'Cables', 3500, 4800, 6500, 15000, 20),
-  producto('14', 'CB-LIG-1M', 'Cable USB a Lightning 1 m', 'Cables', 3800, 5000, 7000, 16000, 20),
-  producto('15', 'PB-10K', 'Batería portátil 10.000 mAh', 'Baterías', 30000, 36000, 46000, 85000, 5),
-  producto('16', 'SO-MAG-CAR', 'Soporte magnético para carro', 'Soportes', 6000, 8000, 11000, 25000, 10),
-  producto('17', 'SO-TRI-LUZ', 'Trípode con aro de luz para selfie', 'Soportes', 18000, 23000, 30000, 59000, 5),
-  producto('18', 'MS-64GB', 'Memoria microSD 64 GB', 'Memorias', 14000, 17000, 22000, 39000, 10),
-  producto('19', 'PA-BT-MIN', 'Parlante Bluetooth mini', 'Parlantes', 20000, 25000, 33000, 65000, 5),
-  producto('20', 'RP-PAN-A54', 'Pantalla de repuesto Samsung A54', 'Repuestos', 120000, 135000, 160000, 230000, 3),
+  producto('1', 'VT-IP15', 'Vidrio templado 9D iPhone 15', 'vidrios-templados', 2500, 3500, 5000, 15000, 30),
+  producto('2', 'VT-A54', 'Vidrio templado 9D Samsung A54', 'vidrios-templados', 2300, 3200, 4500, 15000, 30),
+  producto('3', 'VT-CER-67', 'Vidrio cerámico mate universal 6,7"', 'vidrios-templados', 3000, 4000, 6000, 18000, 20),
+  producto('4', 'ES-IP15-SIL', 'Estuche de silicona iPhone 15', 'estuches', 6000, 8000, 11000, 28000, 15),
+  producto('5', 'ES-A54-ANT', 'Estuche antigolpes Samsung A54', 'estuches', 5500, 7500, 10000, 25000, 15),
+  producto('6', 'ES-RN13-TR', 'Estuche transparente Redmi Note 13', 'estuches', 3000, 4200, 6000, 18000, 15),
+  producto('7', 'ES-BIL-65', 'Estuche billetera universal 6,5"', 'estuches', 7000, 9500, 13000, 32000, 10),
+  producto('8', 'AU-TWS-01', 'Audífonos Bluetooth TWS con estuche de carga', 'audifonos', 22000, 27000, 35000, 69000, 10),
+  producto('9', 'AU-CAB-35', 'Audífonos de cable 3,5 mm con micrófono', 'audifonos', 4500, 6000, 8500, 19000, 15),
+  producto('10', 'AU-DIA-BT', 'Diadema Bluetooth plegable', 'audifonos', 28000, 34000, 45000, 89000, 5),
+  producto('11', 'CG-20W-C', 'Cargador rápido 20 W USB-C', 'cargadores', 9000, 11500, 15000, 35000, 15),
+  producto('12', 'CG-CAR-2P', 'Cargador de carro doble puerto', 'cargadores', 7000, 9000, 12000, 28000, 10),
+  producto('13', 'CB-CC-1M', 'Cable USB-C a USB-C 1 m', 'cables', 3500, 4800, 6500, 15000, 20),
+  producto('14', 'CB-LIG-1M', 'Cable USB a Lightning 1 m', 'cables', 3800, 5000, 7000, 16000, 20),
+  producto('15', 'PB-10K', 'Batería portátil 10.000 mAh', 'baterias', 30000, 36000, 46000, 85000, 5),
+  producto('16', 'SO-MAG-CAR', 'Soporte magnético para carro', 'soportes', 6000, 8000, 11000, 25000, 10),
+  producto('17', 'SO-TRI-LUZ', 'Trípode con aro de luz para selfie', 'soportes', 18000, 23000, 30000, 59000, 5),
+  producto('18', 'MS-64GB', 'Memoria microSD 64 GB', 'memorias', 14000, 17000, 22000, 39000, 10),
+  producto('19', 'PA-BT-MIN', 'Parlante Bluetooth mini', 'parlantes', 20000, 25000, 33000, 65000, 5),
+  producto('20', 'RP-PAN-A54', 'Pantalla de repuesto Samsung A54', 'repuestos', 120000, 135000, 160000, 230000, 3),
   // Producto genérico: reparaciones, servicios y artículos sin código. Su nombre y su valor se escriben en cada venta.
-  { ...producto('99', 'GENERICO', 'Producto o servicio genérico', 'Servicios', 0, 0, 0, 0, 0), generico: true },
+  { ...producto('99', 'GENERICO', 'Producto o servicio genérico', 'servicios', 0, 0, 0, 0, 0), generico: true },
 ];
 
 const buscarProducto = (id) => PRODUCTOS.find((candidato) => candidato.id === id);
@@ -80,46 +80,100 @@ const ADMIN = { usuario: 'Administrador', usuarioCorreo: 'demo@generico.com' };
 const CAMILA = { usuario: 'Camila Duarte', usuarioCorreo: 'camila@generico.com' };
 // Ventas de mostrador sin datos del comprador: quedan a nombre del cliente Consumidor final (C-000)
 const SIN_NOMBRE = { cliente: 'Consumidor final', clienteId: 'C-000' };
+// Medio de pago de cada documento: el código del catálogo y el nombre con que se registró
+const PAGO = {
+  efectivo: { metodoId: 'efectivo', metodo: 'Efectivo' },
+  nequi: { metodoId: 'nequi', metodo: 'Nequi' },
+  tarjeta: { metodoId: 'tarjeta', metodo: 'Tarjeta' },
+  transferencia: { metodoId: 'transferencia', metodo: 'Transferencia' },
+  credito: { metodoId: 'credito', metodo: 'Crédito' },
+};
+
+// Elemento activo de un catálogo de Ajustes; el primero de cada lista es el que se ve precargado
+const elemento = (id, nombre, extras = {}) => ({ id, nombre, activo: true, ...extras });
+const CATALOGOS = {
+  metodosPago: [
+    elemento('efectivo', 'Efectivo', { tipo: 'efectivo' }), elemento('nequi', 'Nequi', { tipo: 'otro' }), elemento('tarjeta', 'Tarjeta', { tipo: 'otro' }),
+    elemento('transferencia', 'Transferencia', { tipo: 'otro' }), elemento('credito', 'Crédito', { tipo: 'credito' }),
+  ],
+  tarifasIva: [elemento('19', 'General 19 %'), elemento('5', 'Reducida 5 %'), elemento('0', 'Exento 0 %')],
+  listasPrecio: [elemento('surtido', 'Surtido'), elemento('mayor', 'Por mayor'), elemento('detal', 'Al detal')],
+  etapasEmbudo: [elemento('enviada', 'Enviada'), elemento('negociacion', 'En negociación'), elemento('ganada', 'Ganada'), elemento('perdida', 'Perdida')],
+  motivosPerdida: [
+    elemento('precio', 'Precio', { pideDetalle: false }), elemento('sin-existencias', 'Sin existencias', { pideDetalle: false }),
+    elemento('competencia', 'Compró a la competencia', { pideDetalle: false }), elemento('sin-respuesta', 'Sin respuesta del cliente', { pideDetalle: false }),
+    elemento('no-lo-necesita', 'Ya no lo necesita', { pideDetalle: false }), elemento('otro', 'Otro', { pideDetalle: true }),
+  ],
+  tiposActividad: [
+    elemento('llamada', 'Llamada'), elemento('whatsapp', 'WhatsApp'), elemento('visita', 'Visita'), elemento('correo', 'Correo'),
+    elemento('nota', 'Nota'), elemento('tarea', 'Tarea'),
+  ],
+  etiquetasCliente: [
+    elemento('frecuente', 'Frecuente'), elemento('mayorista', 'Mayorista'), elemento('credito', 'Crédito'), elemento('reparacion', 'Reparación'),
+    elemento('interno', 'Interno'),
+  ],
+  tiposDocumento: [
+    elemento('CC', 'Cédula de ciudadanía'), elemento('NIT', 'NIT'), elemento('CE', 'Cédula de extranjería'), elemento('PAS', 'Pasaporte'),
+    elemento('TI', 'Tarjeta de identidad'),
+  ],
+  tiposPersona: [elemento('natural', 'Persona natural'), elemento('juridica', 'Persona jurídica')],
+  categorias: [
+    elemento('vidrios-templados', 'Vidrios templados'), elemento('estuches', 'Estuches'), elemento('audifonos', 'Audífonos'),
+    elemento('cargadores', 'Cargadores'), elemento('cables', 'Cables'), elemento('baterias', 'Baterías'), elemento('soportes', 'Soportes'),
+    elemento('memorias', 'Memorias'), elemento('parlantes', 'Parlantes'), elemento('repuestos', 'Repuestos'), elemento('servicios', 'Servicios'),
+  ],
+  unidades: [elemento('unidad', 'Unidad'), elemento('par', 'Par'), elemento('caja', 'Caja'), elemento('metro', 'Metro')],
+};
+
+const PARAMETROS = {
+  vigenciaCotizacion: 15,
+  plazoCredito: 30,
+  diasInactividad: 60,
+  cortesCartera: [30, 60, 90],
+  moneda: 'COP',
+  formato: 'es-CO',
+  prefijos: { factura: 'F', remision: 'R', cotizacion: 'C', devolucion: 'ND', anulacion: 'NA', orden: 'OC', traslado: 'TR' },
+};
 
 const VENTAS = [
   // Bodega principal: surtido a los almacenes (precio 1) y ventas por mayor (precio 2)
-  venta({ id: 'F1', fecha: hace(7, 9, 1), ...ADMIN, ...EN.bodega, cliente: 'Almacén Principal', clienteId: 'C-007', metodo: 'Transferencia' }, 'surtido',
+  venta({ id: 'F1', fecha: hace(7, 9, 1), ...ADMIN, ...EN.bodega, cliente: 'Almacén Principal', clienteId: 'C-007', ...PAGO.transferencia }, 'surtido',
     [['1', 30], ['2', 30], ['4', 15], ['5', 15], ['11', 10], ['13', 20]]),
-  venta({ id: 'F2', fecha: hace(7, 11, 2), ...ADMIN, ...EN.bodega, cliente: 'TecnoCel Envigado S.A.S.', clienteId: 'C-005', metodo: 'Crédito', plazoDias: 30 }, 'mayor',
+  venta({ id: 'F2', fecha: hace(7, 11, 2), ...ADMIN, ...EN.bodega, cliente: 'TecnoCel Envigado S.A.S.', clienteId: 'C-005', ...PAGO.credito, plazoDias: 30 }, 'mayor',
     [['1', 40], ['2', 40], ['8', 6], ['11', 12], ['14', 20]]),
-  venta({ id: 'F3', fecha: hace(6, 10, 3), ...ADMIN, ...EN.bodega, cliente: 'Almacén Unicentro', clienteId: 'C-008', metodo: 'Transferencia' }, 'surtido',
+  venta({ id: 'F3', fecha: hace(6, 10, 3), ...ADMIN, ...EN.bodega, cliente: 'Almacén Unicentro', clienteId: 'C-008', ...PAGO.transferencia }, 'surtido',
     [['3', 15], ['6', 15], ['9', 10], ['12', 6], ['16', 6]]),
-  venta({ id: 'F4', fecha: hace(5, 15, 4), ...ADMIN, ...EN.bodega, cliente: 'Comunicaciones El Poblado', clienteId: 'C-006', metodo: 'Transferencia' }, 'mayor',
+  venta({ id: 'F4', fecha: hace(5, 15, 4), ...ADMIN, ...EN.bodega, cliente: 'Comunicaciones El Poblado', clienteId: 'C-006', ...PAGO.transferencia }, 'mayor',
     [['4', 12], ['5', 12], ['7', 6], ['15', 4], ['18', 10]]),
-  venta({ id: 'F5', fecha: hace(4, 9, 5), ...ADMIN, ...EN.bodega, cliente: 'Almacén Florida', clienteId: 'C-009', metodo: 'Transferencia' }, 'surtido',
+  venta({ id: 'F5', fecha: hace(4, 9, 5), ...ADMIN, ...EN.bodega, cliente: 'Almacén Florida', clienteId: 'C-009', ...PAGO.transferencia }, 'surtido',
     [['1', 20], ['2', 20], ['9', 8], ['13', 10], ['19', 3]]),
-  venta({ id: 'F6', fecha: hace(2, 11, 6), ...ADMIN, ...EN.bodega, cliente: 'TecnoCel Envigado S.A.S.', clienteId: 'C-005', metodo: 'Crédito', plazoDias: 30 }, 'mayor',
+  venta({ id: 'F6', fecha: hace(2, 11, 6), ...ADMIN, ...EN.bodega, cliente: 'TecnoCel Envigado S.A.S.', clienteId: 'C-005', ...PAGO.credito, plazoDias: 30 }, 'mayor',
     [['10', 4], ['17', 5], ['19', 6], ['20', 2]]),
   // Almacén principal: ventas al detal (precio 3) y reparaciones con el producto genérico
-  venta({ id: 'F7', fecha: hace(6, 12, 7), ...CAMILA, ...EN.principal, ...SIN_NOMBRE, metodo: 'Efectivo', recibido: 50000, devuelta: 7000 }, 'detal',
+  venta({ id: 'F7', fecha: hace(6, 12, 7), ...CAMILA, ...EN.principal, ...SIN_NOMBRE, ...PAGO.efectivo, recibido: 50000, devuelta: 7000 }, 'detal',
     [['1', 1], ['4', 1]]),
-  venta({ id: 'F8', fecha: hace(5, 17, 8), ...CAMILA, ...EN.principal, cliente: 'Laura Martínez', clienteId: 'C-001', metodo: 'Nequi' }, 'detal',
+  venta({ id: 'F8', fecha: hace(5, 17, 8), ...CAMILA, ...EN.principal, cliente: 'Laura Martínez', clienteId: 'C-001', ...PAGO.nequi }, 'detal',
     [['8', 1], ['13', 1]]),
-  venta({ id: 'F9', fecha: hace(4, 16, 9), ...CAMILA, ...EN.principal, cliente: 'Carlos Rodríguez', clienteId: 'C-002', metodo: 'Tarjeta' }, 'detal',
+  venta({ id: 'F9', fecha: hace(4, 16, 9), ...CAMILA, ...EN.principal, cliente: 'Carlos Rodríguez', clienteId: 'C-002', ...PAGO.tarjeta }, 'detal',
     [['99', 1, 'Cambio de pantalla Samsung A54 (mano de obra)', 70000], ['20', 1], ['2', 1]]),
-  venta({ id: 'F10', fecha: hace(3, 13, 10), ...CAMILA, ...EN.principal, cliente: 'Valentina Gómez', clienteId: 'C-003', metodo: 'Crédito', plazoDias: 30 }, 'detal',
+  venta({ id: 'F10', fecha: hace(3, 13, 10), ...CAMILA, ...EN.principal, cliente: 'Valentina Gómez', clienteId: 'C-003', ...PAGO.credito, plazoDias: 30 }, 'detal',
     [['15', 1], ['11', 1], ['5', 1]]),
-  venta({ id: 'F11', fecha: hace(1, 10, 11), ...CAMILA, ...EN.principal, ...SIN_NOMBRE, metodo: 'Efectivo', recibido: 40000, devuelta: 0 }, 'detal',
+  venta({ id: 'F11', fecha: hace(1, 10, 11), ...CAMILA, ...EN.principal, ...SIN_NOMBRE, ...PAGO.efectivo, recibido: 40000, devuelta: 0 }, 'detal',
     [['99', 1, 'Cambio de pin de carga', 25000], ['2', 1]]),
-  venta({ id: 'F12', fecha: hace(0, 9, 12), ...CAMILA, ...EN.principal, cliente: 'Sofía Restrepo', clienteId: 'C-010', metodo: 'Nequi' }, 'detal',
+  venta({ id: 'F12', fecha: hace(0, 9, 12), ...CAMILA, ...EN.principal, cliente: 'Sofía Restrepo', clienteId: 'C-010', ...PAGO.nequi }, 'detal',
     [['4', 1], ['1', 1], ['14', 1]]),
   // Almacén Unicentro y Almacén Florida
-  venta({ id: 'F13', fecha: hace(5, 11, 13), ...ADMIN, ...EN.unicentro, ...SIN_NOMBRE, metodo: 'Efectivo', recibido: 20000, devuelta: 2000 }, 'detal',
+  venta({ id: 'F13', fecha: hace(5, 11, 13), ...ADMIN, ...EN.unicentro, ...SIN_NOMBRE, ...PAGO.efectivo, recibido: 20000, devuelta: 2000 }, 'detal',
     [['3', 1]]),
-  venta({ id: 'F14', fecha: hace(3, 18, 14), ...ADMIN, ...EN.unicentro, cliente: 'Andrés Herrera', clienteId: 'C-004', metodo: 'Tarjeta' }, 'detal',
+  venta({ id: 'F14', fecha: hace(3, 18, 14), ...ADMIN, ...EN.unicentro, cliente: 'Andrés Herrera', clienteId: 'C-004', ...PAGO.tarjeta }, 'detal',
     [['9', 1], ['16', 1], ['6', 1]]),
-  venta({ id: 'F15', fecha: hace(1, 15, 15), ...ADMIN, ...EN.unicentro, ...SIN_NOMBRE, metodo: 'Nequi' }, 'detal',
+  venta({ id: 'F15', fecha: hace(1, 15, 15), ...ADMIN, ...EN.unicentro, ...SIN_NOMBRE, ...PAGO.nequi }, 'detal',
     [['99', 1, 'Instalación de vidrio templado', 5000], ['3', 1]]),
-  venta({ id: 'F16', fecha: hace(4, 12, 16), ...ADMIN, ...EN.florida, ...SIN_NOMBRE, metodo: 'Efectivo', recibido: 50000, devuelta: 5000 }, 'detal',
+  venta({ id: 'F16', fecha: hace(4, 12, 16), ...ADMIN, ...EN.florida, ...SIN_NOMBRE, ...PAGO.efectivo, recibido: 50000, devuelta: 5000 }, 'detal',
     [['1', 2], ['13', 1]]),
-  venta({ id: 'F17', fecha: hace(2, 17, 17), ...ADMIN, ...EN.florida, cliente: 'Laura Martínez', clienteId: 'C-001', metodo: 'Transferencia' }, 'detal',
+  venta({ id: 'F17', fecha: hace(2, 17, 17), ...ADMIN, ...EN.florida, cliente: 'Laura Martínez', clienteId: 'C-001', ...PAGO.transferencia }, 'detal',
     [['19', 1]]),
-  venta({ id: 'F18', fecha: hace(0, 10, 18), ...ADMIN, ...EN.florida, ...SIN_NOMBRE, metodo: 'Efectivo', recibido: 20000, devuelta: 1000 }, 'detal',
+  venta({ id: 'F18', fecha: hace(0, 10, 18), ...ADMIN, ...EN.florida, ...SIN_NOMBRE, ...PAGO.efectivo, recibido: 20000, devuelta: 1000 }, 'detal',
     [['9', 1]]),
 ];
 
@@ -178,7 +232,7 @@ const STOCK_FINAL = {
 };
 
 const semilla = {
-  version: 9,
+  version: 10,
   productos: PRODUCTOS,
   ventas: VENTAS,
   facturas: FACTURAS,
@@ -210,26 +264,30 @@ const semilla = {
   auditoria: [],
   ajustes: {
     tienda: { nombre: 'Zona Móvil Accesorios', nit: '901.456.789-1', telefono: '604 444 0100', ciudad: 'Medellín', direccion: 'Cra 52 # 14-30, Guayabal' },
-    ventas: { metodosPago: ['Efectivo', 'Nequi', 'Tarjeta', 'Transferencia', 'Crédito'], permitirSinExistencias: false },
+    // Marca que se ve en el encabezado y el ingreso: nombre comercial, logo (imagen en data URL, vacío = el de Genérico) y color
+    marca: { nombreComercial: 'Genérico', logo: '', acento: '#4553c9' },
+    ventas: { permitirSinExistencias: false },
     recibo: { pie: 'Gracias por tu compra · Garantía de 30 días presentando este comprobante', mostrarDatosTienda: true },
+    parametros: PARAMETROS,
+    catalogos: CATALOGOS,
   },
   clientes: [
     // Cliente fijo de las ventas de mostrador: viene elegido en Registrar venta, no tiene crédito ni se elimina
     { id: 'C-000', tipoDocumento: 'CC', documento: '222222222222', tipoPersona: 'natural', nombre: 'Consumidor final', telefono: '', correo: '', direccion: '', etiquetas: [], autorizaDatos: false, limiteCredito: 0, plazoDias: 30, listaPrecio: '', generico: true, creadoEn: hace(365, 9) },
-    { id: 'C-001', tipoDocumento: 'CC', documento: '1036654321', tipoPersona: 'natural', nombre: 'Laura Martínez', telefono: '310 555 0142', correo: 'laura.martinez@correo.com', direccion: 'Cra 70 # 44-12', etiquetas: ['Frecuente'], autorizaDatos: true, limiteCredito: 0, plazoDias: 30, listaPrecio: '', creadoEn: hace(60, 9) },
-    { id: 'C-002', tipoDocumento: 'CC', documento: '71234567', tipoPersona: 'natural', nombre: 'Carlos Rodríguez', telefono: '311 555 0187', correo: 'carlos.rodriguez@correo.com', direccion: 'Calle 33 # 80-25', etiquetas: ['Reparación'], autorizaDatos: true, limiteCredito: 0, plazoDias: 30, listaPrecio: '', creadoEn: hace(40, 9) },
-    { id: 'C-003', tipoDocumento: 'CC', documento: '1017223344', tipoPersona: 'natural', nombre: 'Valentina Gómez', telefono: '312 555 0199', correo: 'valentina.gomez@correo.com', direccion: 'Cra 43A # 5-30', etiquetas: ['Frecuente', 'Crédito'], autorizaDatos: true, limiteCredito: 300000, plazoDias: 30, listaPrecio: '', creadoEn: hace(50, 9) },
+    { id: 'C-001', tipoDocumento: 'CC', documento: '1036654321', tipoPersona: 'natural', nombre: 'Laura Martínez', telefono: '310 555 0142', correo: 'laura.martinez@correo.com', direccion: 'Cra 70 # 44-12', etiquetas: ['frecuente'], autorizaDatos: true, limiteCredito: 0, plazoDias: 30, listaPrecio: '', creadoEn: hace(60, 9) },
+    { id: 'C-002', tipoDocumento: 'CC', documento: '71234567', tipoPersona: 'natural', nombre: 'Carlos Rodríguez', telefono: '311 555 0187', correo: 'carlos.rodriguez@correo.com', direccion: 'Calle 33 # 80-25', etiquetas: ['reparacion'], autorizaDatos: true, limiteCredito: 0, plazoDias: 30, listaPrecio: '', creadoEn: hace(40, 9) },
+    { id: 'C-003', tipoDocumento: 'CC', documento: '1017223344', tipoPersona: 'natural', nombre: 'Valentina Gómez', telefono: '312 555 0199', correo: 'valentina.gomez@correo.com', direccion: 'Cra 43A # 5-30', etiquetas: ['frecuente', 'credito'], autorizaDatos: true, limiteCredito: 300000, plazoDias: 30, listaPrecio: '', creadoEn: hace(50, 9) },
     { id: 'C-004', tipoDocumento: 'CC', documento: '98765432', tipoPersona: 'natural', nombre: 'Andrés Herrera', telefono: '313 555 0123', correo: '', direccion: 'Calle 10 # 38-45', etiquetas: [], autorizaDatos: true, limiteCredito: 0, plazoDias: 30, listaPrecio: '', creadoEn: hace(30, 9) },
-    { id: 'C-005', tipoDocumento: 'NIT', documento: '901555123-4', tipoPersona: 'juridica', nombre: 'TecnoCel Envigado S.A.S.', telefono: '604 555 0178', correo: 'compras@tecnocel.co', direccion: 'Calle 38 Sur # 43-20, Envigado', etiquetas: ['Mayorista', 'Crédito'], autorizaDatos: true, limiteCredito: 5000000, plazoDias: 30, listaPrecio: 'mayor', creadoEn: hace(90, 9) },
-    { id: 'C-006', tipoDocumento: 'NIT', documento: '900777888-1', tipoPersona: 'juridica', nombre: 'Comunicaciones El Poblado', telefono: '604 555 0190', correo: 'gerencia@compoblado.co', direccion: 'Cra 43A # 1 Sur-100, local 140', etiquetas: ['Mayorista'], autorizaDatos: true, limiteCredito: 2000000, plazoDias: 30, listaPrecio: 'mayor', creadoEn: hace(80, 9) },
-    { id: 'C-007', tipoDocumento: '', documento: '', tipoPersona: 'juridica', nombre: 'Almacén Principal', telefono: '604 444 0200', correo: '', direccion: 'Calle 52 # 47-28, local 112', etiquetas: ['Interno'], autorizaDatos: true, limiteCredito: 0, plazoDias: 30, listaPrecio: 'surtido', creadoEn: hace(120, 9) },
-    { id: 'C-008', tipoDocumento: '', documento: '', tipoPersona: 'juridica', nombre: 'Almacén Unicentro', telefono: '604 444 0300', correo: '', direccion: 'Cra 66B # 34A-76, local 215', etiquetas: ['Interno'], autorizaDatos: true, limiteCredito: 0, plazoDias: 30, listaPrecio: 'surtido', creadoEn: hace(120, 9) },
-    { id: 'C-009', tipoDocumento: '', documento: '', tipoPersona: 'juridica', nombre: 'Almacén Florida', telefono: '604 444 0400', correo: '', direccion: 'Calle 71 # 65-150, local 210', etiquetas: ['Interno'], autorizaDatos: true, limiteCredito: 0, plazoDias: 30, listaPrecio: 'surtido', creadoEn: hace(120, 9) },
+    { id: 'C-005', tipoDocumento: 'NIT', documento: '901555123-4', tipoPersona: 'juridica', nombre: 'TecnoCel Envigado S.A.S.', telefono: '604 555 0178', correo: 'compras@tecnocel.co', direccion: 'Calle 38 Sur # 43-20, Envigado', etiquetas: ['mayorista', 'credito'], autorizaDatos: true, limiteCredito: 5000000, plazoDias: 30, listaPrecio: 'mayor', creadoEn: hace(90, 9) },
+    { id: 'C-006', tipoDocumento: 'NIT', documento: '900777888-1', tipoPersona: 'juridica', nombre: 'Comunicaciones El Poblado', telefono: '604 555 0190', correo: 'gerencia@compoblado.co', direccion: 'Cra 43A # 1 Sur-100, local 140', etiquetas: ['mayorista'], autorizaDatos: true, limiteCredito: 2000000, plazoDias: 30, listaPrecio: 'mayor', creadoEn: hace(80, 9) },
+    { id: 'C-007', tipoDocumento: '', documento: '', tipoPersona: 'juridica', nombre: 'Almacén Principal', telefono: '604 444 0200', correo: '', direccion: 'Calle 52 # 47-28, local 112', etiquetas: ['interno'], autorizaDatos: true, limiteCredito: 0, plazoDias: 30, listaPrecio: 'surtido', creadoEn: hace(120, 9) },
+    { id: 'C-008', tipoDocumento: '', documento: '', tipoPersona: 'juridica', nombre: 'Almacén Unicentro', telefono: '604 444 0300', correo: '', direccion: 'Cra 66B # 34A-76, local 215', etiquetas: ['interno'], autorizaDatos: true, limiteCredito: 0, plazoDias: 30, listaPrecio: 'surtido', creadoEn: hace(120, 9) },
+    { id: 'C-009', tipoDocumento: '', documento: '', tipoPersona: 'juridica', nombre: 'Almacén Florida', telefono: '604 444 0400', correo: '', direccion: 'Calle 71 # 65-150, local 210', etiquetas: ['interno'], autorizaDatos: true, limiteCredito: 0, plazoDias: 30, listaPrecio: 'surtido', creadoEn: hace(120, 9) },
     { id: 'C-010', tipoDocumento: 'CC', documento: '1037556677', tipoPersona: 'natural', nombre: 'Sofía Restrepo', telefono: '316 555 0134', correo: 'sofia.restrepo@correo.com', direccion: 'Calle 7 # 43-90', etiquetas: [], autorizaDatos: true, limiteCredito: 0, plazoDias: 30, listaPrecio: '', creadoEn: hace(10, 9) },
   ],
   pagos: [
-    { id: 'PG-0001', fecha: hace(5, 11, 1), tipo: 'proveedor', terceroId: 'PV-001', tercero: 'Importadora Celutec S.A.S.', concepto: 'Abono a factura IC-5520', metodo: 'Transferencia', valor: 1500000, tiendaId: 'T-01', usuario: 'Administrador' },
-    { id: 'PG-0002', fecha: hace(2, 12, 2), tipo: 'abono', terceroId: 'C-005', tercero: 'TecnoCel Envigado S.A.S.', concepto: 'Abono a deuda', metodo: 'Transferencia', valor: 500000, tiendaId: 'T-01', usuario: 'Administrador' },
+    { id: 'PG-0001', fecha: hace(5, 11, 1), tipo: 'proveedor', terceroId: 'PV-001', tercero: 'Importadora Celutec S.A.S.', concepto: 'Abono a factura IC-5520', ...PAGO.transferencia, valor: 1500000, tiendaId: 'T-01', usuario: 'Administrador' },
+    { id: 'PG-0002', fecha: hace(2, 12, 2), tipo: 'abono', terceroId: 'C-005', tercero: 'TecnoCel Envigado S.A.S.', concepto: 'Abono a deuda', ...PAGO.transferencia, valor: 500000, tiendaId: 'T-01', usuario: 'Administrador' },
   ],
   cajas: [],
   movimientosCaja: [],

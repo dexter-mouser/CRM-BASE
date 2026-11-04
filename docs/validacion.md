@@ -26,9 +26,9 @@ Se valida **toda** la tabla antes de cambiar nada. Si una fila falla, no se impo
 
 | Campo | Regla |
 |---|---|
-| Categoría | Texto opcional, hasta 60 caracteres |
+| Categoría y unidad | Código obligatorio de un elemento activo de su catálogo en Ajustes (al editar se acepta el que ya tenía) |
 | Precio de venta | Entero ≥ 0, incluye el IVA |
-| IVA | 0, 5 o 19 (`TARIFAS_IVA`) |
+| IVA | Una tarifa activa del catálogo de Ajustes (19, 5 o 0 en la semilla) |
 | Stock mínimo | Entero ≥ 0 |
 
 El IVA incluido de un valor es `valor − valor / (1 + tarifa / 100)`, redondeado al peso.
@@ -37,12 +37,12 @@ El IVA incluido de un valor es `valor − valor / (1 + tarifa / 100)`, redondead
 
 | Campo | Regla |
 |---|---|
-| Tipo de documento | `CC`, `NIT`, `CE`, `PAS` o `TI`; obligatorio si hay número |
+| Tipo de documento | Sigla activa del catálogo (CC, NIT, CE, PAS, TI en la semilla); obligatorio si hay número y el número es obligatorio si hay tipo |
 | Documento | Opcional, 3 a 20 caracteres (números, letras, punto y guion); no se repite con el mismo tipo |
-| Tipo de persona | `natural` o `juridica` |
-| Etiquetas | Separadas por coma, sin repetir, hasta 10 de 30 caracteres |
+| Tipo de persona | Obligatorio; elemento activo del catálogo |
+| Etiquetas | Casillas con las etiquetas activas del catálogo, sin repetir |
 | Cupo de crédito | Entero ≥ 0; 0 significa que no se le vende a Crédito |
-| Plazo | Entero de 1 a 365 días |
+| Plazo | Entero de 1 a 365 días, obligatorio (viene escrito el plazo de Ajustes) |
 | Autorización de datos | Sí o no (Ley 1581 de 2012) |
 
 Una venta a Crédito exige cliente registrado con cupo y no puede superar `cupo − deuda`. Vence en `fecha + plazo`.
@@ -64,4 +64,21 @@ Una venta a Crédito exige cliente registrado con cupo y no puede superar `cupo 
 
 ## Copia de seguridad (JSON)
 
-Formato `generico-copia-1` con `version`, `fecha`, `huella` (SHA-256 de `datos`) y `datos`. Antes de restaurar se comprueba: formato, versión, huella, que cada sección exista (las copias anteriores a las remisiones y cotizaciones se toman con `documentos` vacío) y que cada registro cumpla `ESQUEMA_DATOS`, que haya ajustes, métodos de pago, rol Propietario y al menos un propietario activo. Solo se copian las claves conocidas.
+Formato `generico-copia-1` con `version`, `fecha`, `huella` (SHA-256 de `datos`) y `datos`. Antes de restaurar se comprueba: formato, versión, huella, que cada sección exista y que cada registro cumpla `ESQUEMA_DATOS`, que haya ajustes (negocio, marca, ventas, recibo, parámetros y catálogos, cada elemento con código y nombre), rol Propietario y al menos un propietario activo. Solo se copian las claves conocidas.
+
+## Catálogos y parámetros (Ajustes)
+
+| Dato | Regla |
+|---|---|
+| Nombre de un elemento | Obligatorio, hasta 40 caracteres, sin repetirse en su catálogo (sin tildes ni mayúsculas) |
+| Código | Sale del nombre; en tarifas de IVA es la tarifa (entero de 0 a 100) y en tipos de documento la sigla (1 a 5 letras) |
+| Elemento en uso | No se elimina: se desactiva. El tipo de un medio de pago con registros no cambia |
+| Elementos fijos | Etapas Enviada, Ganada y Perdida, actividad Tarea y las tres listas de precio: solo cambian de nombre |
+| Mínimo | Cada catálogo (menos etiquetas) conserva un elemento activo; medios de pago, uno activo que no sea crédito |
+| Prefijos | 1 a 4 letras sin tildes, distintos entre sí; solo aplican a los documentos nuevos |
+| Vigencia de cotización | Entero de 1 a 365 días |
+| Plazo de pago por defecto | Entero de 0 a 365 días |
+| Días sin comprar (inactivo) | Entero de 1 a 3650 |
+| Cortes de cartera | De 1 a 6 enteros en días, de menor a mayor y sin repetir |
+| Moneda y formato | Código de 3 letras (COP, USD) y un formato regional válido (es-CO) |
+| Marca | Nombre comercial hasta 40 caracteres, color `#rrggbb` y logo PNG, JPG, WEBP o SVG de hasta 200 KB (vacío = el de Genérico) |

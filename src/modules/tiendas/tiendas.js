@@ -98,7 +98,7 @@ export function montar(raiz, contexto) {
           ...estado.bodegas.filter((bodega) => bodega.activa).map((bodega) => [bodega.id, `${bodega.nombre} · ${bodega.id}`]),
         ],
       },
-      { clave: 'listaPrecio', etiqueta: 'Lista de precio por defecto', tipo: 'seleccion', valor: 'detal', opciones: () => LISTAS_PRECIO.map((lista) => [lista.id, lista.etiqueta]) },
+      { clave: 'listaPrecio', etiqueta: 'Lista de precio por defecto', tipo: 'seleccion', valor: 'detal', opciones: () => LISTAS_PRECIO.map((lista) => [lista.id, lista.numero]) },
       { clave: 'direccion', etiqueta: 'Dirección', maximo: 300, ancho: 'completo' },
     ],
     alGuardar: (datos, tienda) => {

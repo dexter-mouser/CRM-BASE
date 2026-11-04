@@ -43,7 +43,7 @@ export function exigirTiendaActiva(accion = 'continuar') {
 // Un registro con tiendaId pertenece a la vista actual si coincide con la sucursal activa (o si se ven todas)
 export function enTiendaActiva(registro) {
   const activa = tiendaActivaId();
-  return activa === TODAS_LAS_TIENDAS || (registro.tiendaId ?? estado.tiendas[0]?.id) === activa;
+  return activa === TODAS_LAS_TIENDAS || registro.tiendaId === activa;
 }
 
 export const nombreDeTienda = (id) => estado.tiendas.find((tienda) => tienda.id === id)?.nombre ?? '—';

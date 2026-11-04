@@ -67,18 +67,18 @@ export function exigirFecha(valor, etiqueta = 'la fecha') {
 
 export const exigirMotivo = (valor) => exigirTexto(valor, 'el motivo', { maximo: LIMITES.motivo, minimo: LIMITES.minimoMotivo });
 
-// Tarifas de IVA vigentes en Colombia (los precios de venta incluyen el IVA)
-export const TARIFAS_IVA = [0, 5, 19];
-
 // Datos de un producto del inventario. El ID es solo números y opcional: se genera uno si está vacío.
 // Los ceros a la izquierda se quitan para que "007" y "7" sean el mismo producto.
-// Tiene tres precios de venta (1 surtido, 2 por mayor, 3 al detal). Un producto genérico no maneja stock:
-// su nombre y su valor se escriben en cada venta.
+// Tiene tres precios de venta (listas 1, 2 y 3). Un producto genérico no maneja stock: su nombre y su valor se escriben
+// en cada venta. La categoría, la unidad y la tarifa de IVA son códigos de los catálogos de Ajustes: el servicio de
+// inventario revisa que existan.
 export function validarProducto({
-  id = '', referencia = '', nombre, categoria = '', costo, precioSurtido = 0, precioMayor = 0, precioDetal = 0,
-  iva = 19, stockMinimo = 0, existencias, generico = false,
+  id = '', referencia = '', nombre, categoriaId = '', unidadId = '', costo, precioSurtido = 0, precioMayor = 0, precioDetal = 0,
+  iva, stockMinimo = 0, existencias, generico = false,
 }) {
-  if (!TARIFAS_IVA.includes(iva)) throw new Error(`El IVA debe ser ${TARIFAS_IVA.join(', ')} %`);
+  if (!categoriaId) throw new Error('Elige la categoría');
+  if (!unidadId) throw new Error('Elige la unidad de medida');
+  exigirEntero(iva, 'la tarifa de IVA', { maximo: 100 });
   const esGenerico = generico === true;
   const idLimpio = limpiarTexto(id);
   if (idLimpio && !PATRONES.codigoProducto.test(idLimpio)) throw new Error(`El ID "${idLimpio}" solo puede tener números`);
@@ -86,11 +86,12 @@ export function validarProducto({
     id: idLimpio ? String(Number(idLimpio)) : '',
     referencia: exigirTexto(referencia, 'la referencia', { obligatorio: false, maximo: 40 }),
     nombre: exigirTexto(nombre, 'el nombre del producto'),
-    categoria: exigirTexto(categoria, 'la categoría', { obligatorio: false, maximo: 60 }),
-    costo: exigirEntero(costo ?? 0, 'el costo'),
-    precioSurtido: exigirEntero(precioSurtido, 'el precio 1 (surtido)'),
-    precioMayor: exigirEntero(precioMayor, 'el precio 2 (por mayor)'),
-    precioDetal: exigirEntero(precioDetal, 'el precio 3 (al detal)'),
+    categoriaId,
+    unidadId,
+    costo: exigirEntero(costo, 'el costo'),
+    precioSurtido: exigirEntero(precioSurtido, 'el precio 1'),
+    precioMayor: exigirEntero(precioMayor, 'el precio 2'),
+    precioDetal: exigirEntero(precioDetal, 'el precio 3'),
     iva,
     stockMinimo: esGenerico ? 0 : exigirEntero(stockMinimo, 'el stock mínimo'),
     existencias: esGenerico ? 0 : exigirEntero(existencias, 'el stock', { minimo: -LIMITES.valorMaximo }),
@@ -101,28 +102,29 @@ export function validarProducto({
 // --- Clientes ----------------------------------------------------------------------------------------------
 // Listas de precio que puede tener un cliente o una tienda (los detalles están en inventario.service.js)
 export const LISTAS_PRECIO_VALIDAS = ['surtido', 'mayor', 'detal'];
-export const TIPOS_DOCUMENTO = { CC: 'Cédula de ciudadanía', NIT: 'NIT', CE: 'Cédula de extranjería', PAS: 'Pasaporte', TI: 'Tarjeta de identidad' };
-export const TIPOS_PERSONA = { natural: 'Persona natural', juridica: 'Persona jurídica' };
 
+// Tipo de documento, tipo de persona y etiquetas son códigos de los catálogos de Ajustes: el servicio de clientes
+// revisa que existan. Aquí solo se valida su forma.
 export function validarCliente(datos) {
-  const tipoDocumento = TIPOS_DOCUMENTO[datos.tipoDocumento] ? datos.tipoDocumento : '';
+  const tipoDocumento = limpiarTexto(datos.tipoDocumento);
   const documento = limpiarTexto(datos.documento);
   if (documento && !/^[0-9A-Za-z.-]{3,20}$/.test(documento)) throw new Error('El documento solo puede tener números, letras, punto y guion');
   if (documento && !tipoDocumento) throw new Error('Elige el tipo de documento');
-  const etiquetas = [...new Set(String(datos.etiquetas ?? '').split(',').map((etiqueta) => limpiarTexto(etiqueta)).filter(Boolean))];
-  if (etiquetas.some((etiqueta) => etiqueta.length > 30)) throw new Error('Cada etiqueta puede tener hasta 30 caracteres');
+  if (tipoDocumento && !documento) throw new Error('Escribe el número de documento o elige «Sin documento»');
+  const etiquetas = Array.isArray(datos.etiquetas) ? [...new Set(datos.etiquetas.map(limpiarTexto).filter(Boolean))] : [];
+  if (!limpiarTexto(datos.tipoPersona)) throw new Error('Elige el tipo de persona');
   return {
     nombre: exigirTexto(datos.nombre, 'el nombre del cliente'),
     tipoDocumento,
     documento,
-    tipoPersona: TIPOS_PERSONA[datos.tipoPersona] ? datos.tipoPersona : 'natural',
+    tipoPersona: limpiarTexto(datos.tipoPersona),
     telefono: exigirTelefono(datos.telefono),
     correo: exigirCorreo(datos.correo, { obligatorio: false }),
     direccion: exigirTexto(datos.direccion, 'la dirección', { obligatorio: false, maximo: LIMITES.textoLargo }),
-    etiquetas: etiquetas.slice(0, 10),
+    etiquetas,
     autorizaDatos: Boolean(datos.autorizaDatos),
-    limiteCredito: exigirEntero(datos.limiteCredito ?? 0, 'el cupo de crédito'),
-    plazoDias: exigirEntero(datos.plazoDias ?? 30, 'el plazo', { minimo: 1, maximo: 365 }),
+    limiteCredito: exigirEntero(datos.limiteCredito, 'el cupo de crédito'),
+    plazoDias: exigirEntero(datos.plazoDias, 'el plazo', { minimo: 1, maximo: 365 }),
     // Lista de precio con la que se le vende; vacío = la de la tienda donde compra
     listaPrecio: LISTAS_PRECIO_VALIDAS.includes(datos.listaPrecio) ? datos.listaPrecio : '',
   };
@@ -136,7 +138,7 @@ export function validarProveedor(datos) {
     telefono: exigirTelefono(datos.telefono),
     correo: exigirCorreo(datos.correo, { obligatorio: false }),
     contacto: exigirTexto(datos.contacto, 'el contacto', { obligatorio: false }),
-    plazoDias: exigirEntero(datos.plazoDias ?? 30, 'el plazo de pago', { minimo: 0, maximo: 365 }),
+    plazoDias: exigirEntero(datos.plazoDias, 'el plazo de pago', { minimo: 0, maximo: 365 }),
   };
 }
 
@@ -155,13 +157,13 @@ export function validarLineas(lineas, campoValor, etiquetaValor) {
 const ESQUEMA_ITEM_VENTA = { productoId: 'texto', nombre: 'texto', cantidad: 'enteroNoNegativo', valorUnitario: 'enteroNoNegativo' };
 
 export const ESQUEMA_DATOS = {
-  productos: { id: 'texto', referencia: 'textoOpcional', nombre: 'texto', costo: 'enteroNoNegativo', existencias: 'entero' },
-  ventas: { id: 'texto', fecha: 'fecha', cliente: 'texto', metodo: 'texto', total: 'enteroNoNegativo', items: ['lista', ESQUEMA_ITEM_VENTA] },
+  productos: { id: 'texto', referencia: 'textoOpcional', nombre: 'texto', categoriaId: 'texto', unidadId: 'texto', costo: 'enteroNoNegativo', existencias: 'entero' },
+  ventas: { id: 'texto', fecha: 'fecha', cliente: 'texto', metodoId: 'texto', metodo: 'texto', total: 'enteroNoNegativo', items: ['lista', ESQUEMA_ITEM_VENTA] },
   facturas: { numero: 'texto', proveedor: 'texto', fecha: 'texto', total: 'enteroNoNegativo', items: ['lista', { productoId: 'texto', nombre: 'texto', cantidad: 'enteroNoNegativo', costoUnitario: 'enteroNoNegativo' }] },
   clientes: { id: 'texto', nombre: 'texto', telefono: 'textoOpcional', correo: 'textoOpcional', direccion: 'textoOpcional' },
-  pagos: { id: 'texto', fecha: 'fecha', tipo: 'texto', tercero: 'texto', metodo: 'texto', valor: 'enteroNoNegativo' },
+  pagos: { id: 'texto', fecha: 'fecha', tipo: 'texto', tercero: 'texto', metodoId: 'texto', metodo: 'texto', valor: 'enteroNoNegativo' },
   documentos: { id: 'texto', tipo: 'texto', fecha: 'fecha', cliente: 'texto', total: 'enteroNoNegativo', items: ['lista', ESQUEMA_ITEM_VENTA] },
-  devoluciones: { id: 'texto', ventaId: 'texto', fecha: 'fecha', tipo: 'texto', motivo: 'texto', metodo: 'texto', total: 'enteroNoNegativo', items: ['lista', ESQUEMA_ITEM_VENTA] },
+  devoluciones: { id: 'texto', ventaId: 'texto', fecha: 'fecha', tipo: 'texto', motivo: 'texto', metodoId: 'texto', metodo: 'texto', total: 'enteroNoNegativo', items: ['lista', ESQUEMA_ITEM_VENTA] },
   cajas: { id: 'texto', apertura: 'fecha', base: 'enteroNoNegativo' },
   movimientosCaja: { id: 'texto', cajaId: 'texto', fecha: 'fecha', tipo: 'texto', concepto: 'texto', valor: 'enteroNoNegativo' },
   contabilidad: { dia: 'texto', cerradoEn: 'fecha' },
@@ -205,17 +207,19 @@ export function validarDatos(datos) {
   if (!TIPOS.objeto(datos)) throw new Error('El archivo no contiene datos de la aplicación');
   const conteo = {};
   for (const [seccion, esquema] of Object.entries(ESQUEMA_DATOS)) {
-    // Las copias hechas antes de existir remisiones y cotizaciones no traen "documentos": se toman como vacías
-    if (seccion === 'documentos' && datos[seccion] === undefined) datos[seccion] = [];
     const lista = datos[seccion];
     if (!Array.isArray(lista)) throw new Error(`Falta la sección "${seccion}"`);
     lista.forEach((registro, posicion) => validarRegistro(registro, esquema, `${seccion}[${posicion + 1}]`));
     conteo[seccion] = lista.length;
   }
-  if (!TIPOS.objeto(datos.ajustes) || !TIPOS.objeto(datos.ajustes.tienda) || !TIPOS.objeto(datos.ajustes.ventas) || !TIPOS.objeto(datos.ajustes.recibo)) {
+  const secciones = ['tienda', 'marca', 'ventas', 'recibo', 'parametros', 'catalogos'];
+  if (!TIPOS.objeto(datos.ajustes) || secciones.some((seccion) => !TIPOS.objeto(datos.ajustes[seccion]))) {
     throw new Error('Faltan los ajustes de la tienda');
   }
-  if (!Array.isArray(datos.ajustes.ventas.metodosPago) || !datos.ajustes.ventas.metodosPago.length) throw new Error('Los ajustes no tienen medios de pago');
+  const catalogos = Object.values(datos.ajustes.catalogos);
+  if (!catalogos.length || catalogos.some((lista) => !Array.isArray(lista) || lista.some((elemento) => !TIPOS.texto(elemento?.id) || !TIPOS.texto(elemento?.nombre)))) {
+    throw new Error('Los catálogos de los ajustes no son válidos');
+  }
   if (!Array.isArray(datos.orden)) throw new Error('Falta el orden del panel');
   if (!datos.roles.some((rol) => rol.protegido)) throw new Error('Debe existir el rol Propietario');
   if (!datos.usuarios.some((usuario) => usuario.activo && datos.roles.some((rol) => rol.id === usuario.rolId && rol.protegido))) {

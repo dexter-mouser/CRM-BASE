@@ -40,7 +40,22 @@ main {
   font-size: var(--letra-lg);
   font-weight: 700;
   letter-spacing: -0.3px;
+  max-width: 100%;
   color: var(--texto);
+}
+
+/* Logo propio de Ajustes y nombre comercial largo: la imagen no se deforma y el nombre se corta con puntos */
+.logo-imagen {
+  flex: none;
+  object-fit: contain;
+  border-radius: var(--radio-md);
+}
+
+.logo > span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 /* Encabezado: buscador de pantallas, tienda activa y botón Vender */

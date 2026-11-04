@@ -3,7 +3,8 @@ import { aPesos, aFecha, fechaDeHoy, aFechaLocal } from '../../core/format.js';
 import { cargarHtml, seccion, repetir } from '../../core/template.js';
 import { descargarCsv } from '../../services/csv.service.js';
 import * as servicioReportes from '../../services/reportes.service.js';
-import { carteraPorEdades, RANGOS_CARTERA } from '../../services/clientes.service.js';
+import { carteraPorEdades } from '../../services/clientes.service.js';
+import { parametro, rangosCartera } from '../../services/catalogos.service.js';
 import { cargarPlantillasTabla, montarTablaResumen } from '../../components/tabla-resumen/tabla-resumen.js';
 
 let documento;
@@ -30,10 +31,10 @@ export function montar(raiz, contexto) {
     inactivos: tabla('#inactivos', [
       { clave: 'nombre', titulo: 'Cliente', html: (fila) => repetir(documento, 'enlace-cliente', [fila]) },
       { clave: 'ultima', titulo: 'Última compra' }, derecha('dias', 'Días'),
-    ], 'Todos los clientes han comprado en los últimos 60 días.'),
+    ], `Todos los clientes han comprado en los últimos ${parametro('diasInactividad')} días.`),
     cartera: tabla('#cartera', [
       { clave: 'nombre', titulo: 'Cliente' },
-      ...RANGOS_CARTERA.map((rango) => derecha(rango.id, rango.etiqueta)),
+      ...rangosCartera().map((rango) => derecha(rango.id, rango.etiqueta)),
       { clave: 'total', titulo: 'Total', alinear: 'derecha', html: (fila) => repetir(documento, 'total-cartera', [fila]) },
     ], 'No hay cartera pendiente.'),
     porMetodo: tabla('#por-metodo', [{ clave: 'metodo', titulo: 'Medio de pago' }, derecha('valor', 'Total')], 'No hay ventas en este rango.'),
@@ -64,12 +65,12 @@ export function montar(raiz, contexto) {
     tablas.porVendedor.actualizar(servicioReportes.ventasPorVendedor(desde.value, hasta.value).map((fila) => ({ ...fila, total: aPesos(fila.total) })));
     tablas.inactivos.actualizar(servicioReportes.clientesInactivos().map((fila) => ({ ...fila, ultima: aFecha(fila.ultima.slice(0, 10)) })));
     const cartera = carteraPorEdades();
-    const totales = { nombre: 'Total', clase: 'fila-total', total: 0, ...Object.fromEntries(RANGOS_CARTERA.map((rango) => [rango.id, 0])) };
+    const totales = { nombre: 'Total', clase: 'fila-total', total: 0, ...Object.fromEntries(rangosCartera().map((rango) => [rango.id, 0])) };
     cartera.forEach((fila) => {
-      RANGOS_CARTERA.forEach((rango) => { totales[rango.id] += fila[rango.id]; });
+      rangosCartera().forEach((rango) => { totales[rango.id] += fila[rango.id]; });
       totales.total += fila.total;
     });
-    const enPesos = (fila) => ({ ...fila, ...Object.fromEntries([...RANGOS_CARTERA.map((rango) => rango.id), 'total'].map((clave) => [clave, aPesos(fila[clave])])) });
+    const enPesos = (fila) => ({ ...fila, ...Object.fromEntries([...rangosCartera().map((rango) => rango.id), 'total'].map((clave) => [clave, aPesos(fila[clave])])) });
     tablas.cartera.actualizar([...cartera.map((fila) => enPesos({ ...fila, clase: '' })), ...(cartera.length ? [enPesos(totales)] : [])]);
     tablas.stockBajo.actualizar(servicioReportes.productosConStockBajo());
     tablas.deudas.actualizar(servicioReportes.deudasDeClientes().map((fila) => ({ nombre: fila.nombre, deuda: aPesos(fila.deuda) })));

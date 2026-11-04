@@ -13,6 +13,7 @@ import { cargarPlantillasFicha, crearFicha } from '../../components/ficha-regist
 import { cargarPlantillasFormulario, montarFormulario } from '../../components/formulario/formulario.js';
 import { montarSelectorRegistro } from '../../components/selector-registro/selector-registro.js';
 import { COLUMNAS_PROVEEDOR, proveedoresParaElegir } from '../../components/selector-registro/registros.js';
+import { parametro } from '../../services/catalogos.service.js';
 
 let documento;
 let plantillasCuadricula;
@@ -81,7 +82,7 @@ export function montar(raiz, contexto) {
     campos: [
       { clave: 'nombre', etiqueta: 'Nombre o razón social', obligatorio: true },
       { clave: 'nit', etiqueta: 'NIT', ejemplo: '900123456-7' },
-      { clave: 'plazoDias', etiqueta: 'Plazo de pago (días)', tipo: 'entero', valor: 30, ayuda: '0 = de contado' },
+      { clave: 'plazoDias', etiqueta: 'Plazo de pago (días)', tipo: 'entero', valor: () => parametro('plazoCredito'), obligatorio: true, ayuda: '0 = de contado' },
       { clave: 'contacto', etiqueta: 'Persona de contacto' },
       { clave: 'telefono', etiqueta: 'Teléfono', tipo: 'telefono' },
       { clave: 'correo', etiqueta: 'Correo', tipo: 'correo' },

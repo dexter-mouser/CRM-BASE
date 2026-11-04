@@ -1,9 +1,9 @@
 import { buscar, buscarTodos } from '../../core/dom.js';
 import { estado } from '../../core/store.js';
-import { aPesos, aFecha, fechaDeHoy } from '../../core/format.js';
+import { aPesos, aFecha, fechaDeHoy, conMoneda } from '../../core/format.js';
 import { puede, usuarioActual } from '../../core/autorizacion.js';
 import { cargarHtml, seccion, repetir, rellenar } from '../../core/template.js';
-import { TIPOS_DOCUMENTO, TIPOS_PERSONA } from '../../core/validacion.js';
+import { nombreDe, opcionesDe, parametro, primeroActivo } from '../../services/catalogos.service.js';
 import { resumirItems, TIPOS_DOCUMENTO as TIPOS_DE_VENTA, ETIQUETA_NOTA } from '../../services/ventas.service.js';
 import * as servicioClientes from '../../services/clientes.service.js';
 import { LISTAS_PRECIO, etiquetaDeLista } from '../../services/inventario.service.js';
@@ -23,24 +23,28 @@ export async function dibujar() {
   return seccion(documento, 'principal');
 }
 
-// Campos del cliente: lo que tiene un valor habitual se ve escrito al crear y se cambia si hace falta
+// Campos del cliente: lo que tiene un valor habitual se ve escrito al crear y se cambia si hace falta. Las opciones
+// salen de los catálogos de Ajustes; el primer elemento activo es el que se ve precargado
 const CAMPOS_CLIENTE = [
   { clave: 'nombre', etiqueta: 'Nombre o razón social', obligatorio: true },
-  { clave: 'tipoPersona', etiqueta: 'Tipo de persona', tipo: 'seleccion', opciones: () => Object.entries(TIPOS_PERSONA), valor: 'natural' },
-  { clave: 'tipoDocumento', etiqueta: 'Tipo de documento', tipo: 'seleccion', opciones: () => [['', 'Sin documento'], ...Object.entries(TIPOS_DOCUMENTO)], valor: 'CC' },
+  {
+    clave: 'tipoPersona', etiqueta: 'Tipo de persona', tipo: 'seleccion', obligatorio: true,
+    opciones: (cliente) => opcionesDe('tiposPersona', cliente?.tipoPersona), valor: () => primeroActivo('tiposPersona'),
+  },
+  {
+    clave: 'tipoDocumento', etiqueta: 'Tipo de documento', tipo: 'seleccion',
+    opciones: (cliente) => [['', 'Sin documento'], ...opcionesDe('tiposDocumento', cliente?.tipoDocumento)], valor: () => primeroActivo('tiposDocumento'),
+  },
   { clave: 'documento', etiqueta: 'Número de documento', ejemplo: 'Sin puntos' },
   { clave: 'telefono', etiqueta: 'Teléfono', tipo: 'telefono' },
   { clave: 'correo', etiqueta: 'Correo', tipo: 'correo' },
   { clave: 'direccion', etiqueta: 'Dirección', ancho: 2 },
-  {
-    clave: 'etiquetas', etiqueta: 'Etiquetas', tipo: 'etiquetas', ayuda: 'Separadas por coma',
-    opciones: () => [...new Set(estado.clientes.flatMap((cliente) => cliente.etiquetas ?? []))].sort(),
-  },
-  { clave: 'limiteCredito', etiqueta: 'Cupo de crédito (COP)', tipo: 'entero', valor: 0, ayuda: '0 = sin crédito' },
-  { clave: 'plazoDias', etiqueta: 'Plazo de pago (días)', tipo: 'entero', valor: 30, obligatorio: true },
+  { clave: 'etiquetas', etiqueta: 'Etiquetas', tipo: 'casillas', ancho: 'completo', opciones: (cliente) => opcionesDe('etiquetasCliente', cliente?.etiquetas) },
+  { clave: 'limiteCredito', etiqueta: conMoneda('Cupo de crédito'), tipo: 'entero', valor: 0, ayuda: '0 = sin crédito' },
+  { clave: 'plazoDias', etiqueta: 'Plazo de pago (días)', tipo: 'entero', valor: () => parametro('plazoCredito'), obligatorio: true },
   {
     clave: 'listaPrecio', etiqueta: 'Lista de precio', tipo: 'seleccion', valor: '',
-    opciones: () => [['', 'La de la sucursal donde compra'], ...LISTAS_PRECIO.map((lista) => [lista.id, lista.etiqueta])],
+    opciones: () => [['', 'La de la sucursal donde compra'], ...LISTAS_PRECIO.map((lista) => [lista.id, lista.numero])],
   },
   { clave: 'autorizaDatos', etiqueta: 'El cliente autoriza el tratamiento de sus datos personales (Ley 1581 de 2012)', tipo: 'casilla', ancho: 'completo' },
 ];
@@ -48,7 +52,7 @@ const CAMPOS_CLIENTE = [
 export function montar(raiz, contexto) {
   let clientePorEliminar = null;
   let clienteEnFicha = null;
-  const etiquetasHtml = (lista = []) => repetir(documento, 'etiqueta-cliente', lista.map((texto) => ({ texto })));
+  const etiquetasHtml = (lista) => repetir(documento, 'etiqueta-cliente', lista.map((id) => ({ texto: nombreDe('etiquetasCliente', id) })));
 
   const ejecutar = (accion, mensaje) => {
     try {
@@ -66,7 +70,7 @@ export function montar(raiz, contexto) {
     return {
       ...cliente,
       documentoTexto: cliente.documento ? `${cliente.tipoDocumento} ${cliente.documento}` : '',
-      etiquetasTexto: (cliente.etiquetas ?? []).join(', '),
+      etiquetasTexto: cliente.etiquetas.map((id) => nombreDe('etiquetasCliente', id)).join(', '),
       deudaTexto: aPesos(deuda),
       deudaHtml: deuda > 0 ? rellenar(documento.querySelector('#deuda-con-saldo').innerHTML, { valor: aPesos(deuda) }) : aPesos(0),
       cupoTexto: cliente.limiteCredito ? aPesos(servicioClientes.cupoDisponible(cliente)) : 'Sin crédito',
@@ -138,7 +142,7 @@ export function montar(raiz, contexto) {
       ],
       filas: servicioActividades.actividadesDeCliente(cliente.id).slice().reverse().map((actividad) => ({
         fecha: aFecha(actividad.fecha),
-        tipo: servicioActividades.TIPOS_ACTIVIDAD[actividad.tipo],
+        tipo: nombreDe('tiposActividad', actividad.tipo),
         descripcion: actividad.descripcion + (actividad.resultado ? ` · ${actividad.resultado}` : ''),
         responsable: actividad.responsable,
         estado: servicioActividades.esPendiente(actividad)
@@ -162,10 +166,10 @@ export function montar(raiz, contexto) {
 
     buscar('#titulo-ficha', raiz).textContent = `${cliente.nombre} · ${cliente.id}`;
     buscar('#subtitulo-ficha', raiz).textContent = [
-      TIPOS_PERSONA[cliente.tipoPersona],
+      nombreDe('tiposPersona', cliente.tipoPersona),
       cliente.documento ? `${cliente.tipoDocumento} ${cliente.documento}` : 'Sin documento',
       cliente.telefono, cliente.correo, cliente.direccion,
-      cliente.listaPrecio ? etiquetaDeLista(cliente.listaPrecio) : '',
+      cliente.listaPrecio ? `Lista de precios ${etiquetaDeLista(cliente.listaPrecio)}` : '',
       cliente.autorizaDatos ? 'Autoriza tratamiento de datos' : 'Sin autorización de datos',
     ].filter(Boolean).join(' · ');
     buscar('#etiquetas-ficha', raiz).innerHTML = etiquetasHtml(cliente.etiquetas);
@@ -174,7 +178,7 @@ export function montar(raiz, contexto) {
       { etiqueta: 'Última compra', valor: ultima ? aFecha(ultima.slice(0, 10)) : '—', clase: '' },
       { etiqueta: 'Deuda', valor: aPesos(deuda), clase: deuda > 0 ? 'texto-negativo' : '' },
       { etiqueta: 'Vencido', valor: aPesos(vencido), clase: vencido > 0 ? 'texto-negativo' : '' },
-      { etiqueta: `Cupo disponible (plazo ${cliente.plazoDias ?? 30} días)`, valor: cliente.limiteCredito ? aPesos(servicioClientes.cupoDisponible(cliente)) : 'Sin crédito', clase: '' },
+      { etiqueta: `Cupo disponible (plazo ${cliente.plazoDias} días)`, valor: cliente.limiteCredito ? aPesos(servicioClientes.cupoDisponible(cliente)) : 'Sin crédito', clase: '' },
     ]);
 
     buscar('#editar-ficha', raiz).hidden = !puede('clientes', 'editar');
@@ -259,7 +263,7 @@ export function montar(raiz, contexto) {
     alError: contexto.alerta,
     campos: [
       {
-        clave: 'tipo', etiqueta: 'Tipo', tipo: 'seleccion', valor: 'llamada', opciones: () => Object.entries(servicioActividades.TIPOS_ACTIVIDAD),
+        clave: 'tipo', etiqueta: 'Tipo', tipo: 'seleccion', obligatorio: true, valor: () => primeroActivo('tiposActividad'), opciones: (actividad) => opcionesDe('tiposActividad', actividad?.tipo),
         alCambiar: (tipo, actividad) => actividad.habilitar('vence', tipo === 'tarea'),
       },
       { clave: 'vence', etiqueta: 'Fecha de la tarea', tipo: 'fecha', valor: fechaDeHoy, obligatorio: true },

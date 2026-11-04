@@ -7,9 +7,10 @@ import { exigirEntero, exigirTexto } from '../core/validacion.js';
 import { registrarAuditoria } from './auditoria.service.js';
 import { exigirTiendaActiva, tiendaActivaId, TODAS_LAS_TIENDAS } from '../core/tienda.js';
 import { nombreDeUsuario } from '../core/autorizacion.js';
+import { esEfectivo } from './catalogos.service.js';
 
 // Cada tienda tiene su propia caja. Sin tienda indicada se usa la sucursal activa.
-const tiendaDe = (registro) => registro.tiendaId ?? 'T-01';
+const tiendaDe = (registro) => registro.tiendaId;
 export const cajaAbierta = (tiendaId = tiendaActivaId()) => estado.cajas.find((caja) => !caja.cierre && tiendaDe(caja) === tiendaId) ?? null;
 export const cajasDeLaVista = () => estado.cajas.filter((caja) => tiendaActivaId() === TODAS_LAS_TIENDAS || tiendaDe(caja) === tiendaActivaId());
 
@@ -24,7 +25,7 @@ export function resumenDeCaja(caja) {
     const momento = new Date(fecha).getTime();
     return momento >= desde && momento <= hasta && tiendaDe(registro) === tiendaDe(caja);
   };
-  const efectivo = (elemento) => elemento.metodo === 'Efectivo';
+  const efectivo = (elemento) => esEfectivo(elemento.metodoId);
   const ventasEfectivo = sumar(estado.ventas.filter((venta) => efectivo(venta) && dentro(venta.fecha, venta)), 'total');
   const abonosEfectivo = sumar(estado.pagos.filter((pago) => pago.tipo === 'abono' && efectivo(pago) && dentro(pago.fecha, pago)));
   const pagosProveedores = sumar(estado.pagos.filter((pago) => pago.tipo === 'proveedor' && efectivo(pago) && dentro(pago.fecha, pago)));

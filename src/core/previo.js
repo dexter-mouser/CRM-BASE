@@ -8,6 +8,24 @@
     raiz.dataset.tema = tema;
   } catch (error) { /* sin almacenamiento */ }
 
+  // Color de marca de Ajustes antes de pintar (el mismo cálculo de aplicarMarca en tema.js)
+  try {
+    var acento = JSON.parse(localStorage.getItem('generico.tienda')).ajustes.marca.acento;
+    if (/^#[0-9a-f]{6}$/.test(acento) && acento !== '#4553c9') {
+      var canales = [1, 3, 5].map(function (inicio) {
+        var canal = parseInt(acento.slice(inicio, inicio + 2), 16) / 255;
+        return canal <= 0.03928 ? canal / 12.92 : Math.pow((canal + 0.055) / 1.055, 2.4);
+      });
+      var luz = 0.2126 * canales[0] + 0.7152 * canales[1] + 0.0722 * canales[2];
+      raiz.style.setProperty('--marca-claro', acento);
+      raiz.style.setProperty('--marca-texto-claro', luz > 0.4 ? '#12142b' : '#ffffff');
+      raiz.style.setProperty('--marca-suave-claro', 'color-mix(in srgb, ' + acento + ' 12%, #ffffff)');
+      raiz.style.setProperty('--marca-oscuro', 'color-mix(in srgb, ' + acento + ' 55%, #ffffff)');
+      raiz.style.setProperty('--marca-texto-oscuro', '#12142b');
+      raiz.style.setProperty('--marca-suave-oscuro', 'color-mix(in srgb, ' + acento + ' 28%, #161615)');
+    }
+  } catch (error) { /* sin datos guardados: se usa el color del diseño */ }
+
   if (!('protegida' in raiz.dataset)) return;
 
   function vigente(almacen) {

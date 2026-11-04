@@ -875,7 +875,7 @@ kbd {
   color: var(--negativo);
 }
 
-/* Selector de un registro (components/selector-registro): el elegido arriba y una casilla de búsqueda por columna */
+/* Selector de un registro (components/selector-registro): una casilla de búsqueda por columna con los datos del elegido */
 .selector-registro {
   min-width: 0;
   border: 1px solid var(--borde-suave);
@@ -917,18 +917,24 @@ kbd {
   box-shadow: inset 3px 0 0 var(--negativo);
 }
 
-.sin-elegir {
-  grid-column: 1 / -1;
-  font-weight: 400;
-}
-
-.fila-busqueda-selector {
-  border-top: 1px solid var(--borde);
-  background: var(--pasar);
-}
-
-.fila-busqueda-selector .campo {
+.fila-elegida .campo {
   padding: 6px 8px;
+}
+
+.fila-elegida .alinear-derecha .campo {
+  text-align: right;
+}
+
+/* Cada casilla muestra el dato del elegido como texto firme; al enfocarla se aclara para indicar que se puede buscar */
+.fila-elegida:not(.sin-registro) .campo::placeholder {
+  color: var(--texto);
+  font-weight: 600;
+  opacity: 1;
+}
+
+.fila-elegida:not(.sin-registro) .campo:focus::placeholder {
+  color: var(--suave);
+  font-weight: 400;
 }
 
 .resultados-selector {
@@ -978,8 +984,109 @@ kbd {
     font-weight: 400;
     color: var(--suave);
   }
+}
 
-  .fila-busqueda-selector > div:empty {
-    display: none;
+/* Editor de un catálogo de Ajustes (components/editor-catalogo): una fila por elemento con orden, nombre editable,
+   columnas extra, uso, estado y acciones; en un espacio angosto cada fila se acomoda en varias líneas */
+.editor-catalogo {
+  container-type: inline-size;
+  min-width: 0;
+}
+
+.cabecera-editor {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--espacio-1) var(--espacio-3);
+  margin-bottom: var(--espacio-3);
+}
+
+.filas-editor {
+  border: 1px solid var(--borde-suave);
+  border-radius: var(--radio-lg);
+  overflow: hidden;
+}
+
+.fila-editor,
+.agregar-editor {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--espacio-3);
+  padding: 6px 8px;
+}
+
+.fila-editor + .fila-editor {
+  border-top: 1px solid var(--borde-suave);
+}
+
+.fila-editor.inactiva .nombre-editor {
+  color: var(--suave);
+  text-decoration: line-through;
+}
+
+.orden-editor {
+  display: flex;
+  gap: 2px;
+}
+
+.boton-orden {
+  min-width: 32px;
+  padding: 4px 0;
+}
+
+.codigo-editor {
+  min-width: 44px;
+  font-weight: 600;
+  color: var(--suave);
+}
+
+.fila-editor .nombre-editor {
+  flex: 2 1 140px;
+  min-width: 0;
+}
+
+.fila-editor select,
+.agregar-editor select {
+  flex: 1 1 140px;
+  min-width: 0;
+}
+
+.uso-editor {
+  min-width: 72px;
+  font-size: var(--letra-xs);
+}
+
+.acciones-editor {
+  display: flex;
+  gap: var(--espacio-2);
+  margin-left: auto;
+}
+
+.agregar-editor {
+  padding: var(--espacio-3) 0 0;
+}
+
+.agregar-editor input[name="nombre"] {
+  flex: 1 1 180px;
+  min-width: 0;
+}
+
+.agregar-editor .codigo-nuevo {
+  flex: 0 0 96px;
+}
+
+@container (max-width: 520px) {
+  .acciones-editor {
+    width: 100%;
+    margin-left: 0;
   }
+}
+
+/* Selector de color (marca en Ajustes): una muestra del alto de los demás campos */
+.campo[type="color"] {
+  width: 96px;
+  height: 38px;
+  padding: 3px;
+  cursor: pointer;
 }

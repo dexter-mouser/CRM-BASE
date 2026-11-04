@@ -5,6 +5,7 @@ import { siguienteCodigo } from '../core/codigos.js';
 import { exigirPermiso, nombreDeUsuario } from '../core/autorizacion.js';
 import { exigirMotivo, exigirTexto, LIMITES } from '../core/validacion.js';
 import { registrarAuditoria } from './auditoria.service.js';
+import { prefijoDe } from './catalogos.service.js';
 import { buscarBodega, buscarProductoPorId, existenciasEn, moverExistencias } from './inventario.service.js';
 
 const normalizar = (texto) => String(texto).normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().trim();
@@ -83,7 +84,7 @@ export function enviarTraslado({ origenId, destinoId, lineas, observaciones = ''
     if (linea.cantidad > disponible) throw new Error(`En ${origen.nombre} solo hay ${disponible} de ${linea.nombre}`);
   }
   const traslado = {
-    id: siguienteCodigo(estado.traslados.map((existente) => existente.id), 'TR', 4),
+    id: siguienteCodigo(estado.traslados.map((existente) => existente.id), prefijoDe('traslado'), 4),
     fecha: new Date().toISOString(),
     origenId: origen.id,
     destinoId: destino.id,

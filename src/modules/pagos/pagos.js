@@ -1,7 +1,7 @@
 import { buscar } from '../../core/dom.js';
 import { puede } from '../../core/autorizacion.js';
 import { estado } from '../../core/store.js';
-import { aPesos, aFecha } from '../../core/format.js';
+import { aPesos, aFecha, conMoneda } from '../../core/format.js';
 import { cargarHtml, seccion, repetir } from '../../core/template.js';
 import { deudaDeCliente } from '../../services/clientes.service.js';
 import { saldoConProveedor } from '../../services/proveedores.service.js';
@@ -121,8 +121,8 @@ export function montar(raiz, contexto) {
         clave: 'clienteId', etiqueta: 'Cliente con deuda', tipo: 'registro', obligatorio: true, valor: '', plural: 'clientes con deuda', vacio: 'Elige el cliente que abona',
         columnas: COLUMNAS_CLIENTE, registros: deudores, alCambiar: precargarValor((id) => deudaDeCliente(estado.clientes.find((cliente) => cliente.id === id))),
       },
-      { clave: 'valor', etiqueta: 'Valor (COP)', tipo: 'entero', obligatorio: true },
-      { clave: 'metodo', etiqueta: 'Medio de pago', tipo: 'seleccion', opciones: opcionesMetodo, valor: () => opcionesMetodo()[0] },
+      { clave: 'valor', etiqueta: conMoneda('Valor'), tipo: 'entero', obligatorio: true },
+      { clave: 'metodoId', etiqueta: 'Medio de pago', tipo: 'seleccion', opciones: opcionesMetodo, valor: () => opcionesMetodo()[0]?.[0] ?? '', obligatorio: true },
     ],
     alGuardar: (datos) => ejecutar(() => servicioPagos.registrarAbono(datos), 'Abono registrado correctamente'),
   });
@@ -139,8 +139,8 @@ export function montar(raiz, contexto) {
         columnas: COLUMNAS_PROVEEDOR, registros: acreedores, alCambiar: precargarValor(saldoConProveedor),
       },
       { clave: 'concepto', etiqueta: 'Concepto', valor: 'Pago de facturas', obligatorio: true },
-      { clave: 'valor', etiqueta: 'Valor (COP)', tipo: 'entero', obligatorio: true },
-      { clave: 'metodo', etiqueta: 'Medio de pago', tipo: 'seleccion', opciones: opcionesMetodo, valor: () => opcionesMetodo()[0] },
+      { clave: 'valor', etiqueta: conMoneda('Valor'), tipo: 'entero', obligatorio: true },
+      { clave: 'metodoId', etiqueta: 'Medio de pago', tipo: 'seleccion', opciones: opcionesMetodo, valor: () => opcionesMetodo()[0]?.[0] ?? '', obligatorio: true },
     ],
     alGuardar: (datos) => ejecutar(() => servicioPagos.registrarPagoProveedor(datos), 'Pago al proveedor registrado correctamente'),
   });

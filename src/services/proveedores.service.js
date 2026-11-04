@@ -5,6 +5,7 @@ import { siguienteCodigo } from '../core/codigos.js';
 import { exigirPermiso, nombreDeUsuario } from '../core/autorizacion.js';
 import { exigirMotivo, exigirTexto, validarLineas, validarProveedor, LIMITES } from '../core/validacion.js';
 import { registrarAuditoria } from './auditoria.service.js';
+import { prefijoDe } from './catalogos.service.js';
 
 const normalizar = (texto) => String(texto).normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().trim();
 
@@ -69,7 +70,7 @@ export function registrarOrden({ proveedorId, lineas, observaciones = '' }) {
   validarLineas(lineas, 'costoUnitario', 'el costo unitario');
   const items = lineas.map(({ productoId, nombre, cantidad, costoUnitario }) => ({ productoId, nombre, cantidad, costoUnitario }));
   const orden = {
-    id: siguienteCodigo(estado.ordenesCompra.map((existente) => existente.id), 'OC', 4),
+    id: siguienteCodigo(estado.ordenesCompra.map((existente) => existente.id), prefijoDe('orden'), 4),
     proveedorId: proveedor.id,
     proveedor: proveedor.nombre,
     fecha: new Date().toISOString(),

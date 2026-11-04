@@ -20,7 +20,7 @@ export async function montarEncabezado(ranura, { alAlternarMenu, sesion }) {
   buscar('#alternar-menu').innerHTML = icono(ICONO_HAMBURGUESA);
   buscar('#alternar-menu').onclick = alAlternarMenu;
   prepararBotonTema(buscar('#alternar-tema'), (tema) => mostrarAviso(`Tema ${tema} aplicado correctamente`));
-  buscar('.marca').innerHTML = logoCompleto(32);
+  refrescarMarca();
 
   const iniciales = sesion.nombre.split(' ').slice(0, 2).map((palabra) => palabra[0]).join('').toUpperCase();
   const avatar = buscar('#usuario');
@@ -162,4 +162,11 @@ function pintarAlertas(documento) {
     ? repetir(documento, 'alerta', alertas)
     : '<div class="texto-suave">No tienes alertas pendientes.</div>';
   return cotizaciones.length;
+}
+
+// Logo y nombre comercial de Ajustes en el encabezado (también al guardar la marca)
+export function refrescarMarca() {
+  const enlace = buscar('.marca');
+  enlace.innerHTML = logoCompleto(32);
+  enlace.setAttribute('aria-label', `${estado.ajustes.marca.nombreComercial}, ir al panel`);
 }

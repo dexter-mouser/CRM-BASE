@@ -1,23 +1,23 @@
 import { buscar, escaparHtml } from '../../core/dom.js';
 import { puede } from '../../core/autorizacion.js';
 import { estado } from '../../core/store.js';
-import { aPesos, aFecha, fechaDeHoy } from '../../core/format.js';
+import { aPesos, aFecha, fechaDeHoy, conMoneda } from '../../core/format.js';
 import { cargarHtml, seccion, repetir } from '../../core/template.js';
 import { cargarPlantillasCuadricula, montarCuadricula } from '../../components/cuadricula-datos/cuadricula-datos.js';
 import { cargarPlantillasFicha, crearFicha } from '../../components/ficha-registro/ficha-registro.js';
-import { LISTAS_PRECIO, manejaStock, agregarProducto, actualizarProducto, eliminarProducto, importarProductos, kardexDeProducto, buscarProductoPorId, categorias, bodegaActiva, existenciasVisibles, buscarBodega, siguienteIdProducto } from '../../services/inventario.service.js';
+import { LISTAS_PRECIO, nombreDePrecio, manejaStock, agregarProducto, actualizarProducto, eliminarProducto, importarProductos, kardexDeProducto, buscarProductoPorId, bodegaActiva, existenciasVisibles, buscarBodega, siguienteIdProducto } from '../../services/inventario.service.js';
 import { cargarPlantillasFormulario, montarFormulario } from '../../components/formulario/formulario.js';
 import { montarSelectorRegistro } from '../../components/selector-registro/selector-registro.js';
 import { COLUMNAS_PRODUCTO, productosParaElegir } from '../../components/selector-registro/registros.js';
 import { bodegasActivas } from '../../services/bodegas.service.js';
-import { TARIFAS_IVA } from '../../core/validacion.js';
+import { nombreDe, opcionesDe, primeroActivo } from '../../services/catalogos.service.js';
 import { buscarOrden } from '../../services/proveedores.service.js';
 import { descargarInventarioCsv, leerInventarioCsv } from '../../services/csv.service.js';
 import { cargarPlantillasBuscador } from '../../components/buscador-cuadricula/buscador-cuadricula.js';
 import { montarFactura } from './factura.js';
 import { mostrarComprobanteDeFactura } from '../../components/recibo/comprobantes.js';
 
-const CAMPOS = ['referencia', 'nombre', 'categoria', 'costo', 'precioSurtido', 'precioMayor', 'precioDetal', 'iva', 'stockMinimo', 'existencias'];
+const CAMPOS = ['referencia', 'nombre', 'categoriaId', 'unidadId', 'costo', 'precioSurtido', 'precioMayor', 'precioDetal', 'iva', 'stockMinimo', 'existencias'];
 let documento;
 let plantillasCuadricula;
 let plantillasFicha;
@@ -113,7 +113,7 @@ export function montar(raiz, contexto) {
     const producto = buscarProductoPorId(id);
     CAMPOS.forEach((nombre) => {
       if ((nombre === 'existencias' && !bodega) || (producto.generico && ['existencias', 'stockMinimo'].includes(nombre))) return;
-      const actual = nombre === 'existencias' ? existenciasVisibles(producto) : (producto[nombre] ?? (typeof datos[nombre] === 'number' ? 0 : ''));
+      const actual = nombre === 'existencias' ? existenciasVisibles(producto) : producto[nombre];
       if (datos[nombre] !== actual) actualizarProducto(id, nombre, datos[nombre]);
     });
   };
@@ -130,12 +130,20 @@ export function montar(raiz, contexto) {
       { clave: 'id', etiqueta: 'Código', tipo: 'entero', maximo: 12, valor: siguienteIdProducto, obligatorio: true },
       { clave: 'referencia', etiqueta: 'Referencia', maximo: 40 },
       { clave: 'nombre', etiqueta: 'Nombre', obligatorio: true },
-      { clave: 'categoria', etiqueta: 'Categoría', tipo: 'lista', maximo: 60, opciones: categorias },
-      { clave: 'costo', etiqueta: 'Costo (COP)', tipo: 'entero', valor: 0 },
-      { clave: 'iva', etiqueta: 'IVA', tipo: 'seleccion', valor: 19, opciones: () => TARIFAS_IVA.map((tarifa) => [tarifa, `${tarifa} %`]), ayuda: 'Los precios incluyen el IVA' },
-      { clave: 'precioSurtido', etiqueta: 'Precio 1 · Surtido (COP)', tipo: 'entero', valor: 0, ayuda: 'Casi al costo, para surtir almacenes' },
-      { clave: 'precioMayor', etiqueta: 'Precio 2 · Por mayor (COP)', tipo: 'entero', valor: 0 },
-      { clave: 'precioDetal', etiqueta: 'Precio 3 · Al detal (COP)', tipo: 'entero', valor: 0 },
+      {
+        clave: 'categoriaId', etiqueta: 'Categoría', tipo: 'seleccion', obligatorio: true,
+        valor: () => primeroActivo('categorias'), opciones: (producto) => opcionesDe('categorias', producto?.categoriaId),
+      },
+      {
+        clave: 'unidadId', etiqueta: 'Unidad de medida', tipo: 'seleccion', obligatorio: true,
+        valor: () => primeroActivo('unidades'), opciones: (producto) => opcionesDe('unidades', producto?.unidadId),
+      },
+      { clave: 'costo', etiqueta: conMoneda('Costo'), tipo: 'entero', valor: 0 },
+      {
+        clave: 'iva', etiqueta: 'IVA', tipo: 'seleccion', obligatorio: true, ayuda: 'Los precios incluyen el IVA',
+        valor: () => primeroActivo('tarifasIva'), opciones: (producto) => opcionesDe('tarifasIva', producto ? String(producto.iva) : ''),
+      },
+      ...LISTAS_PRECIO.map((lista) => ({ clave: lista.campo, etiqueta: conMoneda(nombreDePrecio(lista)), tipo: 'entero', valor: 0 })),
       { clave: 'stockMinimo', etiqueta: 'Stock mínimo', tipo: 'entero', valor: 0 },
       { clave: 'existencias', etiqueta: 'Stock inicial', tipo: 'entero-negativo', valor: 0 },
       {
@@ -177,7 +185,7 @@ export function montar(raiz, contexto) {
     return {
       etiqueta: 'Ficha del producto',
       titulo: `${producto.nombre} · ID ${producto.id}`,
-      subtitulo: [producto.referencia && `Ref. ${producto.referencia}`, producto.categoria, estadoDe({ ...producto, existencias: visibles })].filter(Boolean).join(' · '),
+      subtitulo: [producto.referencia && `Ref. ${producto.referencia}`, nombreDe('categorias', producto.categoriaId), estadoDe({ ...producto, existencias: visibles })].filter(Boolean).join(' · '),
       indicadores: producto.generico
         ? [{ etiqueta: 'Tipo', valor: 'Genérico' }, { etiqueta: 'Costo de referencia', valor: aPesos(producto.costo) }]
         : [
@@ -187,9 +195,10 @@ export function montar(raiz, contexto) {
         ],
       datos: [
         { etiqueta: 'Referencia', valor: producto.referencia ?? '' },
-        { etiqueta: 'Categoría', valor: producto.categoria ?? '' },
-        { etiqueta: 'IVA', valor: `${producto.iva ?? 0} %` },
-        ...LISTAS_PRECIO.map((lista) => ({ etiqueta: lista.etiqueta, valor: producto.generico ? 'Se escribe en cada venta' : aPesos(producto[lista.campo] ?? 0) })),
+        { etiqueta: 'Categoría', valor: nombreDe('categorias', producto.categoriaId) },
+        { etiqueta: 'Unidad de medida', valor: nombreDe('unidades', producto.unidadId) },
+        { etiqueta: 'IVA', valor: `${producto.iva} %` },
+        ...LISTAS_PRECIO.map((lista) => ({ etiqueta: nombreDePrecio(lista), valor: producto.generico ? 'Se escribe en cada venta' : aPesos(producto[lista.campo]) })),
         ...(producto.generico
           ? [{ etiqueta: 'Uso', valor: 'Servicios, reparaciones y artículos sin código: el nombre y el valor se escriben en cada venta y no mueve stock.', ancho: true }]
           : [{ etiqueta: 'Stock mínimo', valor: String(producto.stockMinimo ?? 0) }, { etiqueta: 'Stock total', valor: String(producto.existencias) }]),

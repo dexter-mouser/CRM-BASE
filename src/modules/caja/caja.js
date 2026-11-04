@@ -1,6 +1,6 @@
 import { buscar } from '../../core/dom.js';
 import { estado } from '../../core/store.js';
-import { aPesos, aFecha } from '../../core/format.js';
+import { aPesos, aFecha, conMoneda, formatoFecha } from '../../core/format.js';
 import { cargarHtml, seccion, repetir } from '../../core/template.js';
 import * as servicioCaja from '../../services/caja.service.js';
 import { tiendaActiva, nombreDeTienda } from '../../core/tienda.js';
@@ -13,7 +13,7 @@ let plantillasCuadricula;
 let plantillasFicha;
 let plantillasFormulario;
 
-const aHora = (iso) => new Intl.DateTimeFormat('es-CO', { timeStyle: 'short' }).format(new Date(iso));
+const aHora = (iso) => formatoFecha({ timeStyle: 'short' }).format(new Date(iso));
 
 const contenidoCajaAbierta = (caja) => {
   const resumen = servicioCaja.resumenDeCaja(caja);
@@ -63,7 +63,7 @@ export function montar(raiz, contexto) {
     ],
     filas: servicioCaja.cajasDeLaVista().filter((existente) => existente.cierre).reverse().map((existente) => ({
       id: existente.id,
-      tienda: nombreDeTienda(existente.tiendaId ?? estado.tiendas[0]?.id),
+      tienda: nombreDeTienda(existente.tiendaId),
       apertura: aFecha(existente.apertura),
       cierre: aFecha(existente.cierre.fecha),
       esperado: aPesos(existente.cierre.esperado),
@@ -89,7 +89,7 @@ export function montar(raiz, contexto) {
     const resumen = servicioCaja.resumenDeCaja(cerrada);
     return {
       etiqueta: 'Ficha del cierre de caja',
-      titulo: `Caja ${cerrada.id} · ${nombreDeTienda(cerrada.tiendaId ?? estado.tiendas[0]?.id)}`,
+      titulo: `Caja ${cerrada.id} · ${nombreDeTienda(cerrada.tiendaId)}`,
       subtitulo: `${aFecha(cerrada.apertura)} → ${aFecha(cerrada.cierre.fecha)}${cerrada.usuario ? ` · ${cerrada.usuario}` : ''}`,
       indicadores: [
         { etiqueta: 'Esperado', valor: aPesos(cerrada.cierre.esperado) },
@@ -137,7 +137,7 @@ export function montar(raiz, contexto) {
       incrustado: true,
       textoGuardar: 'Abrir caja',
       columnas: 2,
-      campos: [{ clave: 'base', etiqueta: 'Base (COP)', tipo: 'entero', valor: 0, obligatorio: true }],
+      campos: [{ clave: 'base', etiqueta: conMoneda('Base'), tipo: 'entero', valor: 0, obligatorio: true }],
       alGuardar: ({ base }) => ejecutar(() => servicioCaja.abrirCaja(base), 'Caja abierta correctamente'),
     });
   }
@@ -152,7 +152,7 @@ export function montar(raiz, contexto) {
       campos: [
         { clave: 'tipo', etiqueta: 'Tipo', tipo: 'seleccion', valor: 'ingreso', opciones: [['ingreso', 'Ingreso'], ['egreso', 'Egreso']] },
         { clave: 'concepto', etiqueta: 'Concepto', obligatorio: true },
-        { clave: 'valor', etiqueta: 'Valor (COP)', tipo: 'entero', obligatorio: true },
+        { clave: 'valor', etiqueta: conMoneda('Valor'), tipo: 'entero', obligatorio: true },
       ],
       alGuardar: (datos) => ejecutar(() => servicioCaja.registrarMovimiento(datos), 'Movimiento registrado correctamente'),
     });
@@ -163,7 +163,7 @@ export function montar(raiz, contexto) {
       textoGuardar: 'Cerrar caja',
       columnas: 2,
       campos: [{
-        clave: 'contado', etiqueta: 'Efectivo contado (COP)', tipo: 'entero', obligatorio: true,
+        clave: 'contado', etiqueta: conMoneda('Efectivo contado'), tipo: 'entero', obligatorio: true,
         ayuda: `Cuenta el efectivo y escríbelo. Se guarda la diferencia con lo esperado (${aPesos(servicioCaja.resumenDeCaja(caja).esperado)}).`,
       }],
       alGuardar: ({ contado }) => ejecutar(() => servicioCaja.cerrarCaja(contado), (cierre) => {

@@ -1,19 +1,11 @@
-// Seguimiento de clientes: actividades registradas (llamadas, WhatsApp, visitas, correos, notas) y tareas con
+// Seguimiento de clientes: actividades registradas (los tipos salen del catálogo de Ajustes: llamada, WhatsApp…) y tareas con
 // fecha de vencimiento y responsable. Una tarea queda pendiente hasta que se marca como hecha.
 import { estado, guardarEstado } from '../core/store.js';
 import { siguienteCodigo } from '../core/codigos.js';
 import { exigirPermiso, usuarioActual, nombreDeUsuario } from '../core/autorizacion.js';
 import { exigirFecha, exigirTexto, LIMITES } from '../core/validacion.js';
 import { registrarAuditoria } from './auditoria.service.js';
-
-export const TIPOS_ACTIVIDAD = {
-  llamada: 'Llamada',
-  whatsapp: 'WhatsApp',
-  visita: 'Visita',
-  correo: 'Correo',
-  nota: 'Nota',
-  tarea: 'Tarea',
-};
+import { exigirElemento, nombreDe } from './catalogos.service.js';
 
 const DIA_MS = 86_400_000;
 
@@ -36,7 +28,7 @@ export function registrarActividad(datos) {
   exigirPermiso('seguimiento', 'crear', 'registrar actividades');
   const cliente = estado.clientes.find((candidato) => candidato.id === datos.clienteId);
   if (!cliente) throw new Error('Elige el cliente');
-  if (!TIPOS_ACTIVIDAD[datos.tipo]) throw new Error('Elige el tipo de actividad');
+  exigirElemento('tiposActividad', datos.tipo, 'Elige el tipo de actividad');
   const esTarea = datos.tipo === 'tarea';
   const responsable = estado.usuarios.find((usuario) => usuario.correo === datos.responsableCorreo && usuario.activo) ?? usuarioActual();
   const actividad = {
@@ -53,7 +45,7 @@ export function registrarActividad(datos) {
   };
   if (esTarea && new Date(actividad.vence).getTime() < Date.now() - DIA_MS) throw new Error('La fecha de la tarea no puede ser anterior a hoy');
   estado.actividades.push(actividad);
-  registrarAuditoria('seguimiento', esTarea ? 'Tarea creada' : 'Actividad registrada', `${actividad.id} · ${cliente.nombre} · ${TIPOS_ACTIVIDAD[actividad.tipo]}`);
+  registrarAuditoria('seguimiento', esTarea ? 'Tarea creada' : 'Actividad registrada', `${actividad.id} · ${cliente.nombre} · ${nombreDe('tiposActividad', actividad.tipo)}`);
   guardarEstado();
   return actividad;
 }

@@ -3,7 +3,7 @@ import { estado } from '../../core/store.js';
 import { aPesos, fechaDeHoy } from '../../core/format.js';
 import { puede } from '../../core/autorizacion.js';
 import { cargarHtml, seccion, repetir } from '../../core/template.js';
-import { TIPOS_DOCUMENTO } from '../../core/validacion.js';
+import { opcionesDe, primeroActivo } from '../../services/catalogos.service.js';
 import { nombreDeTienda, enTiendaActiva } from '../../core/tienda.js';
 import * as servicioEmpleados from '../../services/empleados.service.js';
 import { cargarPlantillasCuadricula, montarCuadricula } from '../../components/cuadricula-datos/cuadricula-datos.js';
@@ -71,7 +71,10 @@ export function montar(raiz, contexto) {
     columnas: 4,
     campos: [
       { clave: 'nombre', etiqueta: 'Nombre completo', obligatorio: true, ancho: 2 },
-      { clave: 'tipoDocumento', etiqueta: 'Tipo de documento', tipo: 'seleccion', valor: 'CC', opciones: () => Object.entries(TIPOS_DOCUMENTO) },
+      {
+        clave: 'tipoDocumento', etiqueta: 'Tipo de documento', tipo: 'seleccion', obligatorio: true,
+        valor: () => primeroActivo('tiposDocumento'), opciones: (empleado) => opcionesDe('tiposDocumento', empleado?.tipoDocumento),
+      },
       { clave: 'documento', etiqueta: 'Documento', maximo: 20, obligatorio: true },
       { clave: 'cargo', etiqueta: 'Cargo', tipo: 'lista', maximo: 60, obligatorio: true, opciones: () => servicioEmpleados.CARGOS },
       {

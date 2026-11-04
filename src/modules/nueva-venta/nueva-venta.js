@@ -7,7 +7,8 @@ import { cargarHtml, seccion, repetir } from '../../core/template.js';
 import { sesionActual } from '../../core/sesion.js';
 import { buscarProductoPorCodigo, LISTAS_PRECIO, etiquetaDeLista } from '../../services/inventario.service.js';
 import { tiendaActiva, tiendaActivaId } from '../../core/tienda.js';
-import { armarVenta, registrarVenta, ultimoValorDeVenta, listaDeTienda, buscarDocumento, documentoPendiente, impuestosDe, consecutivoPrevisto, TIPOS_DOCUMENTO, DESTINOS_POSIBLES } from '../../services/ventas.service.js';
+import { armarVenta, registrarVenta, ultimoValorDeVenta, listaDeTienda, buscarDocumento, documentoPendiente, impuestosDe, consecutivoPrevisto, numeroDe, TIPOS_DOCUMENTO, DESTINOS_POSIBLES } from '../../services/ventas.service.js';
+import { activos, esEfectivo } from '../../services/catalogos.service.js';
 import { deudaDeCliente, consumidorFinal } from '../../services/clientes.service.js';
 import { puede } from '../../core/autorizacion.js';
 import { cargarPlantillasBuscador, montarBuscadorCuadricula } from '../../components/buscador-cuadricula/buscador-cuadricula.js';
@@ -21,7 +22,6 @@ let plantillasSelector;
 let escuchaTeclado = null;
 
 const TEXTO_REGISTRAR = { factura: 'Emitir factura', remision: 'Emitir remisión', cotizacion: 'Guardar cotización' };
-const METODO_EFECTIVO = 'Efectivo';
 
 // Un lector de códigos teclea muy rápido (menos de 50 ms entre teclas) y termina con Enter
 const MILISEGUNDOS_ENTRE_TECLAS_DE_LECTOR = 50;
@@ -30,7 +30,8 @@ const LARGO_MINIMO_CODIGO = 3;
 export async function dibujar() {
   documento = await cargarHtml(new URL('./nueva-venta.html', import.meta.url));
   [plantillasBuscador, plantillasSelector] = await Promise.all([cargarPlantillasBuscador(), cargarPlantillasSelector()]);
-  const metodos = estado.ajustes.ventas.metodosPago.map((metodo) => ({ metodo }));
+  // Medios de pago activos en el orden de Ajustes: el primero queda elegido
+  const metodos = activos('metodosPago').map((metodo) => ({ id: metodo.id, nombre: metodo.nombre }));
   return seccion(documento, 'principal', {
     opcionesMetodo: repetir(documento, 'opcion-metodo', metodos),
     opcionesLista: repetir(documento, 'opcion-lista', LISTAS_PRECIO),
@@ -55,11 +56,11 @@ export function montar(raiz, contexto) {
   let lista = listaDeTienda(tiendaActivaId());
   const subtotal = (linea) => linea.cantidad * linea.valorUnitario;
   const totalActual = () => lineas.reduce((acumulado, linea) => acumulado + subtotal(linea), 0);
-  const cobraEnEfectivo = () => tipo === 'factura' && buscar('#metodo', raiz).value === METODO_EFECTIVO;
+  const cobraEnEfectivo = () => tipo === 'factura' && esEfectivo(buscar('#metodo', raiz).value);
   const datosDeVenta = () => ({
     tipo,
     clienteId: selectorCliente.elegido()?.id ?? '',
-    metodo: buscar('#metodo', raiz).value,
+    metodoId: buscar('#metodo', raiz).value,
     observaciones: buscar('#observaciones', raiz).value,
     // Vacío = valor exacto
     recibido: cobraEnEfectivo() ? leerEntero(campoRecibido.value) : 0,
@@ -91,8 +92,8 @@ export function montar(raiz, contexto) {
     buscar('#lista-precio', raiz).value = nueva;
     if (cambio && avisar) {
       contexto.aviso(lineas.length
-        ? `${etiquetaDeLista(nueva)} aplicado correctamente a los productos que agregues; los que ya están conservan su valor`
-        : `${etiquetaDeLista(nueva)} aplicado correctamente`);
+        ? `Lista de precios ${etiquetaDeLista(nueva)} aplicada correctamente a los productos que agregues; los que ya están conservan su valor`
+        : `Lista de precios ${etiquetaDeLista(nueva)} aplicada correctamente`);
     }
   };
 
@@ -131,7 +132,6 @@ export function montar(raiz, contexto) {
     buscar('#subtotal-venta', raiz).textContent = aPesos(total - iva);
     buscar('#iva-venta', raiz).innerHTML = repetir(documento, 'linea-impuesto', impuestos.map((grupo) => ({ tarifa: grupo.tarifa, valor: aPesos(grupo.iva) })));
     buscar('#total-venta', raiz).textContent = aPesos(total);
-    campoRecibido.placeholder = `$ Valor (vacío = ${aPesos(total)})`;
     pintarPago();
   };
 
@@ -177,7 +177,7 @@ export function montar(raiz, contexto) {
         referencia: producto.referencia,
         nombre: producto.generico ? '' : producto.nombre,
         generico: Boolean(producto.generico),
-        iva: producto.iva ?? 0,
+        iva: producto.iva,
         cantidad: 1,
         valorUnitario: ultimoValorDeVenta(producto.id, lista),
       });
@@ -284,7 +284,7 @@ export function montar(raiz, contexto) {
     selectorCliente.elegir(origen.clienteId || consumidorFinal()?.id, false);
     if (origen.observaciones) buscar('#observaciones', raiz).value = origen.observaciones;
     buscar('#aviso-origen', raiz).hidden = false;
-    buscar('#texto-origen', raiz).textContent = `Pasando ${TIPOS_DOCUMENTO[origen.tipo].etiqueta.toLowerCase()} ${origen.id} · ${origen.cliente}. Conserva el número ${origen.id.slice(1)}.`;
+    buscar('#texto-origen', raiz).textContent = `Pasando ${TIPOS_DOCUMENTO[origen.tipo].etiqueta.toLowerCase()} ${origen.id} · ${origen.cliente}. Conserva el número ${numeroDe(origen.id)}.`;
     buscar('#detalle-origen', raiz).textContent = origen.tipo === 'remision'
       ? 'Las cantidades ya entregadas no se descuentan otra vez del stock; lo remitido que quites de la factura vuelve al stock.'
       : 'La cotización no movió el stock: la remisión o la factura lo descuentan al registrarse.';

@@ -6,8 +6,8 @@ import { estaAnulada } from './ventas.service.js';
 import { productosBajoMinimo } from './inventario.service.js';
 import { cotizaciones, resumenDelEmbudo } from './embudo.service.js';
 import { enTiendaActiva } from '../core/tienda.js';
+import { nombreDe, parametro } from './catalogos.service.js';
 
-const DIAS_INACTIVIDAD = 60;
 
 // Ventas cuya fecha local está entre "desde" y "hasta" (ambas incluidas, formato AAAA-MM-DD)
 // Solo las de la sucursal activa (o de todas si se ven todas las tiendas)
@@ -42,7 +42,7 @@ export function reporteDeVentas(desde, hasta) {
   const porProducto = new Map();
   let utilidad = 0;
   for (const venta of ventas) {
-    porMetodo.set(venta.metodo, (porMetodo.get(venta.metodo) ?? 0) + venta.total);
+    porMetodo.set(venta.metodoId, (porMetodo.get(venta.metodoId) ?? 0) + venta.total);
     for (const item of venta.items) {
       const ingreso = item.cantidad * item.valorUnitario;
       utilidad += ingreso - item.cantidad * costoDe(item.productoId);
@@ -53,7 +53,7 @@ export function reporteDeVentas(desde, hasta) {
     }
   }
   for (const devolucion of devoluciones) {
-    porMetodo.set(devolucion.metodo, (porMetodo.get(devolucion.metodo) ?? 0) - devolucion.total);
+    porMetodo.set(devolucion.metodoId, (porMetodo.get(devolucion.metodoId) ?? 0) - devolucion.total);
     for (const item of devolucion.items) {
       const ingreso = item.cantidad * item.valorUnitario;
       utilidad -= ingreso - item.cantidad * costoDe(item.productoId);
@@ -72,7 +72,7 @@ export function reporteDeVentas(desde, hasta) {
     cantidad,
     ticketPromedio: cantidad ? Math.round(total / cantidad) : 0,
     utilidad,
-    porMetodo: [...porMetodo].map(([metodo, valor]) => ({ metodo, valor })).sort((a, b) => b.valor - a.valor),
+    porMetodo: [...porMetodo].map(([metodoId, valor]) => ({ metodo: nombreDe('metodosPago', metodoId), valor })).sort((a, b) => b.valor - a.valor),
     masVendidos: [...porProducto.values()].filter((producto) => producto.cantidad > 0).sort((a, b) => b.cantidad - a.cantidad).slice(0, 5),
   };
 }
@@ -100,14 +100,14 @@ export function clientesNuevosYRecurrentes(desde, hasta) {
   return { nuevos, recurrentes };
 }
 
-// Clientes que compraron alguna vez pero llevan más de 60 días sin comprar
+// Clientes que compraron alguna vez pero llevan más de los días sin comprar de Ajustes
 export function clientesInactivos(ahora = Date.now()) {
   return estado.clientes.map((cliente) => {
     const ventas = estado.ventas.filter((venta) => venta.clienteId === cliente.id);
     if (!ventas.length) return null;
     const ultima = ventas.reduce((mayor, venta) => (venta.fecha > mayor ? venta.fecha : mayor), '');
     const dias = Math.floor((ahora - new Date(ultima).getTime()) / 86_400_000);
-    return dias > DIAS_INACTIVIDAD ? { id: cliente.id, nombre: cliente.nombre, ultima, dias } : null;
+    return dias > parametro('diasInactividad') ? { id: cliente.id, nombre: cliente.nombre, ultima, dias } : null;
   }).filter(Boolean).sort((a, b) => b.dias - a.dias);
 }
 

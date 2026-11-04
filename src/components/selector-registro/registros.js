@@ -5,6 +5,9 @@ import { aPesos, aFecha } from '../../core/format.js';
 import { deudaDeCliente, cupoDisponible } from '../../services/clientes.service.js';
 import { saldoConProveedor } from '../../services/proveedores.service.js';
 import { etiquetaDeLista, existenciasVisibles } from '../../services/inventario.service.js';
+import { listaDeTienda } from '../../services/ventas.service.js';
+import { tiendaActivaId, TODAS_LAS_TIENDAS } from '../../core/tienda.js';
+import { nombreDe } from '../../services/catalogos.service.js';
 
 const documentoDe = (registro) => (registro.documento ? `${registro.tipoDocumento} ${registro.documento}` : '');
 
@@ -14,16 +17,23 @@ export const COLUMNAS_CLIENTE = [
   { clave: 'documentoTexto', titulo: 'Identificación', ancho: '150px' },
   { clave: 'nombre', titulo: 'Nombre', ancho: 'minmax(0, 1.5fr)' },
   { clave: 'telefono', titulo: 'Teléfono', ancho: '120px' },
-  { clave: 'listaTexto', titulo: 'Lista de precios', ancho: '130px' },
+  { clave: 'listaTexto', titulo: 'Lista de precios', ancho: '110px' },
   { clave: 'deudaTexto', titulo: 'Saldo pendiente', ancho: '100px', alinear: 'derecha' },
   { clave: 'cupoTexto', titulo: 'Crédito disponible', ancho: '100px', alinear: 'derecha' },
 ];
+
+// Sin lista propia el cliente compra con la de la sucursal activa; con "todas" no hay una que mostrar
+const listaDeCliente = (cliente) => {
+  if (cliente.listaPrecio) return cliente.listaPrecio;
+  const tiendaId = tiendaActivaId();
+  return tiendaId && tiendaId !== TODAS_LAS_TIENDAS ? listaDeTienda(tiendaId) : '';
+};
 
 // filtro: función opcional para dejar solo algunos (por ejemplo, sin el consumidor final o solo con deuda)
 export const clientesParaElegir = (filtro = () => true) => estado.clientes.filter(filtro).map((cliente) => ({
   ...cliente,
   documentoTexto: documentoDe(cliente),
-  listaTexto: cliente.listaPrecio ? etiquetaDeLista(cliente.listaPrecio) : 'La de la sucursal',
+  listaTexto: etiquetaDeLista(listaDeCliente(cliente)),
   deudaTexto: aPesos(deudaDeCliente(cliente)),
   cupoTexto: cliente.limiteCredito ? aPesos(cupoDisponible(cliente)) : 'Sin crédito',
 }));
@@ -40,7 +50,7 @@ export const COLUMNAS_PROVEEDOR = [
 
 export const proveedoresParaElegir = (filtro = () => true) => estado.proveedores.filter(filtro).map((proveedor) => ({
   ...proveedor,
-  plazoTexto: `${proveedor.plazoDias ?? 0} días`,
+  plazoTexto: `${proveedor.plazoDias} días`,
   saldo: saldoConProveedor(proveedor.id),
   saldoTexto: aPesos(saldoConProveedor(proveedor.id)),
 }));
@@ -50,12 +60,13 @@ export const COLUMNAS_PRODUCTO = [
   { clave: 'id', titulo: 'Código', ancho: '70px' },
   { clave: 'referencia', titulo: 'Referencia', ancho: '120px' },
   { clave: 'nombre', titulo: 'Producto', ancho: 'minmax(0, 1.6fr)' },
-  { clave: 'categoria', titulo: 'Categoría', ancho: '130px' },
+  { clave: 'categoriaTexto', titulo: 'Categoría', ancho: '130px' },
   { clave: 'stockTexto', titulo: 'Stock', ancho: '80px', alinear: 'derecha' },
 ];
 
 export const productosParaElegir = (filtro = () => true) => estado.productos.filter(filtro).map((producto) => ({
   ...producto,
+  categoriaTexto: nombreDe('categorias', producto.categoriaId),
   stockTexto: producto.generico ? '—' : String(existenciasVisibles(producto)),
 }));
 

@@ -1,4 +1,5 @@
-// Reglas de negocio de Ajustes: datos del negocio, recibo, ventas y restablecimiento de datos de prueba.
+// Reglas de negocio de Ajustes: datos del negocio, marca, recibo, ventas y restablecimiento de datos de prueba.
+// Los catálogos y parámetros (medios de pago, prefijos, etapas…) están en catalogos.service.js.
 import { estado, guardarEstado } from '../core/store.js';
 import { semilla } from '../data/seed.js';
 import { borrarBusquedas } from '../core/busquedas.js';
@@ -6,7 +7,6 @@ import { exigirPermiso } from '../core/autorizacion.js';
 import { exigirTelefono, exigirTexto, LIMITES } from '../core/validacion.js';
 import { registrarAuditoria } from './auditoria.service.js';
 
-export const METODOS_DISPONIBLES = ['Efectivo', 'Nequi', 'Tarjeta', 'Transferencia', 'Crédito'];
 
 export function guardarDatosTienda({ nombre, nit, telefono, ciudad, direccion }) {
   exigirPermiso('ajustes', 'editar', 'cambiar los ajustes');
@@ -35,14 +35,20 @@ export function establecerMostrarDatosTienda(valor) {
   guardarEstado();
 }
 
-// Activa o desactiva un medio de pago; siempre debe quedar al menos uno disponible
-export function establecerMetodoPago(metodo, activo) {
+// Marca: nombre comercial del encabezado y el ingreso, logo (imagen pequeña en data URL; vacío = el de Genérico) y
+// color de acento en formato #rrggbb
+const LOGO_MAXIMO_BYTES = 200 * 1024;
+const PATRON_LOGO = /^data:image\/(png|jpeg|webp|svg\+xml);base64,[A-Za-z0-9+/=]+$/;
+
+export function guardarMarca({ nombreComercial, acento, logo }) {
   exigirPermiso('ajustes', 'editar', 'cambiar los ajustes');
-  const actuales = estado.ajustes.ventas.metodosPago;
-  const nuevos = METODOS_DISPONIBLES.filter((candidato) => (candidato === metodo ? activo : actuales.includes(candidato)));
-  if (!nuevos.length) throw new Error('Debe quedar al menos un medio de pago disponible');
-  estado.ajustes.ventas.metodosPago = nuevos;
-  registrarAuditoria('ajustes', 'Medios de pago', nuevos.join(', '));
+  const color = String(acento ?? '').trim().toLowerCase();
+  if (!/^#[0-9a-f]{6}$/.test(color)) throw new Error('Elige el color de la marca');
+  const imagen = String(logo ?? '');
+  if (imagen && !PATRON_LOGO.test(imagen)) throw new Error('El logo debe ser una imagen PNG, JPG, WEBP o SVG');
+  if (imagen.length * 0.75 > LOGO_MAXIMO_BYTES) throw new Error('El logo es demasiado grande (máximo 200 KB)');
+  estado.ajustes.marca = { nombreComercial: exigirTexto(nombreComercial, 'el nombre comercial', { maximo: 40 }), acento: color, logo: imagen };
+  registrarAuditoria('ajustes', 'Marca', `${estado.ajustes.marca.nombreComercial} · ${color}${imagen ? ' · con logo' : ''}`);
   guardarEstado();
 }
 
@@ -54,14 +60,17 @@ export function establecerPermitirSinExistencias(valor) {
 }
 
 // Vuelve el inventario, las ventas, las remisiones y cotizaciones, los clientes y su seguimiento, los proveedores,
-// los pagos, la caja, los traslados y la contabilidad a los datos de ejemplo; los ajustes, roles, personas, tiendas,
-// bodegas, empleados y la auditoría no cambian
+// los pagos, la caja, los traslados y la contabilidad a los datos de ejemplo. También los catálogos y parámetros,
+// porque esos datos usan sus códigos. Los datos del negocio, la marca, el recibo, roles, personas, tiendas, bodegas,
+// empleados y la auditoría no cambian
 export function restablecerDatosDePrueba() {
   exigirPermiso('ajustes', 'editar', 'cambiar los ajustes');
   const datos = structuredClone(semilla);
   const claves = ['productos', 'ventas', 'documentos', 'facturas', 'orden', 'clientes', 'pagos', 'cajas', 'movimientosCaja', 'contabilidad',
     'devoluciones', 'actividades', 'proveedores', 'ordenesCompra', 'ajustesInventario', 'traslados'];
   claves.forEach((clave) => { estado[clave] = datos[clave]; });
+  estado.ajustes.catalogos = datos.ajustes.catalogos;
+  estado.ajustes.parametros = datos.ajustes.parametros;
   borrarBusquedas();
   registrarAuditoria('ajustes', 'Datos de ejemplo restablecidos', '');
   guardarEstado();

@@ -1,5 +1,6 @@
 /* Tono de la interfaz: única fuente de colores, tamaños, radios, letras y sombras.
-   Cada tienda puede sobrescribir los colores de marca desde Ajustes (sin tocar código).
+   Cada tienda puede sobrescribir los colores de marca desde Ajustes (sin tocar código): tema.js pone las variables
+   --marca-claro, --marca-oscuro y sus derivadas en <html>; sin ellas se usa el índigo del diseño.
    --acento es el color de marca (botones principales, selección); cada grupo del menú tiene su color. */
 :root {
   /* Espaciado */
@@ -36,10 +37,10 @@
   --borde: #e4e4e2;
   --texto: #1f1f1e;
   --suave: #6b6b68;
-  --acento: #4553c9;
-  --acento-texto: #ffffff;
-  --marca: #4553c9;
-  --marca-suave: #eceefc;
+  --acento: var(--marca-claro, #4553c9);
+  --acento-texto: var(--marca-texto-claro, #ffffff);
+  --marca: var(--marca-claro, #4553c9);
+  --marca-suave: var(--marca-suave-claro, #eceefc);
   --exito: #1d7f55;
   --exito-suave: #e5f4ec;
   /* Color de cada grupo del menú */
@@ -82,10 +83,10 @@
   --borde: #333331;
   --texto: #ececea;
   --suave: #a3a39f;
-  --acento: #8d97f2;
-  --acento-texto: #12142b;
-  --marca: #8d97f2;
-  --marca-suave: #262a48;
+  --acento: var(--marca-oscuro, #8d97f2);
+  --acento-texto: var(--marca-texto-oscuro, #12142b);
+  --marca: var(--marca-oscuro, #8d97f2);
+  --marca-suave: var(--marca-suave-oscuro, #262a48);
   --exito: #5cc796;
   --exito-suave: #1d3329;
   --grupo-inicio: #8d97f2;

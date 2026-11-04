@@ -13,6 +13,7 @@ import { nombreDeTienda } from '../../core/tienda.js';
 import { etiquetaDeLista } from '../../services/inventario.service.js';
 import { cargarPlantillasSelector, montarSelectorRegistro } from '../../components/selector-registro/selector-registro.js';
 import { COLUMNAS_FACTURA, facturasParaElegir } from '../../components/selector-registro/registros.js';
+import { esEfectivo } from '../../services/catalogos.service.js';
 
 let documento;
 let plantillasCuadricula;
@@ -192,8 +193,8 @@ export function montar(raiz, contexto) {
       datos: [
         ...datosComunes(venta),
         { etiqueta: 'Medio de pago', valor: venta.metodo },
-        { etiqueta: 'Monto recibido', valor: venta.metodo === 'Efectivo' && venta.recibido ? aPesos(venta.recibido) : '' },
-        { etiqueta: 'Cambio', valor: venta.metodo === 'Efectivo' && venta.recibido ? aPesos(venta.devuelta ?? 0) : '' },
+        { etiqueta: 'Monto recibido', valor: esEfectivo(venta.metodoId) && venta.recibido ? aPesos(venta.recibido) : '' },
+        { etiqueta: 'Cambio', valor: esEfectivo(venta.metodoId) && venta.recibido ? aPesos(venta.devuelta) : '' },
         { etiqueta: 'Plazo', valor: venta.plazoDias ? `${venta.plazoDias} días` : '' },
         { etiqueta: 'Documento de origen', valor: venta.documentoOrigen ?? '' },
         { etiqueta: 'Mensaje personalizado', valor: venta.observaciones ?? '', ancho: true },

@@ -1,7 +1,7 @@
-// Selector de un registro (cliente, proveedor, producto, factura…) con la forma de la cuadrícula: una fila con los
-// datos del registro elegido, siempre a la vista, y debajo una casilla de búsqueda por cada columna. Escribir en
-// cualquier casilla (se combinan, sin tildes ni mayúsculas) muestra las coincidencias; flechas y Enter o un clic
-// eligen; Escape cierra. Siempre hay un registro elegido si se da uno por defecto (por ejemplo, Consumidor final).
+// Selector de un registro (cliente, proveedor, producto, factura…) con la forma de la cuadrícula: debajo de los
+// títulos, una sola fila de casillas de búsqueda que muestran los datos del registro elegido, siempre a la vista.
+// Escribir en cualquier casilla (se combinan, sin tildes ni mayúsculas) muestra las coincidencias; flechas y Enter o
+// un clic eligen; Escape cierra. Siempre hay un registro elegido si se da uno por defecto (por ejemplo, Consumidor final).
 //
 // const selector = montarSelectorRegistro(contenedor, opciones)
 //   plantillas   resultado de cargarPlantillasSelector()
@@ -20,6 +20,7 @@ import { cargarHtml, rellenar, repetir } from '../../core/template.js';
 import { anchoFlexible } from '../cuadricula-datos/cuadricula-datos.js';
 
 const MAXIMO_RESULTADOS = 8;
+const TEXTO_BUSCAR = 'Buscar';
 let consecutivo = 0;
 
 export const cargarPlantillasSelector = () => cargarHtml(new URL('./selector-registro.html', import.meta.url));
@@ -39,15 +40,18 @@ export function montarSelectorRegistro(contenedor, {
     clave,
     etiqueta,
     encabezados: repetir(plantillas, 'selector-encabezado', columnas.map((columna) => ({ titulo: columna.titulo, clase: clase(columna) }))),
-    filtros: columnas.map((columna) => (columna.filtrable === false
-      ? '<div></div>'
-      : rellenar(plantilla('selector-filtro'), { clave: columna.clave, titulo: columna.titulo, etiqueta }))).join(''),
+    filtros: columnas.map((columna) => rellenar(plantilla(columna.filtrable === false ? 'selector-fijo' : 'selector-filtro'), {
+      clave: columna.clave, titulo: columna.titulo, clase: clase(columna), etiqueta,
+    })).join(''),
   });
   const raiz = contenedor.firstElementChild;
   raiz.style.setProperty('--columnas-selector', columnas.map((columna) => anchoFlexible(columna.ancho)).join(' '));
   const filaElegida = buscar('[data-elegido]', raiz);
+  const anuncio = buscar('[data-anuncio]', raiz);
   const panel = buscar('[data-resultados]', raiz);
   const casillas = buscarTodos('[data-filtro-selector]', raiz);
+  const columnaDe = (claveColumna) => columnas.find((columna) => columna.clave === claveColumna);
+  const columnaDelAviso = filtrables.find((columna) => String(columna.ancho).includes('fr')) ?? filtrables[0];
   let actual = null;
   let encontrados = [];
   let posicionActiva = 0;
@@ -56,9 +60,24 @@ export function montarSelectorRegistro(contenedor, {
     ? rellenar(plantilla('selector-celda-html'), { clase: clase(columna), titulo: columna.titulo, contenido: columna.html(registro) })
     : rellenar(plantilla('selector-celda'), { clase: clase(columna), titulo: columna.titulo, texto: registro[columna.clave] ?? '' }))).join('');
 
+  // Los datos del elegido van como texto de ayuda de cada casilla: se ven siempre y escribir encima busca otro.
+  // Sin elegido, las casillas dicen "Buscar" y la columna flexible (la del nombre, la más ancha) dice qué falta elegir
   function pintarElegido() {
-    filaElegida.innerHTML = actual ? celdas(actual) : rellenar(plantilla('selector-sin-elegir'), { texto: vacio });
+    casillas.forEach((casilla) => {
+      const columna = columnaDe(casilla.dataset.filtroSelector);
+      const vacia = columna === columnaDelAviso ? vacio : TEXTO_BUSCAR;
+      const texto = actual ? String(actual[columna.clave] ?? '') || '—' : vacia;
+      casilla.placeholder = texto;
+      casilla.title = actual ? `${columna.titulo}: ${texto}` : '';
+    });
+    buscarTodos('[data-celda-fija]', raiz).forEach((celda) => {
+      const columna = columnaDe(celda.dataset.celdaFija);
+      if (!actual) celda.textContent = '';
+      else if (columna.html) celda.innerHTML = columna.html(actual);
+      else celda.textContent = actual[columna.clave] ?? '';
+    });
     filaElegida.classList.toggle('sin-registro', !actual);
+    anuncio.textContent = actual ? `Elegido: ${actual.nombre ?? actual.id}` : vacio;
   }
 
   function cerrar() {

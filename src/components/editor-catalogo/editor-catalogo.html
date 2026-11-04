@@ -1,0 +1,62 @@
+<template id="editor-estructura">
+  <section class="editor-catalogo" aria-labelledby="titulo-{{id}}">
+    <div class="cabecera-editor">
+      <strong id="titulo-{{id}}">{{titulo}}</strong>
+      <span class="texto-suave">{{ayuda}}</span>
+    </div>
+    <div class="filas-editor" role="list" data-filas></div>
+    {{{agregar}}}
+  </section>
+</template>
+
+<template id="editor-fila">
+  <div class="fila-editor {{clase}}" role="listitem" data-id="{{id}}">
+    <div class="orden-editor">
+      <button type="button" class="boton boton-orden" data-mover="-1" aria-label="Subir {{nombre}}" {{{sinSubir}}}>↑</button>
+      <button type="button" class="boton boton-orden" data-mover="1" aria-label="Bajar {{nombre}}" {{{sinBajar}}}>↓</button>
+    </div>
+    {{{codigo}}}
+    <input class="campo nombre-editor" data-nombre value="{{nombre}}" maxlength="40" aria-label="Nombre de {{nombre}}" autocomplete="off">
+    {{{extras}}}
+    <span class="uso-editor texto-suave">{{uso}}</span>
+    <span class="insignia {{claseEstado}}">{{estado}}</span>
+    <div class="acciones-editor">{{{acciones}}}</div>
+  </div>
+</template>
+
+<template id="editor-codigo">
+  <span class="codigo-editor" title="{{etiqueta}}">{{codigo}}</span>
+</template>
+
+<template id="editor-seleccion">
+  <select class="campo" data-extra="{{clave}}" aria-label="{{etiqueta}} de {{nombre}}" {{{bloqueo}}}>{{{opciones}}}</select>
+</template>
+
+<template id="editor-opcion">
+  <option value="{{valor}}" {{{seleccion}}}>{{texto}}</option>
+</template>
+
+<template id="editor-casilla">
+  <label class="casilla"><input type="checkbox" data-extra="{{clave}}" {{{marcada}}}> {{etiqueta}}</label>
+</template>
+
+<template id="editor-boton-activar">
+  <button type="button" class="boton" data-activar="{{valor}}">{{texto}}</button>
+</template>
+
+<template id="editor-boton-eliminar">
+  <button type="button" class="boton peligro" data-eliminar>Eliminar</button>
+</template>
+
+<template id="editor-agregar">
+  <form class="agregar-editor" data-agregar>
+    {{{codigo}}}
+    <input class="campo" name="nombre" maxlength="40" placeholder="Nuevo: {{singular}}" aria-label="Nombre del nuevo {{singular}}" autocomplete="off">
+    {{{extras}}}
+    <button type="submit" class="boton primario">Agregar</button>
+  </form>
+</template>
+
+<template id="editor-codigo-nuevo">
+  <input class="campo codigo-nuevo" name="codigo" maxlength="5" placeholder="{{etiqueta}}" aria-label="{{etiqueta}}" autocomplete="off" {{{numerico}}}>
+</template>

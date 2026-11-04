@@ -35,14 +35,14 @@
 </template>
 
 <template id="acciones-abierta">
-  {{{negociar}}}
+  {{{avanzar}}}
   <a class="boton primario" href="nueva-venta.html?documento={{id}}&amp;tipo=factura">Facturar</a>
   <a class="boton" href="nueva-venta.html?documento={{id}}&amp;tipo=remision">Remisión</a>
   <button type="button" class="boton peligro" data-perder="{{id}}">Perdida</button>
 </template>
 
-<template id="boton-negociar">
-  <button type="button" class="boton" data-negociar="{{id}}">En negociación</button>
+<template id="boton-avanzar">
+  <button type="button" class="boton" data-avanzar="{{id}}" data-etapa="{{etapa}}">Pasar a {{nombre}}</button>
 </template>
 
 <template id="boton-ficha">

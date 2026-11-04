@@ -9,6 +9,7 @@ import { exigirPermiso, nombreDeUsuario } from '../core/autorizacion.js';
 import { exigirFecha, exigirTexto, validarLineas, validarProducto } from '../core/validacion.js';
 import { registrarAuditoria } from './auditoria.service.js';
 import { bodegaDeTienda, tiendaActivaId, TODAS_LAS_TIENDAS } from '../core/tienda.js';
+import { exigirElemento, idPorNombre, nombreDe } from './catalogos.service.js';
 
 const quitarTildes = (texto) => String(texto).normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
 
@@ -16,17 +17,20 @@ export const buscarProductoPorId = (id) => estado.productos.find((producto) => p
 export const buscarBodega = (id) => estado.bodegas.find((bodega) => bodega.id === id);
 
 // Campos que se pueden editar (el ID no se edita porque lo usan ventas y facturas; "genérico" se elige al crear)
-export const CAMPOS_EDITABLES = ['referencia', 'nombre', 'categoria', 'costo', 'precioSurtido', 'precioMayor', 'precioDetal', 'iva', 'stockMinimo', 'existencias'];
+export const CAMPOS_EDITABLES = ['referencia', 'nombre', 'categoriaId', 'unidadId', 'costo', 'precioSurtido', 'precioMayor', 'precioDetal', 'iva', 'stockMinimo', 'existencias'];
 
-// Listas de precio: cada producto tiene los tres precios y cada venta usa una lista
+// Listas de precio: cada producto tiene los tres precios y cada venta usa una lista. En pantalla la lista se nombra
+// solo con su número (1, 2 o 3), que es como la conocen los empleados; su nombre (Surtido, Por mayor…) se cambia en Ajustes
 export const LISTAS_PRECIO = [
-  { id: 'surtido', campo: 'precioSurtido', etiqueta: 'Precio 1 · Surtido', detalle: 'Casi al costo, para surtir los almacenes' },
-  { id: 'mayor', campo: 'precioMayor', etiqueta: 'Precio 2 · Por mayor', detalle: 'Ventas mayoristas' },
-  { id: 'detal', campo: 'precioDetal', etiqueta: 'Precio 3 · Al detal', detalle: 'Ventas al público' },
+  { id: 'surtido', campo: 'precioSurtido', numero: '1' },
+  { id: 'mayor', campo: 'precioMayor', numero: '2' },
+  { id: 'detal', campo: 'precioDetal', numero: '3' },
 ];
 export const LISTA_POR_DEFECTO = 'detal';
 export const esListaPrecio = (id) => LISTAS_PRECIO.some((lista) => lista.id === id);
-export const etiquetaDeLista = (id) => LISTAS_PRECIO.find((lista) => lista.id === id)?.etiqueta ?? '';
+export const etiquetaDeLista = (id) => LISTAS_PRECIO.find((lista) => lista.id === id)?.numero ?? '';
+// Nombre del precio de una lista en el producto: «Precio 1 · Surtido»
+export const nombreDePrecio = (lista) => `Precio ${lista.numero} · ${nombreDe('listasPrecio', lista.id)}`;
 
 // Precio de un producto en una lista; si esa lista no tiene precio, el de la siguiente más alta
 export function precioDeLista(producto, listaId = LISTA_POR_DEFECTO) {
@@ -39,7 +43,6 @@ export function precioDeLista(producto, listaId = LISTA_POR_DEFECTO) {
 // Un producto genérico (servicios, reparaciones, artículos sin código) no maneja stock
 export const manejaStock = (producto) => Boolean(producto) && !producto.generico;
 
-export const categorias = () => [...new Set(estado.productos.map((producto) => producto.categoria).filter(Boolean))].sort();
 
 // El ID de producto es solo números: el siguiente es el mayor que exista más uno
 export const siguienteIdProducto = () => String(siguienteNumero(estado.productos.map((producto) => producto.id)));
@@ -94,7 +97,7 @@ export function buscarProductos(consulta = '') {
   const exacto = quitarTildes(consulta.trim());
   const esExacto = (producto) => quitarTildes(producto.id) === exacto || quitarTildes(producto.referencia) === exacto;
   return estado.productos.map(conStockVisible).filter((producto) => {
-    const texto = quitarTildes([producto.id, producto.nombre, producto.referencia, producto.categoria, producto.costo, producto.precioDetal, producto.existencias].join(' '));
+    const texto = quitarTildes([producto.id, producto.nombre, producto.referencia, nombreDe('categorias', producto.categoriaId), producto.costo, producto.precioDetal, producto.existencias].join(' '));
     return terminos.every((termino) => texto.includes(termino));
   }).sort((a, b) => Number(esExacto(b)) - Number(esExacto(a)));
 }
@@ -106,7 +109,14 @@ export function filtrarProductos(filtros) {
     condiciones.every(([columna, texto]) => quitarTildes(producto[columna]).includes(quitarTildes(texto.trim()))));
 }
 
-// Edición en línea de un campo de un producto. El stock que se edita es el de la bodega de la sucursal activa.
+// Categoría, unidad y tarifa de IVA deben estar activas en los catálogos; al editar se acepta la que ya tenía
+function exigirCatalogosDeProducto(limpio, actual = {}) {
+  exigirElemento('categorias', limpio.categoriaId, 'Elige una categoría del catálogo', actual.categoriaId);
+  exigirElemento('unidades', limpio.unidadId, 'Elige una unidad de medida del catálogo', actual.unidadId);
+  exigirElemento('tarifasIva', String(limpio.iva), `La tarifa de IVA ${limpio.iva} % no está activa en Ajustes`, String(actual.iva ?? ''));
+}
+
+// Edición de un campo de un producto. El stock que se edita es el de la bodega de la sucursal activa.
 export function actualizarProducto(id, campo, valor) {
   exigirPermiso('inventario', 'editar', 'editar productos');
   const producto = buscarProductoPorId(id);
@@ -122,6 +132,7 @@ export function actualizarProducto(id, campo, valor) {
     registrarAuditoria('inventario', 'Stock ajustado', `${producto.id} · ${bodega.nombre} = ${limpio.existencias}`);
   } else {
     const limpio = validarProducto({ ...producto, [campo]: valor });
+    exigirCatalogosDeProducto(limpio, producto);
     producto[campo] = limpio[campo];
     registrarAuditoria('inventario', 'Producto editado', `${producto.id} · ${campo} = ${producto[campo]}`);
   }
@@ -140,6 +151,7 @@ export const buscarProductoPorCodigo = (codigo) => {
 export function agregarProducto(datos) {
   exigirPermiso('inventario', 'crear', 'crear productos');
   const limpio = validarProducto(datos);
+  exigirCatalogosDeProducto(limpio);
   const bodega = limpio.existencias ? exigirBodegaActiva() : null;
   const idFinal = limpio.id || siguienteIdProducto();
   if (buscarProductoPorId(idFinal)) throw new Error(`Ya existe un producto con el ID ${idFinal}`);
@@ -184,10 +196,14 @@ export function importarProductos(filas) {
   const validas = filas.map((fila, posicion) => {
     try {
       const actual = fila.id ? buscarProductoPorId(String(Number(fila.id))) : null;
-      const definidos = Object.fromEntries(Object.entries(fila).filter(([, valor]) => valor !== undefined));
+      const { categoria, unidad, ...definidos } = Object.fromEntries(Object.entries(fila).filter(([, valor]) => valor !== undefined));
+      // El archivo trae los nombres de la categoría y la unidad; se guardan sus códigos del catálogo
+      if (categoria !== undefined) definidos.categoriaId = idPorNombre('categorias', categoria, 'La categoría');
+      if (unidad !== undefined) definidos.unidadId = idPorNombre('unidades', unidad, 'La unidad');
       const base = actual ? { ...actual, existencias: bodega ? existenciasEn(actual, bodega.id) : actual.existencias } : {};
-      const completa = { costo: 0, existencias: 0, ...base, ...definidos, generico: actual?.generico ?? false };
+      const completa = { existencias: 0, ...base, ...definidos, generico: actual?.generico ?? false };
       const limpia = validarProducto(completa);
+      exigirCatalogosDeProducto(limpia, actual ?? {});
       if (limpia.id && vistos.has(limpia.id)) throw new Error(`el ID ${limpia.id} está repetido en el archivo`);
       if (limpia.id) vistos.add(limpia.id);
       return limpia;
@@ -283,7 +299,7 @@ export function kardexDeProducto(productoId, bodegaId = null) {
     if (cantidad && deLaBodega(bodega)) movimientos.push({ fecha, documento, detalle, cantidad, costo, bodegaId: bodega });
   };
   const deItems = (items) => items.filter((item) => item.productoId === productoId).reduce((suma, item) => suma + item.cantidad, 0);
-  const bodegaDe = (registro) => registro.bodegaId ?? 'B-01';
+  const bodegaDe = (registro) => registro.bodegaId;
 
   estado.facturas.forEach((factura) => {
     const item = factura.items.find((candidato) => candidato.productoId === productoId);

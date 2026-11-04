@@ -5,6 +5,7 @@ import { cargarHtml, seccion, repetir } from '../../core/template.js';
 import { resumirItems, buscarDocumento } from '../../services/ventas.service.js';
 import * as servicioEmbudo from '../../services/embudo.service.js';
 import { mostrarReciboDeVenta } from '../../components/recibo/comprobantes.js';
+import { elementos, opcionesDe, ETAPAS_CERRADAS } from '../../services/catalogos.service.js';
 import { refrescarAlertas } from '../../components/header/header.js';
 import { cargarPlantillasFicha, crearFicha } from '../../components/ficha-registro/ficha-registro.js';
 import { cargarPlantillasFormulario, montarFormulario } from '../../components/formulario/formulario.js';
@@ -27,12 +28,13 @@ export function montar(raiz, contexto) {
   // Botones de una oportunidad según su etapa (en la tarjeta y en la ficha)
   const accionesDe = (cotizacion) => {
     const etapa = servicioEmbudo.etapaDe(cotizacion);
-    const abierta = etapa === 'enviada' || etapa === 'negociacion';
+    const abierta = !ETAPAS_CERRADAS.includes(etapa);
+    const siguiente = servicioEmbudo.siguienteEtapa(cotizacion);
     let acciones = '';
     if (abierta && puedeEditar) {
       acciones = repetir(documento, 'acciones-abierta', [{
         id: cotizacion.id,
-        negociar: etapa === 'enviada' ? repetir(documento, 'boton-negociar', [{ id: cotizacion.id }]) : '',
+        avanzar: siguiente ? repetir(documento, 'boton-avanzar', [{ id: cotizacion.id, etapa: siguiente.id, nombre: siguiente.nombre }]) : '',
       }]);
       // Sin permiso para registrar ventas no se ofrece facturar ni remisionar
       if (!puedeConvertir) acciones = acciones.replace(/<a class="boton[^"]*" href="nueva-venta[^>]*>[^<]*<\/a>/g, '');
@@ -43,7 +45,7 @@ export function montar(raiz, contexto) {
   const motivoDe = (cotizacion) => {
     const etapa = servicioEmbudo.etapaDe(cotizacion);
     let motivo = '';
-    if (etapa === 'perdida') motivo = `${cotizacion.motivoPerdida ?? 'Anulada'}${cotizacion.detallePerdida ? `: ${cotizacion.detallePerdida}` : ''}`;
+    if (etapa === 'perdida') motivo = servicioEmbudo.motivoDePerdida(cotizacion);
     if (etapa === 'ganada') motivo = `Pasada a ${cotizacion.convertidoEn}`;
     return motivo;
   };
@@ -69,18 +71,20 @@ export function montar(raiz, contexto) {
   const pintar = () => {
     const lista = servicioEmbudo.cotizaciones().slice().reverse();
     const resumen = servicioEmbudo.resumenDelEmbudo(lista);
-    const abiertas = resumen.porEtapa.enviada.valor + resumen.porEtapa.negociacion.valor;
+
     buscar('#resumen-embudo', raiz).innerHTML = repetir(documento, 'indicador', [
-      { etiqueta: 'Valor en juego (abiertas)', valor: aPesos(abiertas) },
+      { etiqueta: 'Valor en juego (abiertas)', valor: aPesos(resumen.enJuego) },
       { etiqueta: 'Ganadas', valor: `${resumen.porEtapa.ganada.cantidad} · ${aPesos(resumen.porEtapa.ganada.valor)}` },
       { etiqueta: 'Perdidas', valor: `${resumen.porEtapa.perdida.cantidad} · ${aPesos(resumen.porEtapa.perdida.valor)}` },
       { etiqueta: 'Conversión', valor: `${resumen.conversion} %` },
     ]);
-    buscar('#tablero', raiz).innerHTML = servicioEmbudo.ETAPAS.map((etapa) => {
+    // Columnas: las etapas activas y las desactivadas que aún tienen cotizaciones
+    const etapas = elementos('etapasEmbudo').filter((etapa) => etapa.activo || resumen.porEtapa[etapa.id].cantidad);
+    buscar('#tablero', raiz).innerHTML = etapas.map((etapa) => {
       const deEtapa = lista.filter((cotizacion) => servicioEmbudo.etapaDe(cotizacion) === etapa.id);
       return repetir(documento, 'columna-embudo', [{
         etapa: etapa.id,
-        titulo: etapa.etiqueta,
+        titulo: etapa.nombre,
         cantidad: deEtapa.length,
         valor: aPesos(resumen.porEtapa[etapa.id].valor),
         tarjetas: deEtapa.map(tarjeta).join(''),
@@ -107,7 +111,7 @@ export function montar(raiz, contexto) {
     }
   };
 
-  // El motivo no se supone: la persona lo elige; el detalle es obligatorio si el motivo es «Otro»
+  // El motivo no se supone: la persona lo elige; el detalle es obligatorio si el motivo lo pide en Ajustes
   const panelPerdida = montarFormulario(buscar('#panel-perdida', raiz), {
     plantillas: plantillasFormulario,
     clave: 'perdida',
@@ -115,8 +119,8 @@ export function montar(raiz, contexto) {
     columnas: 2,
     alError: contexto.alerta,
     campos: [
-      { clave: 'motivo', etiqueta: 'Motivo', tipo: 'seleccion', obligatorio: true, valor: '', opciones: () => [['', 'Elige el motivo'], ...servicioEmbudo.MOTIVOS_PERDIDA] },
-      { clave: 'detalle', etiqueta: 'Detalle', maximo: 200, ayuda: 'Obligatorio si el motivo es «Otro»' },
+      { clave: 'motivo', etiqueta: 'Motivo', tipo: 'seleccion', obligatorio: true, valor: '', opciones: () => [['', 'Elige el motivo'], ...opcionesDe('motivosPerdida')] },
+      { clave: 'detalle', etiqueta: 'Detalle', maximo: 200, ayuda: 'Obligatorio si el motivo lo pide (por ejemplo, «Otro»)' },
     ],
     alGuardar: ({ motivo, detalle }, cotizacion) => ejecutar(
       () => servicioEmbudo.marcarPerdida(cotizacion.id, motivo, detalle),
@@ -149,12 +153,17 @@ export function montar(raiz, contexto) {
     };
   });
 
+  const avanzar = (id, etapa) => ejecutar(
+    () => servicioEmbudo.cambiarEtapa(id, etapa),
+    `Cotización ${id} pasada a ${servicioEmbudo.etiquetaDeEtapa(etapa)} correctamente`,
+  );
+
   const alTocar = (evento) => {
     const boton = evento.target.closest('button');
     if (!boton) return;
     if (boton.dataset.ficha) abrirFicha(boton.dataset.ficha);
     else if (boton.dataset.ver) mostrarReciboDeVenta(buscarDocumento(boton.dataset.ver));
-    else if (boton.dataset.negociar) ejecutar(() => servicioEmbudo.cambiarEtapa(boton.dataset.negociar, 'negociacion'), `Cotización ${boton.dataset.negociar} en negociación correctamente`);
+    else if (boton.dataset.avanzar) avanzar(boton.dataset.avanzar, boton.dataset.etapa);
     else if (boton.dataset.perder) abrirPerdida(boton.dataset.perder);
   };
   buscar('#tablero', raiz).addEventListener('click', alTocar);

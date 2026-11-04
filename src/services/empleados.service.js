@@ -3,7 +3,8 @@
 import { estado, guardarEstado } from '../core/store.js';
 import { siguienteCodigo } from '../core/codigos.js';
 import { exigirPermiso } from '../core/autorizacion.js';
-import { exigirCorreo, exigirEntero, exigirFecha, exigirTelefono, exigirTexto, TIPOS_DOCUMENTO } from '../core/validacion.js';
+import { exigirCorreo, exigirEntero, exigirFecha, exigirTelefono, exigirTexto } from '../core/validacion.js';
+import { exigirElemento } from './catalogos.service.js';
 import { registrarAuditoria } from './auditoria.service.js';
 import { aFechaLocal, fechaDeHoy } from '../core/format.js';
 
@@ -30,7 +31,8 @@ export function desempenoDelMes(empleado) {
 }
 
 function prepararDatos(datos, idActual) {
-  const tipoDocumento = TIPOS_DOCUMENTO[datos.tipoDocumento] ? datos.tipoDocumento : 'CC';
+  const actual = estado.empleados.find((empleado) => empleado.id === idActual);
+  const tipoDocumento = exigirElemento('tiposDocumento', datos.tipoDocumento, 'Elige el tipo de documento', actual?.tipoDocumento);
   const documento = exigirTexto(datos.documento, 'el documento', { maximo: 20 });
   if (!/^[0-9A-Za-z.-]{3,20}$/.test(documento)) throw new Error('El documento solo puede tener números, letras, punto y guion');
   if (estado.empleados.some((empleado) => empleado.id !== idActual && empleado.documento === documento && empleado.tipoDocumento === tipoDocumento)) {

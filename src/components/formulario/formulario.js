@@ -8,10 +8,10 @@
 //   titulo        título al crear; tituloEditar(registro) da el título al editar
 //   columnas      2, 3 o 4 columnas en escritorio (en celular siempre una)
 //   campos        [{ clave, etiqueta, tipo, opciones, valor, obligatorio, ancho, ayuda, ejemplo, maximo, alCambiar }]
-//     tipo        texto (por defecto), entero, entero-negativo, decimal (admite coma), correo, telefono, fecha, clave, area, seleccion,
+//     tipo        texto (por defecto), entero, entero-negativo, decimal (admite coma), correo, telefono, fecha, clave, color, area, seleccion,
 //                 lista (texto con sugerencias), etiquetas (texto separado por comas → lista), casilla, casillas,
 //                 registro (selector filtrable de un cliente, proveedor, factura…: lleva columnas, registros, plural, vacio)
-//     opciones    [[valor, texto]], [{ valor, texto }] o una función que las calcula al abrir
+//     opciones    [[valor, texto]], [{ valor, texto }] o una función (registro abierto o null) que las calcula al abrir
 //     valor       valor por defecto al crear (o función que lo calcula al abrir); se ve escrito en el campo
 //     obligatorio true para exigirlo al guardar
 //     ancho       'completo' ocupa toda la fila; un número ocupa ese número de columnas
@@ -41,7 +41,7 @@ export async function cargarPlantillasFormulario() {
 
 const TIPOS_ENTRADA = {
   texto: 'text', lista: 'text', etiquetas: 'text', entero: 'text', 'entero-negativo': 'text', decimal: 'text',
-  correo: 'email', telefono: 'tel', fecha: 'date', clave: 'password',
+  correo: 'email', telefono: 'tel', fecha: 'date', clave: 'password', color: 'color',
 };
 const CON_CAMBIO = new Set(['casilla', 'casillas', 'seleccion', 'fecha']);
 
@@ -62,7 +62,9 @@ export function montarFormulario(contenedor, {
   let registroAbierto = null;
   let api;
 
-  const htmlOpciones = (campo) => repetir(plantillas, tipoDe(campo) === 'casillas' ? 'opcion-casilla' : 'opcion', normalizarOpciones(campo.opciones));
+  // Las opciones calculadas reciben el registro abierto: al editar pueden incluir un valor ya desactivado
+  const listaDeOpciones = (campo) => (typeof campo.opciones === 'function' ? campo.opciones(registroAbierto) : campo.opciones);
+  const htmlOpciones = (campo) => repetir(plantillas, tipoDe(campo) === 'casillas' ? 'opcion-casilla' : 'opcion', normalizarOpciones(listaDeOpciones(campo)));
 
   // Las opciones calculadas con una función se llenan al abrir (pueden depender del formulario ya montado)
   const opcionesIniciales = (campo) => (typeof campo.opciones === 'function' ? '' : htmlOpciones(campo));

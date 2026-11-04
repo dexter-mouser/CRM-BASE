@@ -5,6 +5,7 @@ import { aFecha, aFechaLocal, fechaDeHoy } from '../core/format.js';
 import { exigirPermiso } from '../core/autorizacion.js';
 import { exigirMotivo } from '../core/validacion.js';
 import { registrarAuditoria } from './auditoria.service.js';
+import { esCredito } from './catalogos.service.js';
 
 const sumar = (lista, campo) => lista.reduce((acumulado, elemento) => acumulado + elemento[campo], 0);
 
@@ -39,8 +40,8 @@ export function resumenDelDia(dia) {
     costoVendido,
     devoluciones: totalDevuelto,
     utilidad: totalVentas - totalDevuelto - (costoVendido - costoDevuelto),
-    ventasCredito: sumar(ventas.filter((venta) => venta.metodo === 'Crédito'), 'total')
-      - sumar(devoluciones.filter((devolucion) => devolucion.metodo === 'Crédito'), 'total'),
+    ventasCredito: sumar(ventas.filter((venta) => esCredito(venta.metodoId)), 'total')
+      - sumar(devoluciones.filter((devolucion) => esCredito(devolucion.metodoId)), 'total'),
     abonosClientes: sumar(pagos.filter((pago) => pago.tipo === 'abono'), 'valor'),
     pagosProveedores: sumar(pagos.filter((pago) => pago.tipo === 'proveedor'), 'valor'),
     comprasFacturadas: sumar(estado.facturas.filter((factura) => factura.fecha === dia), 'total'),

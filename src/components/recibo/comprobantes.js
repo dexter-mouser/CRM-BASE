@@ -2,7 +2,8 @@
 import { aPesos, aFecha } from '../../core/format.js';
 import { mostrarComprobante } from './recibo.js';
 import { estado } from '../../core/store.js';
-import { devolucionesDeVenta, estaAnulada, buscarClientePorNombre, impuestosDe, TIPOS_DOCUMENTO, ETIQUETA_NOTA, METODO_CREDITO } from '../../services/ventas.service.js';
+import { devolucionesDeVenta, estaAnulada, buscarClientePorNombre, impuestosDe, TIPOS_DOCUMENTO, ETIQUETA_NOTA } from '../../services/ventas.service.js';
+import { esCredito, esEfectivo } from '../../services/catalogos.service.js';
 import { buscarCliente, deudaDeCliente, vencimientoDe } from '../../services/clientes.service.js';
 import { proveedoresConSaldo } from '../../services/pagos.service.js';
 import { buscarProveedor, ESTADOS_ORDEN } from '../../services/proveedores.service.js';
@@ -42,7 +43,7 @@ const totalesDeImpuestos = (documento) => impuestosDe(documento).flatMap((grupo)
 
 // Factura de venta, remisión o cotización; registrada (con número) o aún sin registrar (vista previa)
 export function mostrarReciboDeVenta(documento) {
-  const tipo = documento.tipo ?? 'factura';
+  const { tipo } = documento;
   const registrado = Boolean(documento.id);
   const etiqueta = TIPOS_DOCUMENTO[tipo].etiqueta;
   const datos = datosComunes(documento);
@@ -57,7 +58,7 @@ export function mostrarReciboDeVenta(documento) {
     const devuelto = notasDeLaFactura.reduce((acumulado, nota) => acumulado + nota.total, 0);
     totales.push(...totalesDeImpuestos(documento));
     totales.push({ etiqueta: 'TOTAL', valor: aPesos(documento.total), fuerte: !devuelto });
-    if (documento.metodo === 'Efectivo' && documento.recibido) {
+    if (esEfectivo(documento.metodoId) && documento.recibido) {
       totales.push({ etiqueta: 'Monto recibido', valor: aPesos(documento.recibido) });
       totales.push({ etiqueta: 'Cambio', valor: aPesos(documento.devuelta) });
     }
@@ -67,9 +68,9 @@ export function mostrarReciboDeVenta(documento) {
     }
     notas.push(...notasDeLaFactura.map((nota) => `${nota.id} · ${nota.tipo === 'anulacion' ? 'Anulada' : 'Devolución'} (${aFecha(nota.fecha)}): ${nota.motivo}`));
     if (registrado && estaAnulada(documento)) sello = 'ANULADA';
-    if (documento.metodo === METODO_CREDITO) {
+    if (esCredito(documento.metodoId)) {
       datos.push(['Vence', aFecha(vencimientoDe(documento).slice(0, 10))]);
-      notas.push(`Venta a crédito a ${documento.plazoDias ?? 30} días: el valor queda como deuda del cliente.`);
+      notas.push(`Venta a crédito a ${documento.plazoDias} días: el valor queda como deuda del cliente.`);
     }
   } else if (tipo === 'remision') {
     totales.push({ etiqueta: 'VALOR DE LA MERCANCÍA', valor: aPesos(documento.total), fuerte: true });
@@ -109,7 +110,7 @@ export function mostrarComprobanteDeDevolucion(nota) {
   const acumulado = estado.devoluciones
     .filter((otra) => otra.ventaId === nota.ventaId && estado.devoluciones.indexOf(otra) <= estado.devoluciones.indexOf(nota))
     .reduce((suma, otra) => suma + otra.total, 0);
-  const reembolso = nota.metodo === METODO_CREDITO ? 'Se descontó de la deuda del cliente' : `Reembolso por ${nota.metodo}`;
+  const reembolso = esCredito(nota.metodoId) ? 'Se descontó de la deuda del cliente' : `Reembolso por ${nota.metodo}`;
   const datos = [
     ['Factura original', nota.ventaId],
     ['Fecha de la factura', factura ? aFecha(factura.fecha) : '—'],
