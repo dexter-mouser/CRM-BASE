@@ -206,3 +206,17 @@
 .boton-enlace:hover {
   color: var(--texto);
 }
+
+/* Pie: Plantilla, Importar y Exportar CSV juntos a la derecha */
+.acciones-csv {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--espacio-4);
+  margin-left: auto;
+}
+
+.acciones-csv label.boton-enlace {
+  margin: 0;
+  font-size: inherit;
+  color: var(--suave);
+}

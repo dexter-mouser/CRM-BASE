@@ -10,6 +10,7 @@ import { refrescarAlertas } from '../../components/header/header.js';
 import { cargarPlantillasFormulario, montarFormulario } from '../../components/formulario/formulario.js';
 import { COLUMNAS_CLIENTE, clientesParaElegir } from '../../components/selector-registro/registros.js';
 import { nombreDe, opcionesDe, primeroActivo } from '../../services/catalogos.service.js';
+import { importarActividades } from '../../services/importacion.service.js';
 
 let documento;
 let plantillasCuadricula;
@@ -110,6 +111,7 @@ export function montar(raiz, contexto) {
 
   const tareas = montarCuadricula(buscar('#cuadricula-tareas', raiz), {
     exportar: { modulo: 'seguimiento', archivo: 'tareas' },
+    importar: { modulo: 'seguimiento', formato: 'actividades', registros: () => [], importar: importarActividades, alImportar: contexto.redibujar },
     plantillas: plantillasCuadricula,
     titulo: 'Tareas pendientes',
     vacio: 'No tienes tareas pendientes.',
@@ -126,6 +128,7 @@ export function montar(raiz, contexto) {
 
   const historial = montarCuadricula(buscar('#cuadricula-actividades', raiz), {
     exportar: { modulo: 'seguimiento', archivo: 'actividades' },
+    importar: { modulo: 'seguimiento', formato: 'actividades', registros: () => [], importar: importarActividades, alImportar: contexto.redibujar },
     plantillas: plantillasCuadricula,
     titulo: 'Historial de actividades',
     vacio: 'Aún no hay actividades registradas.',

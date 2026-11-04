@@ -14,6 +14,7 @@ import { etiquetaDeLista } from '../../services/inventario.service.js';
 import { cargarPlantillasSelector, montarSelectorRegistro } from '../../components/selector-registro/selector-registro.js';
 import { COLUMNAS_FACTURA, facturasParaElegir } from '../../components/selector-registro/registros.js';
 import { esEfectivo } from '../../services/catalogos.service.js';
+import { importarFacturas, importarNotas, importarRemisionesYCotizaciones } from '../../services/importacion.service.js';
 
 let documento;
 let plantillasCuadricula;
@@ -105,6 +106,7 @@ export function montar(raiz, contexto) {
 
   montarCuadricula(buscar('#cuadricula-facturas', raiz), {
     exportar: { modulo: 'ventas', archivo: 'facturas' },
+    importar: { modulo: 'ventas', formato: 'facturas', registros: () => [], importar: importarFacturas, alImportar: contexto.redibujar },
     plantillas: plantillasCuadricula,
     titulo: 'Facturas de venta',
     vacio: 'Aún no hay facturas de venta.',
@@ -123,6 +125,7 @@ export function montar(raiz, contexto) {
 
   montarCuadricula(buscar('#cuadricula-documentos', raiz), {
     exportar: { modulo: 'ventas', archivo: 'remisiones-y-cotizaciones' },
+    importar: { modulo: 'ventas', formato: 'documentos', registros: () => [], importar: importarRemisionesYCotizaciones, alImportar: contexto.redibujar },
     plantillas: plantillasCuadricula,
     titulo: 'Remisiones y cotizaciones',
     vacio: 'Aún no hay remisiones ni cotizaciones. Créalas en Registrar venta eligiendo el documento.',
@@ -141,6 +144,7 @@ export function montar(raiz, contexto) {
 
   montarCuadricula(buscar('#cuadricula-notas', raiz), {
     exportar: { modulo: 'ventas', archivo: 'notas' },
+    importar: { modulo: 'ventas', formato: 'notas', registros: () => [], importar: importarNotas, alImportar: contexto.redibujar },
     plantillas: plantillasCuadricula,
     titulo: 'Notas de devolución y de anulación',
     vacio: 'Aún no hay notas de devolución ni de anulación.',

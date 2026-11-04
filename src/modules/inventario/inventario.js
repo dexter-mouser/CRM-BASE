@@ -16,6 +16,7 @@ import { conectarImportacion } from '../../components/importar-csv/importar-csv.
 import { cargarPlantillasBuscador } from '../../components/buscador-cuadricula/buscador-cuadricula.js';
 import { montarFactura } from './factura.js';
 import { mostrarComprobanteDeFactura } from '../../components/recibo/comprobantes.js';
+import { importarCompras } from '../../services/importacion.service.js';
 
 const CAMPOS = ['referencia', 'nombre', 'categoriaId', 'unidadId', 'costo', 'precioSurtido', 'precioMayor', 'precioDetal', 'iva', 'stockMinimo', 'existencias'];
 let documento;
@@ -92,6 +93,7 @@ export function montar(raiz, contexto) {
 
   const cuadriculaProductos = montarCuadricula(buscar('#cuadricula-productos', raiz), {
     exportar: { modulo: 'inventario', archivo: 'productos' },
+    importar: { modulo: 'inventario', formato: 'productos', registros: () => estado.productos.map((producto) => ({ ...producto, existencias: existenciasVisibles(producto) })), importar: importarProductos, alImportar: contexto.redibujar },
     plantillas: plantillasCuadricula,
     titulo: 'Productos',
     vacio: 'Aún no hay productos. Agrega uno con "Nuevo producto".',
@@ -296,6 +298,7 @@ export function montar(raiz, contexto) {
 
   montarCuadricula(buscar('#cuadricula-facturas-compra', raiz), {
     exportar: { modulo: 'inventario', archivo: 'facturas-de-compra' },
+    importar: { modulo: 'inventario', formato: 'compras', registros: () => [], importar: importarCompras, alImportar: contexto.redibujar },
     plantillas: plantillasCuadricula,
     titulo: 'Facturas de compra',
     vacio: 'Aún no hay facturas de compra.',
@@ -382,7 +385,9 @@ export function montar(raiz, contexto) {
   }
 
   // Plantilla e importación CSV (el stock del archivo es el de la bodega de la sucursal activa)
-  conectarImportacion(raiz, contexto, {
+  conectarImportacion({
+    plantilla: buscar('[data-plantilla-csv]', raiz),
+    entrada: buscar('[data-importar-csv]', raiz),
     modulo: 'inventario',
     formato: 'productos',
     registros: () => estado.productos.map((producto) => ({ ...producto, existencias: existenciasVisibles(producto) })),

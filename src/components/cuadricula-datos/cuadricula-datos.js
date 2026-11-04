@@ -12,12 +12,15 @@
 //   alPintar: función (cuerpo) llamada tras cada pintado, para activar campos numéricos u otros comportamientos
 //   exportar: { modulo, archivo } muestra "Exportar CSV" si el rol tiene ese permiso en el módulo; descarga las filas
 //             que se ven con el filtro (todas las páginas), con las columnas que tienen búsqueda
+//   importar: { modulo, formato, registros, importar, alImportar } muestra "Plantilla CSV" e "Importar CSV" junto a
+//             Exportar si el rol tiene ese permiso (ver components/importar-csv)
 // Devuelve { actualizar(filasNuevas), filtradas() }: repinta sin perder lo escrito en las casillas y entrega las filas visibles tras filtrar.
 import { buscar, buscarTodos } from '../../core/dom.js';
 import { cargarHtml, rellenar, repetir } from '../../core/template.js';
 import { puede } from '../../core/autorizacion.js';
 import { descargarCsv } from '../../services/csv.service.js';
 import { mostrarAviso } from '../toast/toast.js';
+import { conectarImportacion } from '../importar-csv/importar-csv.js';
 
 const POR_PAGINA = 50;
 const ANCHO_POR_FRACCION = 120;
@@ -45,7 +48,7 @@ function exportarFilas({ archivo }, columnas, filas) {
 }
 
 export function montarCuadricula(contenedor, {
-  plantillas, titulo, columnas, filas, vacio = 'No hay datos para mostrar.', porPagina = POR_PAGINA, alPintar, filtrosIniciales = {}, exportar = null,
+  plantillas, titulo, columnas, filas, vacio = 'No hay datos para mostrar.', porPagina = POR_PAGINA, alPintar, filtrosIniciales = {}, exportar = null, importar = null,
 }) {
   const clase = (columna) => (columna.alinear === 'derecha' ? 'alinear-derecha' : '');
 
@@ -114,6 +117,13 @@ export function montarCuadricula(contenedor, {
   const botonExportar = buscar('.exportar-cuadricula', contenedor);
   botonExportar.hidden = !(exportar && puede(exportar.modulo, 'exportar'));
   botonExportar.onclick = () => exportarFilas(exportar, columnas, filtrar());
+  if (importar) {
+    const plantilla = buscar('.plantilla-cuadricula', contenedor);
+    const etiquetaImportar = buscar('.importar-cuadricula', contenedor);
+    plantilla.hidden = false;
+    etiquetaImportar.hidden = false;
+    conectarImportacion({ plantilla, entrada: buscar('input', etiquetaImportar), ...importar });
+  }
 
   casillas.forEach((casilla) => { casilla.value = filtrosIniciales[casilla.dataset.columna] ?? ''; });
   pintar();

@@ -15,6 +15,7 @@ import { cargarPlantillasFormulario, montarFormulario } from '../../components/f
 import { montarSelectorRegistro } from '../../components/selector-registro/selector-registro.js';
 import { COLUMNAS_PROVEEDOR, proveedoresParaElegir } from '../../components/selector-registro/registros.js';
 import { parametro } from '../../services/catalogos.service.js';
+import { importarOrdenes } from '../../services/importacion.service.js';
 
 let documento;
 let plantillasCuadricula;
@@ -58,6 +59,7 @@ export function montar(raiz, contexto) {
   }));
   const cuadriculaProveedores = montarCuadricula(buscar('#cuadricula-proveedores', raiz), {
     exportar: { modulo: 'proveedores', archivo: 'proveedores' },
+    importar: { modulo: 'proveedores', formato: 'proveedores', registros: () => estado.proveedores, importar: servicioProveedores.importarProveedores, alImportar: contexto.redibujar },
     plantillas: plantillasCuadricula,
     titulo: 'Proveedores',
     vacio: 'Aún no hay proveedores. Crea uno con "Nuevo proveedor".',
@@ -73,7 +75,9 @@ export function montar(raiz, contexto) {
     ],
     filas: filasProveedores(),
   });
-  conectarImportacion(raiz, contexto, {
+  conectarImportacion({
+    plantilla: buscar('[data-plantilla-csv]', raiz),
+    entrada: buscar('[data-importar-csv]', raiz),
     modulo: 'proveedores', formato: 'proveedores', registros: () => estado.proveedores, importar: servicioProveedores.importarProveedores,
     alImportar: () => cuadriculaProveedores.actualizar(filasProveedores()),
   });
@@ -238,6 +242,7 @@ export function montar(raiz, contexto) {
   const accionesOrdenAbierta = (orden) => (orden.estado === 'abierta' && puede('inventario', 'crear') ? repetir(documento, 'acciones-orden-abierta', [{ id: orden.id }]) : '');
   montarCuadricula(buscar('#cuadricula-ordenes', raiz), {
     exportar: { modulo: 'proveedores', archivo: 'ordenes-de-compra' },
+    importar: { modulo: 'proveedores', formato: 'ordenes', registros: () => [], importar: importarOrdenes, alImportar: contexto.redibujar },
     plantillas: plantillasCuadricula,
     titulo: 'Órdenes de compra',
     vacio: 'Aún no hay órdenes de compra.',

@@ -12,6 +12,7 @@ import { cargarPlantillasCuadricula, montarCuadricula } from '../../components/c
 import { cargarPlantillasFicha, crearFicha } from '../../components/ficha-registro/ficha-registro.js';
 import { cargarPlantillasFormulario, montarFormulario } from '../../components/formulario/formulario.js';
 import { COLUMNAS_CLIENTE, COLUMNAS_PROVEEDOR, clientesParaElegir, proveedoresParaElegir } from '../../components/selector-registro/registros.js';
+import { importarPagos } from '../../services/importacion.service.js';
 
 let documento;
 let plantillasCuadricula;
@@ -35,6 +36,7 @@ export function montar(raiz, contexto) {
   const tipo = TIPO_POR_SECCION[contexto.seccion] ?? 'abono';
   montarCuadricula(buscar('#cuadricula-pagos', raiz), {
     exportar: { modulo: 'pagos', archivo: 'pagos' },
+    importar: { modulo: 'pagos', formato: 'pagos', registros: () => [], importar: importarPagos, alImportar: contexto.redibujar },
     plantillas: plantillasCuadricula,
     titulo: 'Historial de pagos',
     vacio: 'Aún no hay pagos registrados.',

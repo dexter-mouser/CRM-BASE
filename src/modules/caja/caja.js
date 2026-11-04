@@ -7,6 +7,7 @@ import { tiendaActiva, nombreDeTienda } from '../../core/tienda.js';
 import { cargarPlantillasCuadricula, montarCuadricula } from '../../components/cuadricula-datos/cuadricula-datos.js';
 import { cargarPlantillasFicha, crearFicha } from '../../components/ficha-registro/ficha-registro.js';
 import { cargarPlantillasFormulario, montarFormulario } from '../../components/formulario/formulario.js';
+import { importarMovimientosDeCaja } from '../../services/importacion.service.js';
 
 let documento;
 let plantillasCuadricula;
@@ -180,6 +181,7 @@ export function montar(raiz, contexto) {
   if (caja && contenedorMovimientos) {
     montarCuadricula(contenedorMovimientos, {
       exportar: { modulo: 'caja', archivo: 'movimientos-de-caja' },
+      importar: { modulo: 'caja', formato: 'movimientosCaja', registros: () => [], importar: importarMovimientosDeCaja, alImportar: contexto.redibujar },
       plantillas: plantillasCuadricula,
       titulo: 'Movimientos de esta caja',
       vacio: 'Aún no hay ingresos ni egresos manuales.',

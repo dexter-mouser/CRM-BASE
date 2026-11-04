@@ -7,7 +7,11 @@
 <div class="pie-cuadricula texto-suave">
   <span class="resumen-cuadricula" role="status"></span>
   <button type="button" class="boton-enlace ver-mas-cuadricula" hidden>Ver más</button>
-  <button type="button" class="boton-enlace exportar-cuadricula" hidden>Exportar CSV</button>
+  <span class="acciones-csv">
+    <button type="button" class="boton-enlace plantilla-cuadricula" hidden title="Descarga el formato para importar">Plantilla CSV</button>
+    <label class="boton-enlace importar-cuadricula" hidden>Importar CSV<input type="file" accept=".csv,text/csv" hidden></label>
+    <button type="button" class="boton-enlace exportar-cuadricula" hidden>Exportar CSV</button>
+  </span>
 </div>
 </template>
 

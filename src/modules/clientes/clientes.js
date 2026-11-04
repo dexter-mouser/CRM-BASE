@@ -80,6 +80,7 @@ export function montar(raiz, contexto) {
 
   const cuadriculaClientes = montarCuadricula(buscar('#cuadricula-clientes', raiz), {
     exportar: { modulo: 'clientes', archivo: 'clientes' },
+    importar: { modulo: 'clientes', formato: 'clientes', registros: () => estado.clientes, importar: servicioClientes.importarClientes, alImportar: contexto.redibujar },
     plantillas: plantillasCuadricula,
     titulo: 'Clientes',
     vacio: 'Aún no hay clientes. Crea uno con "Nuevo cliente".',
@@ -96,7 +97,9 @@ export function montar(raiz, contexto) {
     filas: filasClientes(),
   });
   const pintarLista = () => cuadriculaClientes.actualizar(filasClientes());
-  conectarImportacion(raiz, contexto, {
+  conectarImportacion({
+    plantilla: buscar('[data-plantilla-csv]', raiz),
+    entrada: buscar('[data-importar-csv]', raiz),
     modulo: 'clientes', formato: 'clientes', registros: () => estado.clientes, importar: servicioClientes.importarClientes, alImportar: pintarLista,
   });
 

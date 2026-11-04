@@ -93,6 +93,8 @@ Formato `generico-copia-1` con `version`, `fecha`, `huella` (SHA-256 de `datos`)
 | Todo o nada | Se validan todas las filas antes de cambiar nada; si alguna falla no se importa ninguna y el aviso lista las primeras filas con problema |
 | Tamaño | Hasta 10 MB y 5000 filas |
 | Código | Con el código de un registro existente lo actualiza; un código que no existe es un error (para crear se deja vacío). En productos, un ID nuevo crea el producto con ese ID |
+| Documentos | Una fila por producto agrupada por el número del documento; cada documento se registra con las reglas de su pantalla (stock, caja abierta, cupo, existencias) y toma el siguiente consecutivo. Si uno falla, todos los datos vuelven a como estaban antes de importar y el aviso nombra el documento y sus filas |
+| Solo exportan | Auditoría, cierres de caja, días cerrados, kardex y stock por bodega |
 | Columnas ausentes | El registro existente conserva su valor; para un registro nuevo valen las mismas reglas de obligatorios del formulario |
 | Repetidos en el archivo | Nombre, documento o NIT repetidos dentro del mismo archivo son un error |
 | Catálogos | Nombres de catálogo (tipo de persona, etiquetas, categoría, unidad) deben existir y estar activos; la sucursal del empleado se escribe con su nombre |

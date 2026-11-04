@@ -8,6 +8,7 @@ import { cargarPlantillasCuadricula, montarCuadricula } from '../../components/c
 import { cargarPlantillasFicha, crearFicha } from '../../components/ficha-registro/ficha-registro.js';
 import { nombreDeTienda } from '../../core/tienda.js';
 import { cargarPlantillasFormulario, montarFormulario } from '../../components/formulario/formulario.js';
+import { importarUsuarios } from '../../services/importacion.service.js';
 
 let documento;
 let plantillasCuadricula;
@@ -112,6 +113,7 @@ export function montar(raiz, contexto) {
 
   const cuadriculaPersonas = montarCuadricula(buscar('#cuadricula-personas', raiz), {
     exportar: { modulo: 'roles', archivo: 'usuarios' },
+    importar: { modulo: 'roles', formato: 'usuarios', registros: () => estado.usuarios, importar: importarUsuarios, alImportar: contexto.redibujar },
     plantillas: plantillasCuadricula,
     titulo: 'Personas',
     vacio: 'Aún no hay usuarios.',

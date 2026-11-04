@@ -107,13 +107,16 @@ export function montar(raiz, contexto) {
   const abrirFormulario = (empleado) => formulario.abrir(empleado);
   buscar('#nuevo-empleado', raiz).onclick = () => abrirFormulario(null);
 
-  conectarImportacion(raiz, contexto, {
+  conectarImportacion({
+    plantilla: buscar('[data-plantilla-csv]', raiz),
+    entrada: buscar('[data-importar-csv]', raiz),
     modulo: 'empleados', formato: 'empleados', registros: () => estado.empleados, importar: servicioEmpleados.importarEmpleados, alImportar: contexto.redibujar,
   });
 
   const editar = puede('empleados', 'editar');
   montarCuadricula(buscar('#cuadricula-empleados', raiz), {
     exportar: { modulo: 'empleados', archivo: 'empleados' },
+    importar: { modulo: 'empleados', formato: 'empleados', registros: () => estado.empleados, importar: servicioEmpleados.importarEmpleados, alImportar: contexto.redibujar },
     plantillas: plantillasCuadricula,
     titulo: 'Empleados',
     vacio: 'Aún no hay empleados en esta sucursal.',

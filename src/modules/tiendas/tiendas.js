@@ -8,6 +8,7 @@ import { buscarTienda, resumenDeTienda, agregarTienda, actualizarTienda, cambiar
 import { cargarPlantillasCuadricula, montarCuadricula } from '../../components/cuadricula-datos/cuadricula-datos.js';
 import { cargarPlantillasFicha, crearFicha } from '../../components/ficha-registro/ficha-registro.js';
 import { cargarPlantillasFormulario, montarFormulario } from '../../components/formulario/formulario.js';
+import { importarSucursales } from '../../services/importacion.service.js';
 
 let documento;
 let plantillasCuadricula;
@@ -61,6 +62,7 @@ export function montar(raiz, contexto) {
 
   const cuadricula = montarCuadricula(buscar('#cuadricula-tiendas', raiz), {
     exportar: { modulo: 'tiendas', archivo: 'sucursales' },
+    importar: { modulo: 'tiendas', formato: 'sucursales', registros: () => estado.tiendas, importar: importarSucursales, alImportar: contexto.redibujar },
     plantillas: plantillasCuadricula,
     titulo: 'Sucursales',
     vacio: 'Aún no hay sucursales. Crea una con "Nueva sucursal".',

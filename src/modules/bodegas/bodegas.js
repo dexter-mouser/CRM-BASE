@@ -12,6 +12,7 @@ import { dibujarSelector, montarSelectorProductos } from '../../components/selec
 import { cargarPlantillasCuadricula, montarCuadricula } from '../../components/cuadricula-datos/cuadricula-datos.js';
 import { cargarPlantillasFicha, crearFicha } from '../../components/ficha-registro/ficha-registro.js';
 import { cargarPlantillasFormulario, montarFormulario } from '../../components/formulario/formulario.js';
+import { importarBodegas, importarTraslados } from '../../services/importacion.service.js';
 
 let documento;
 let plantillasCuadricula;
@@ -80,6 +81,7 @@ export function montar(raiz, contexto) {
   const editar = puede('bodegas', 'editar');
   montarCuadricula(buscar('#cuadricula-bodegas', raiz), {
     exportar: { modulo: 'bodegas', archivo: 'bodegas' },
+    importar: { modulo: 'bodegas', formato: 'bodegas', registros: () => estado.bodegas, importar: importarBodegas, alImportar: contexto.redibujar },
     plantillas: plantillasCuadricula,
     titulo: 'Bodegas',
     vacio: 'Aún no hay bodegas. Crea una con "Nueva bodega".',
@@ -239,6 +241,7 @@ export function montar(raiz, contexto) {
     ? repetir(documento, 'acciones-traslado-pendiente', [{ id: traslado.id }]) : '');
   montarCuadricula(buscar('#cuadricula-traslados', raiz), {
     exportar: { modulo: 'bodegas', archivo: 'traslados' },
+    importar: { modulo: 'bodegas', formato: 'traslados', registros: () => [], importar: importarTraslados, alImportar: contexto.redibujar },
     plantillas: plantillasCuadricula,
     titulo: 'Traslados',
     vacio: 'Aún no hay traslados.',
