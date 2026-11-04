@@ -6,3 +6,6 @@ CLAUDE.md
 
 # Traspaso local entre chats (contexto, plan, pendientes)
 CONTEXTO-CHAT.md
+
+# Configuración local del servidor de pruebas (rutas de cada equipo)
+.claude/launch.json
