@@ -10,6 +10,7 @@ import { exigirFecha, exigirTexto, validarLineas, validarProducto } from '../cor
 import { registrarAuditoria } from './auditoria.service.js';
 import { bodegaDeTienda, tiendaActivaId, TODAS_LAS_TIENDAS } from '../core/tienda.js';
 import { exigirElemento, idPorNombre, nombreDe } from './catalogos.service.js';
+import { columnasDefinidas, exigirUnico, validarFilas } from '../core/importacion.js';
 
 const quitarTildes = (texto) => String(texto).normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
 
@@ -186,36 +187,22 @@ export function eliminarProducto(id) {
 // Las columnas que no trae el archivo conservan el valor actual del producto. El stock del archivo es el de la
 // bodega de la sucursal activa.
 export function importarProductos(filas) {
-  exigirPermiso('inventario', 'crear', 'importar productos');
-  if (!filas.length) throw new Error('El archivo no tiene productos');
-  if (filas.length > 5000) throw new Error('El archivo tiene demasiadas filas (máximo 5000)');
+  exigirPermiso('inventario', 'importar', 'importar productos');
   const traeStock = filas.some((fila) => fila.existencias !== undefined);
   const bodega = traeStock ? exigirBodegaActiva() : null;
-  const problemas = [];
   const vistos = new Set();
-  const validas = filas.map((fila, posicion) => {
-    try {
-      const actual = fila.id ? buscarProductoPorId(String(Number(fila.id))) : null;
-      const { categoria, unidad, ...definidos } = Object.fromEntries(Object.entries(fila).filter(([, valor]) => valor !== undefined));
-      // El archivo trae los nombres de la categoría y la unidad; se guardan sus códigos del catálogo
-      if (categoria !== undefined) definidos.categoriaId = idPorNombre('categorias', categoria, 'La categoría');
-      if (unidad !== undefined) definidos.unidadId = idPorNombre('unidades', unidad, 'La unidad');
-      const base = actual ? { ...actual, existencias: bodega ? existenciasEn(actual, bodega.id) : actual.existencias } : {};
-      const completa = { existencias: 0, ...base, ...definidos, generico: actual?.generico ?? false };
-      const limpia = validarProducto(completa);
-      exigirCatalogosDeProducto(limpia, actual ?? {});
-      if (limpia.id && vistos.has(limpia.id)) throw new Error(`el ID ${limpia.id} está repetido en el archivo`);
-      if (limpia.id) vistos.add(limpia.id);
-      return limpia;
-    } catch (error) {
-      problemas.push(`Fila ${posicion + 2}: ${error.message}`);
-      return null;
-    }
+  const validas = validarFilas(filas, (fila) => {
+    const actual = fila.id ? buscarProductoPorId(String(Number(fila.id))) : null;
+    const { categoria, unidad, ...definidos } = columnasDefinidas(fila);
+    // El archivo trae los nombres de la categoría y la unidad; se guardan sus códigos del catálogo
+    if (categoria !== undefined) definidos.categoriaId = idPorNombre('categorias', categoria, 'La categoría');
+    if (unidad !== undefined) definidos.unidadId = idPorNombre('unidades', unidad, 'La unidad');
+    const base = actual ? { ...actual, existencias: bodega ? existenciasEn(actual, bodega.id) : actual.existencias } : {};
+    const limpia = validarProducto({ existencias: 0, ...base, ...definidos, generico: actual?.generico ?? false });
+    exigirCatalogosDeProducto(limpia, actual ?? {});
+    exigirUnico(vistos, limpia.id, `el ID ${limpia.id} está repetido en el archivo`);
+    return limpia;
   });
-  if (problemas.length) {
-    const resto = problemas.length > 3 ? ` (y ${problemas.length - 3} más)` : '';
-    throw new Error(`No se importó nada. ${problemas.slice(0, 3).join(' · ')}${resto}`);
-  }
 
   let agregados = 0, actualizados = 0;
   for (const { existencias, ...fila } of validas) {

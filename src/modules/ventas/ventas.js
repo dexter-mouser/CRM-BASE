@@ -104,6 +104,7 @@ export function montar(raiz, contexto) {
   }));
 
   montarCuadricula(buscar('#cuadricula-facturas', raiz), {
+    exportar: { modulo: 'ventas', archivo: 'facturas' },
     plantillas: plantillasCuadricula,
     titulo: 'Facturas de venta',
     vacio: 'Aún no hay facturas de venta.',
@@ -121,6 +122,7 @@ export function montar(raiz, contexto) {
   });
 
   montarCuadricula(buscar('#cuadricula-documentos', raiz), {
+    exportar: { modulo: 'ventas', archivo: 'remisiones-y-cotizaciones' },
     plantillas: plantillasCuadricula,
     titulo: 'Remisiones y cotizaciones',
     vacio: 'Aún no hay remisiones ni cotizaciones. Créalas en Registrar venta eligiendo el documento.',
@@ -138,6 +140,7 @@ export function montar(raiz, contexto) {
   });
 
   montarCuadricula(buscar('#cuadricula-notas', raiz), {
+    exportar: { modulo: 'ventas', archivo: 'notas' },
     plantillas: plantillasCuadricula,
     titulo: 'Notas de devolución y de anulación',
     vacio: 'Aún no hay notas de devolución ni de anulación.',
@@ -164,9 +167,13 @@ export function montar(raiz, contexto) {
       { clave: 'nombre', titulo: 'Producto', ancho: 'minmax(0, 2fr)' },
       { clave: 'cantidad', titulo: 'Cantidad', ancho: '90px', alinear: 'derecha' },
       { clave: 'valor', titulo: 'Precio unitario', ancho: '120px', alinear: 'derecha' },
+      { clave: 'descuentoTexto', titulo: 'Descuento', ancho: '110px', alinear: 'derecha' },
       { clave: 'subtotal', titulo: 'Total línea', ancho: '120px', alinear: 'derecha' },
     ],
-    filas: registro.items.map((item) => ({ ...item, cantidad: String(item.cantidad), valor: aPesos(item.valorUnitario), subtotal: aPesos(item.cantidad * item.valorUnitario) })),
+    // El total de la línea ya tiene su descuento y su parte del descuento de la venta (las notas no tienen descuento)
+    filas: registro.items.map((item) => ({
+      ...item, cantidad: String(item.cantidad), valor: aPesos(item.valorUnitario), descuentoTexto: item.descuento ? aPesos(item.descuento) : '', subtotal: aPesos(item.total),
+    })),
   });
   const datosComunes = (registro) => [
     { etiqueta: 'Cliente', valor: registro.cliente },
@@ -174,6 +181,7 @@ export function montar(raiz, contexto) {
     { etiqueta: 'Sucursal', valor: registro.tiendaId ? nombreDeTienda(registro.tiendaId) : '' },
     { etiqueta: 'Registró', valor: registro.usuario ?? '' },
     { etiqueta: 'Lista de precio', valor: registro.listaPrecio ? etiquetaDeLista(registro.listaPrecio) : '' },
+    { etiqueta: 'Descuento de la venta', valor: registro.descuentoVenta ? aPesos(registro.descuentoVenta) : '' },
   ];
 
   const fichaFactura = crearFicha(buscar('#ficha-factura', raiz), plantillasFicha);

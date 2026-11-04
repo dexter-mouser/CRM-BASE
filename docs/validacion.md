@@ -9,6 +9,8 @@ Todas las reglas viven en un solo archivo, **`src/core/validacion.js`**: JavaScr
 | Motivo (devolución, anulación, reapertura) | Obligatorio, de 5 a 200 caracteres |
 | Observaciones del documento | Opcional, hasta 300 caracteres |
 | Monto recibido (efectivo) | Entero; si se escribe debe cubrir el total; la devuelta es la diferencia. Vacío = valor exacto |
+| Descuento de línea y de la venta | En pesos ("5000", "$ 5.000") o en porcentaje ("10%"); entero ≥ 0 que no supera el valor de la línea o de la venta. El total descontado no supera el descuento máximo de Ajustes (0 a 100 %), salvo para el Propietario. El IVA se calcula sobre el valor descontado |
+| Devolución con descuento | Reembolsa la parte del total de la línea de esas unidades; al devolver las últimas, exactamente lo que queda de la línea |
 | Tipo de documento | `factura`, `remision` o `cotizacion`; solo la factura admite método de pago y monto recibido |
 | Valores en pesos y cantidades | Enteros; máximo 1 000 000 000; el costo, el valor y la cantidad son mayores que 0 donde se pide un valor |
 | Stock | Entero (admite negativos) |
@@ -83,3 +85,15 @@ Formato `generico-copia-1` con `version`, `fecha`, `huella` (SHA-256 de `datos`)
 | Moneda y formato | Código de 3 letras (COP, USD) y un formato regional válido (es-CO) |
 | Marca | Nombre comercial hasta 40 caracteres, color `#rrggbb` y logo PNG, JPG, WEBP o SVG de hasta 200 KB (vacío = el de Genérico) |
 | Ancho de la tirilla | 80 o 58 mm |
+
+## Importación CSV
+
+| Regla | Detalle |
+|---|---|
+| Todo o nada | Se validan todas las filas antes de cambiar nada; si alguna falla no se importa ninguna y el aviso lista las primeras filas con problema |
+| Tamaño | Hasta 10 MB y 5000 filas |
+| Código | Con el código de un registro existente lo actualiza; un código que no existe es un error (para crear se deja vacío). En productos, un ID nuevo crea el producto con ese ID |
+| Columnas ausentes | El registro existente conserva su valor; para un registro nuevo valen las mismas reglas de obligatorios del formulario |
+| Repetidos en el archivo | Nombre, documento o NIT repetidos dentro del mismo archivo son un error |
+| Catálogos | Nombres de catálogo (tipo de persona, etiquetas, categoría, unidad) deben existir y estar activos; la sucursal del empleado se escribe con su nombre |
+| Permisos | Importar exige el permiso "Importar CSV" del módulo; la plantilla también. Exportar exige "Exportar CSV" |

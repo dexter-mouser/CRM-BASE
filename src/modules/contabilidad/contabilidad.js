@@ -70,6 +70,7 @@ const columnasCierres = () => [...COLUMNAS_CIERRES, {
 
 export function montar(raiz, contexto) {
   montarCuadricula(buscar('#cuadricula-cierres', raiz), {
+    exportar: { modulo: 'contabilidad', archivo: 'dias-cerrados' },
     plantillas: plantillasCuadricula,
     titulo: 'Días cerrados',
     vacio: 'Aún no hay días cerrados.',

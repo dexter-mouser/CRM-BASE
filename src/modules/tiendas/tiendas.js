@@ -60,6 +60,7 @@ export function montar(raiz, contexto) {
   });
 
   const cuadricula = montarCuadricula(buscar('#cuadricula-tiendas', raiz), {
+    exportar: { modulo: 'tiendas', archivo: 'sucursales' },
     plantillas: plantillasCuadricula,
     titulo: 'Sucursales',
     vacio: 'Aún no hay sucursales. Crea una con "Nueva sucursal".',

@@ -2,6 +2,7 @@ import { buscar, buscarTodos } from '../../core/dom.js';
 import { aPesos, aFecha, fechaDeHoy, aFechaLocal } from '../../core/format.js';
 import { cargarHtml, seccion, repetir } from '../../core/template.js';
 import { descargarCsv } from '../../services/csv.service.js';
+import { puede } from '../../core/autorizacion.js';
 import * as servicioReportes from '../../services/reportes.service.js';
 import { carteraPorEdades } from '../../services/clientes.service.js';
 import { parametro, rangosCartera } from '../../services/catalogos.service.js';
@@ -96,6 +97,7 @@ export function montar(raiz, contexto) {
   desde.onchange = alCambiarFechas;
   hasta.onchange = alCambiarFechas;
 
+  buscar('#descargar-ventas', raiz).hidden = !puede('reportes', 'exportar');
   buscar('#descargar-ventas', raiz).onclick = () => {
     if (!reporte.ventas.length) return contexto.alerta('No hay ventas en este rango para descargar');
     descargarCsv(

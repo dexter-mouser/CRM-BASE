@@ -50,6 +50,7 @@
               <div role="columnheader"><input class="campo" data-filtro="nombre" aria-label="Buscar producto por descripción" placeholder="Descripción o código de barras" autocomplete="off"></div>
               <div role="columnheader" class="titulo-columna numero-celda">Cantidad</div>
               <div role="columnheader" class="titulo-columna numero-celda">Precio unitario</div>
+              <div role="columnheader" class="titulo-columna numero-celda">Descuento</div>
               <div role="columnheader" class="titulo-columna numero-celda">IVA</div>
               <div role="columnheader" class="titulo-columna numero-celda">Total línea</div>
               <div role="columnheader"><span class="solo-lector">Quitar</span></div>
@@ -80,6 +81,11 @@
         <div class="bloque-documento">
           <h2 class="titulo-bloque">Resumen</h2>
           <div class="linea-resumen"><span>Productos</span><span id="resumen-lineas">0 líneas · 0 unidades</span></div>
+          <div class="linea-resumen linea-descuento">
+            <label for="descuento-venta">Descuento de la venta</label>
+            <input id="descuento-venta" class="campo numero-celda" autocomplete="off" placeholder="$ o %" aria-invalid="false">
+          </div>
+          <div class="linea-resumen" id="fila-descuentos" hidden><span>Descuentos</span><span id="descuentos-venta">$ 0</span></div>
           <div class="linea-resumen"><span>Subtotal (sin IVA)</span><span id="subtotal-venta">$ 0</span></div>
           <div id="iva-venta"></div>
           <div class="linea-resumen total-documento"><span>Total a pagar</span><strong id="total-venta">$ 0</strong></div>
@@ -140,6 +146,7 @@
     <div role="gridcell" class="texto-producto">{{{celdaNombre}}}</div>
     <div role="gridcell"><input class="campo numero-celda" data-campo="cantidad" data-numero="entero" inputmode="numeric" autocomplete="off" aria-label="Cantidad de {{nombre}}" value="{{cantidad}}"></div>
     <div role="gridcell"><input class="campo numero-celda" data-campo="valorUnitario" data-numero="entero" inputmode="numeric" autocomplete="off" placeholder="0" aria-label="Precio unitario de {{nombre}}" value="{{valorUnitario}}"></div>
+    <div role="gridcell"><input class="campo numero-celda" data-campo="descuento" autocomplete="off" placeholder="$ o %" aria-label="Descuento de {{nombre}} en pesos o porcentaje" aria-invalid="{{descuentoInvalido}}" title="{{error}}" value="{{descuento}}"></div>
     <div role="gridcell" class="numero-celda texto-suave">{{iva}} %</div>
     <div role="gridcell" class="numero-celda" data-subtotal>{{subtotal}}</div>
     <div role="gridcell"><button type="button" class="boton icono" data-quitar aria-label="Quitar {{nombre}}">{{{icono}}}</button></div>

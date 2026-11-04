@@ -6,6 +6,7 @@ import { cargarHtml, seccion, repetir, rellenar } from '../../core/template.js';
 import { nombreDe, opcionesDe, parametro, primeroActivo } from '../../services/catalogos.service.js';
 import { resumirItems, TIPOS_DOCUMENTO as TIPOS_DE_VENTA, ETIQUETA_NOTA } from '../../services/ventas.service.js';
 import * as servicioClientes from '../../services/clientes.service.js';
+import { conectarImportacion } from '../../components/importar-csv/importar-csv.js';
 import { LISTAS_PRECIO, etiquetaDeLista } from '../../services/inventario.service.js';
 import * as servicioActividades from '../../services/actividades.service.js';
 import { etapaDe, etiquetaDeEtapa } from '../../services/embudo.service.js';
@@ -78,6 +79,7 @@ export function montar(raiz, contexto) {
   });
 
   const cuadriculaClientes = montarCuadricula(buscar('#cuadricula-clientes', raiz), {
+    exportar: { modulo: 'clientes', archivo: 'clientes' },
     plantillas: plantillasCuadricula,
     titulo: 'Clientes',
     vacio: 'Aún no hay clientes. Crea uno con "Nuevo cliente".',
@@ -94,6 +96,9 @@ export function montar(raiz, contexto) {
     filas: filasClientes(),
   });
   const pintarLista = () => cuadriculaClientes.actualizar(filasClientes());
+  conectarImportacion(raiz, contexto, {
+    modulo: 'clientes', formato: 'clientes', registros: () => estado.clientes, importar: servicioClientes.importarClientes, alImportar: pintarLista,
+  });
 
   // --- Formulario ------------------------------------------------------------------------------------------
   const formulario = montarFormulario(buscar('#formulario-cliente', raiz), {

@@ -79,6 +79,7 @@ export function montar(raiz, contexto) {
   const nombreBodega = (id) => buscarBodega(id)?.nombre ?? id;
   const editar = puede('bodegas', 'editar');
   montarCuadricula(buscar('#cuadricula-bodegas', raiz), {
+    exportar: { modulo: 'bodegas', archivo: 'bodegas' },
     plantillas: plantillasCuadricula,
     titulo: 'Bodegas',
     vacio: 'Aún no hay bodegas. Crea una con "Nueva bodega".',
@@ -162,6 +163,7 @@ export function montar(raiz, contexto) {
   // --- Matriz de stock: una columna por bodega activa -------------------------------------------------------
   const activas = servicioBodegas.bodegasActivas();
   montarCuadricula(buscar('#cuadricula-stock', raiz), {
+    exportar: { modulo: 'bodegas', archivo: 'stock-por-bodega' },
     plantillas: plantillasCuadricula,
     titulo: 'Stock por bodega',
     vacio: 'Aún no hay productos.',
@@ -236,6 +238,7 @@ export function montar(raiz, contexto) {
   const accionesPendientes = (traslado) => (traslado.estado === 'enviado' && puede('bodegas', 'editar')
     ? repetir(documento, 'acciones-traslado-pendiente', [{ id: traslado.id }]) : '');
   montarCuadricula(buscar('#cuadricula-traslados', raiz), {
+    exportar: { modulo: 'bodegas', archivo: 'traslados' },
     plantillas: plantillasCuadricula,
     titulo: 'Traslados',
     vacio: 'Aún no hay traslados.',

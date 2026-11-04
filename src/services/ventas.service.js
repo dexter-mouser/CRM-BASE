@@ -8,7 +8,7 @@
 import { estado, guardarEstado } from '../core/store.js';
 import { numeroMayor, siguienteNumero } from '../core/codigos.js';
 import { aFechaLocal } from '../core/format.js';
-import { exigirPermiso, nombreDeUsuario, usuarioActual } from '../core/autorizacion.js';
+import { exigirPermiso, nombreDeUsuario, rolActual, usuarioActual } from '../core/autorizacion.js';
 import { exigirEntero, exigirMotivo, exigirTexto, validarLineas, LIMITES } from '../core/validacion.js';
 import { registrarAuditoria } from './auditoria.service.js';
 import { ultimoDiaCerrado } from './contabilidad.service.js';
@@ -59,12 +59,13 @@ export function ultimoValorDeVenta(productoId, listaPrecio = LISTA_POR_DEFECTO) 
 // IVA incluido en un valor con la tarifa indicada: valor 11.900 al 19 % -> base 10.000 e IVA 1.900
 export const ivaIncluido = (valor, tarifa) => (tarifa ? Math.round(valor - valor / (1 + tarifa / 100)) : 0);
 
-// Base e IVA de un documento, agrupados por tarifa (los precios incluyen el IVA)
+// Base e IVA de un documento, agrupados por tarifa. Los precios incluyen el IVA y el IVA se calcula sobre el total
+// de cada línea con sus descuentos ya aplicados (el de la línea y su parte del descuento de la venta)
 export function impuestosDe(documento) {
   const porTarifa = new Map();
   documento.items.forEach((item) => {
     const tarifa = item.iva;
-    const valor = item.cantidad * item.valorUnitario;
+    const valor = item.total;
     const anterior = porTarifa.get(tarifa) ?? { tarifa, base: 0, iva: 0 };
     const iva = ivaIncluido(valor, tarifa);
     anterior.iva += iva;
@@ -72,6 +73,66 @@ export function impuestosDe(documento) {
     porTarifa.set(tarifa, anterior);
   });
   return [...porTarifa.values()].sort((a, b) => a.tarifa - b.tarifa);
+}
+
+// --- Descuentos ------------------------------------------------------------------------------------------
+// Un descuento se escribe en pesos ("5000", "$ 5.000") o en porcentaje ("10%") sobre la base; devuelve pesos enteros
+export function leerDescuento(texto, base) {
+  const limpio = String(texto ?? '').replace(/\s/g, '');
+  if (!limpio) return 0;
+  const porcentaje = /^(\d+(?:[.,]\d+)?)%$/.exec(limpio);
+  const valor = porcentaje
+    ? Math.round((base * Number(porcentaje[1].replace(',', '.'))) / 100)
+    : (/^\$?[\d.]+$/.test(limpio) ? Number(limpio.replace(/[$.]/g, '')) : NaN);
+  if (!Number.isInteger(valor)) throw new Error('Escribe el descuento en pesos (5000) o en porcentaje (10%)');
+  if (valor > base) throw new Error('El descuento no puede ser mayor que el valor');
+  return valor;
+}
+
+const brutoDe = (linea) => linea.cantidad * linea.valorUnitario;
+
+// Total de cada línea: su valor menos su descuento y menos su parte del descuento de la venta, repartido en proporción
+// al valor de cada línea. El redondeo lo absorbe la última línea, así la suma da exacto el total del documento
+export function calcularLineas(lineas, descuentoVenta = 0) {
+  const netos = lineas.map((linea) => brutoDe(linea) - (linea.descuento || 0));
+  const suma = netos.reduce((acumulado, neto) => acumulado + neto, 0);
+  let repartido = 0;
+  return lineas.map((linea, posicion) => {
+    const ultima = posicion === lineas.length - 1;
+    const parte = ultima ? descuentoVenta - repartido : (suma ? Math.round((descuentoVenta * netos[posicion]) / suma) : 0);
+    repartido += parte;
+    return { ...linea, descuento: linea.descuento || 0, total: netos[posicion] - parte };
+  });
+}
+
+// El descuento total (líneas más venta) no supera el máximo de Ajustes, salvo que lo dé el Propietario
+function exigirLimiteDescuento(bruto, descuentoTotal) {
+  const maximo = parametro('descuentoMaximo');
+  const porcentaje = bruto ? (descuentoTotal * 100) / bruto : 0;
+  if (porcentaje > maximo && !rolActual()?.protegido) {
+    throw new Error(`El descuento (${Math.round(porcentaje)} %) supera el máximo de ${maximo} %: solo el Propietario puede autorizarlo`);
+  }
+}
+
+// Valida los descuentos y arma las líneas del documento con su total
+function armarItems(lineas, nombres, descuentoVenta) {
+  lineas.forEach((linea, posicion) => {
+    exigirEntero(linea.descuento || 0, `el descuento de ${nombres[posicion]}`, { maximo: brutoDe(linea) });
+  });
+  const neto = lineas.reduce((acumulado, linea) => acumulado + brutoDe(linea) - (linea.descuento || 0), 0);
+  exigirEntero(descuentoVenta, 'el descuento de la venta', { maximo: neto });
+  const bruto = lineas.reduce((acumulado, linea) => acumulado + brutoDe(linea), 0);
+  exigirLimiteDescuento(bruto, bruto - neto + descuentoVenta);
+  return calcularLineas(lineas, descuentoVenta).map(({ productoId, cantidad, valorUnitario, descuento, total }, posicion) => ({
+    productoId,
+    nombre: nombres[posicion],
+    referencia: buscarProducto(productoId)?.referencia ?? '',
+    cantidad,
+    valorUnitario,
+    descuento,
+    total,
+    iva: buscarProducto(productoId)?.iva ?? 0,
+  }));
 }
 
 // --- Documentos sin factura: remisiones y cotizaciones ---------------------------------------------------
@@ -92,7 +153,7 @@ function nombreDeLinea(linea) {
 }
 
 // Valida las líneas y arma el documento sin guardarlo: sirve para la vista previa y para registrar
-export function armarVenta({ tipo = 'factura', clienteId = '', metodoId = '', lineas, recibido, observaciones = '', documentoOrigen = '', listaPrecio = '' }) {
+export function armarVenta({ tipo = 'factura', clienteId = '', metodoId = '', lineas, descuentoVenta = 0, recibido, observaciones = '', documentoOrigen = '', listaPrecio = '' }) {
   if (!TIPOS_DOCUMENTO[tipo]) throw new Error('Elige si es factura, remisión o cotización');
   if (!lineas.length) throw new Error('Agrega al menos un producto');
   const nombres = lineas.map(nombreDeLinea);
@@ -127,15 +188,8 @@ export function armarVenta({ tipo = 'factura', clienteId = '', metodoId = '', li
   const registrado = buscarCliente(clienteId);
   if (!registrado) throw new Error('Elige el cliente de la venta');
 
-  const items = lineas.map(({ productoId, cantidad, valorUnitario }, posicion) => ({
-    productoId,
-    nombre: nombres[posicion],
-    referencia: buscarProducto(productoId)?.referencia ?? '',
-    cantidad,
-    valorUnitario,
-    iva: buscarProducto(productoId)?.iva ?? 0,
-  }));
-  const total = items.reduce((acumulado, item) => acumulado + item.cantidad * item.valorUnitario, 0);
+  const items = armarItems(lineas, nombres, descuentoVenta);
+  const total = items.reduce((acumulado, item) => acumulado + item.total, 0);
   // La factura exige un medio de pago activo; a crédito, solo hasta el cupo del cliente
   if (tipo === 'factura') exigirElemento('metodosPago', metodoId, 'Elige el medio de pago');
   if (tipo === 'factura' && esCredito(metodoId)) {
@@ -158,6 +212,7 @@ export function armarVenta({ tipo = 'factura', clienteId = '', metodoId = '', li
     listaPrecio: esListaPrecio(listaPrecio) ? listaPrecio : (origen?.listaPrecio ?? listaDeTienda(tiendaId)),
     observaciones: exigirTexto(observaciones, 'las observaciones', { obligatorio: false, maximo: LIMITES.textoLargo }),
     items,
+    descuentoVenta,
     total,
   };
 
@@ -263,14 +318,20 @@ export const ETIQUETA_NOTA = { devolucion: 'Nota de devolución', anulacion: 'No
 
 // Productos de la venta con lo que aún se puede devolver
 export function pendientesDeDevolver(venta) {
-  const devoluciones = devolucionesDeVenta(venta.id);
+  const devueltas = devolucionesDeVenta(venta.id).flatMap((devolucion) => devolucion.items);
   return venta.items.map((item) => {
-    const devuelto = devoluciones.flatMap((devolucion) => devolucion.items)
-      .filter((devuelta) => devuelta.productoId === item.productoId)
-      .reduce((acumulado, devuelta) => acumulado + devuelta.cantidad, 0);
-    return { ...item, disponibles: item.cantidad - devuelto };
+    const delProducto = devueltas.filter((devuelta) => devuelta.productoId === item.productoId);
+    const devuelto = delProducto.reduce((acumulado, devuelta) => acumulado + devuelta.cantidad, 0);
+    const valorDevuelto = delProducto.reduce((acumulado, devuelta) => acumulado + devuelta.total, 0);
+    return { ...item, disponibles: item.cantidad - devuelto, valorDevuelto };
   }).filter((item) => item.disponibles > 0);
 }
+
+// Lo que se reembolsa por unas unidades: su parte del total de la línea (con descuentos). Al devolver las últimas se
+// reembolsa exactamente lo que queda, así la línea nunca devuelve más ni menos de lo que se cobró
+const valorDeDevolucion = (item, cantidad) => (cantidad === item.disponibles
+  ? item.total - item.valorDevuelto
+  : Math.round((item.total * cantidad) / item.cantidad));
 
 function crearNota(venta, tipo, cantidades, motivo) {
   const motivoLimpio = exigirMotivo(motivo);
@@ -278,13 +339,22 @@ function crearNota(venta, tipo, cantidades, motivo) {
   const pendientes = pendientesDeDevolver(venta);
   if (!pendientes.length) throw new Error(`La factura ${venta.id} ya fue devuelta por completo`);
 
-  const items = pendientes
-    .map((item) => ({ productoId: item.productoId, nombre: item.nombre, referencia: item.referencia ?? '', cantidad: cantidades[item.productoId] ?? 0, valorUnitario: item.valorUnitario, disponibles: item.disponibles }))
-    .filter((item) => item.cantidad > 0);
-  if (!items.length) throw new Error('Escribe la cantidad que se devuelve de al menos un producto');
-  const exceso = items.find((item) => !Number.isInteger(item.cantidad) || item.cantidad > item.disponibles);
+  const elegidos = pendientes
+    .map((item) => ({ ...item, devolver: cantidades[item.productoId] ?? 0 }))
+    .filter((item) => item.devolver > 0);
+  if (!elegidos.length) throw new Error('Escribe la cantidad que se devuelve de al menos un producto');
+  const exceso = elegidos.find((item) => !Number.isInteger(item.devolver) || item.devolver > item.disponibles);
   if (exceso) throw new Error(`De ${exceso.nombre} solo se pueden devolver ${exceso.disponibles} unidad(es)`);
-  const total = items.reduce((acumulado, item) => acumulado + item.cantidad * item.valorUnitario, 0);
+  const items = elegidos.map((item) => ({
+    productoId: item.productoId,
+    nombre: item.nombre,
+    referencia: item.referencia,
+    cantidad: item.devolver,
+    valorUnitario: item.valorUnitario,
+    iva: item.iva,
+    total: valorDeDevolucion(item, item.devolver),
+  }));
+  const total = items.reduce((acumulado, item) => acumulado + item.total, 0);
 
   if (esCredito(venta.metodoId)) {
     const cliente = buscarCliente(venta.clienteId);
@@ -308,7 +378,7 @@ function crearNota(venta, tipo, cantidades, motivo) {
     metodo: venta.metodo,
     tiendaId: venta.tiendaId,
     bodegaId: venta.bodegaId,
-    items: items.map(({ productoId, nombre, referencia, cantidad, valorUnitario }) => ({ productoId, nombre, referencia, cantidad, valorUnitario })),
+    items,
     total,
   };
   estado.devoluciones.push(nota);

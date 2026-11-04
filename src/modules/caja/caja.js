@@ -48,6 +48,7 @@ export async function dibujar(contexto) {
 
 export function montar(raiz, contexto) {
   montarCuadricula(buscar('#cuadricula-cierres', raiz), {
+    exportar: { modulo: 'caja', archivo: 'cierres-de-caja' },
     plantillas: plantillasCuadricula,
     titulo: 'Cierres anteriores',
     vacio: 'Aún no hay cierres de caja.',
@@ -178,6 +179,7 @@ export function montar(raiz, contexto) {
   const contenedorMovimientos = buscar('#cuadricula-movimientos', raiz);
   if (caja && contenedorMovimientos) {
     montarCuadricula(contenedorMovimientos, {
+      exportar: { modulo: 'caja', archivo: 'movimientos-de-caja' },
       plantillas: plantillasCuadricula,
       titulo: 'Movimientos de esta caja',
       vacio: 'Aún no hay ingresos ni egresos manuales.',

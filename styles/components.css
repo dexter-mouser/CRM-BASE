@@ -1090,3 +1090,63 @@ kbd {
   padding: 3px;
   cursor: pointer;
 }
+
+/* Campo con un valor que no se entiende (por ejemplo, un descuento mal escrito) */
+.campo[aria-invalid="true"] {
+  border-color: var(--negativo);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--negativo) 18%, transparent);
+}
+
+/* --- Pulido de interacción: estados claros y transiciones cortas, sin cambiar la disposición --- */
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+a:focus-visible {
+  outline-color: var(--color-grupo, var(--acento));
+}
+
+.boton:hover {
+  border-color: color-mix(in srgb, var(--contorno) 60%, var(--texto));
+}
+
+.boton:active:not(:disabled) {
+  transform: translateY(1px);
+}
+
+.boton.primario:hover {
+  background: color-mix(in srgb, var(--acento) 88%, var(--texto));
+  border-color: color-mix(in srgb, var(--acento) 88%, var(--texto));
+}
+
+.boton.peligro:hover {
+  background: color-mix(in srgb, var(--negativo) 10%, var(--superficie));
+}
+
+.boton:disabled:hover {
+  background: var(--superficie);
+  border-color: var(--contorno);
+}
+
+.campo:hover:not(:focus):not(:disabled) {
+  border-color: var(--contorno);
+}
+
+.campo:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-grupo, var(--acento)) 18%, transparent);
+}
+
+.campo:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .boton,
+  .campo,
+  .fila-dato,
+  .boton-enlace {
+    transition: background-color 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease, color 0.15s ease, transform 0.1s ease;
+  }
+}

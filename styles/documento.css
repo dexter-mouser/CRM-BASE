@@ -224,3 +224,18 @@
     gap: var(--espacio-6);
   }
 }
+
+/* Descuento de la venta en el resumen: la etiqueta a la izquierda y la casilla corta a la derecha */
+.linea-descuento {
+  align-items: center;
+  margin-bottom: var(--espacio-2);
+}
+
+.linea-descuento label {
+  margin: 0;
+  color: var(--suave);
+}
+
+.linea-descuento .campo {
+  width: 120px;
+}

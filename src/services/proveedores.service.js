@@ -6,6 +6,7 @@ import { exigirPermiso, nombreDeUsuario } from '../core/autorizacion.js';
 import { exigirMotivo, exigirTexto, validarLineas, validarProveedor, LIMITES } from '../core/validacion.js';
 import { registrarAuditoria } from './auditoria.service.js';
 import { prefijoDe } from './catalogos.service.js';
+import { columnasDefinidas, exigirUnico, validarFilas } from '../core/importacion.js';
 
 const normalizar = (texto) => String(texto).normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().trim();
 
@@ -96,4 +97,35 @@ export function anularOrden(id, motivo) {
   orden.motivoAnulacion = exigirMotivo(motivo);
   registrarAuditoria('proveedores', 'Orden de compra anulada', `${id} · ${orden.motivoAnulacion}`);
   guardarEstado();
+}
+
+// Importación CSV: una fila con el código de un proveedor existente lo actualiza; sin código, crea uno nuevo
+export function importarProveedores(filas) {
+  exigirPermiso('proveedores', 'importar', 'importar proveedores');
+  const nombres = new Set();
+  const nits = new Set();
+  const validas = validarFilas(filas, (fila) => {
+    const actual = fila.id ? buscarProveedor(fila.id) : null;
+    if (fila.id && !actual) throw new Error(`no existe el proveedor ${fila.id}: deja el código vacío para crearlo`);
+    const { id, ...datos } = columnasDefinidas(fila);
+    const limpios = prepararDatos({ ...actual, ...datos }, actual?.id ?? null);
+    exigirUnico(nombres, normalizar(limpios.nombre), `${limpios.nombre} está dos veces en el archivo`);
+    exigirUnico(nits, limpios.nit, `el NIT ${limpios.nit} está dos veces en el archivo`);
+    return { actual, limpios };
+  });
+  let agregados = 0;
+  validas.forEach(({ actual, limpios }) => {
+    if (actual) {
+      Object.assign(actual, limpios);
+      facturasDe(actual.id).forEach((factura) => { factura.proveedor = actual.nombre; });
+      pagosA(actual.id).forEach((pago) => { pago.tercero = actual.nombre; });
+    } else {
+      estado.proveedores.push({ id: siguienteCodigo(estado.proveedores.map((existente) => existente.id), 'PV', 3), ...limpios });
+      agregados += 1;
+    }
+  });
+  const actualizados = validas.length - agregados;
+  registrarAuditoria('proveedores', 'Proveedores importados', `${agregados} nuevos, ${actualizados} actualizados`);
+  guardarEstado();
+  return { agregados, actualizados };
 }

@@ -18,6 +18,7 @@ export async function dibujar() {
 
 export function montar(raiz, contexto) {
   const cuadricula = montarCuadricula(buscar('#cuadricula-auditoria', raiz), {
+    exportar: { modulo: 'auditoria', archivo: 'auditoria' },
     plantillas: plantillasCuadricula,
     titulo: 'Registro de auditoría',
     vacio: 'Aún no hay registros de auditoría.',

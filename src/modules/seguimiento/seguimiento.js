@@ -109,6 +109,7 @@ export function montar(raiz, contexto) {
     ? repetir(documento, 'boton-completar', [{ id: actividad.id }]) : '');
 
   const tareas = montarCuadricula(buscar('#cuadricula-tareas', raiz), {
+    exportar: { modulo: 'seguimiento', archivo: 'tareas' },
     plantillas: plantillasCuadricula,
     titulo: 'Tareas pendientes',
     vacio: 'No tienes tareas pendientes.',
@@ -124,6 +125,7 @@ export function montar(raiz, contexto) {
   });
 
   const historial = montarCuadricula(buscar('#cuadricula-actividades', raiz), {
+    exportar: { modulo: 'seguimiento', archivo: 'actividades' },
     plantillas: plantillasCuadricula,
     titulo: 'Historial de actividades',
     vacio: 'Aún no hay actividades registradas.',

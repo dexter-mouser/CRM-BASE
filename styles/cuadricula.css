@@ -8,7 +8,7 @@
 }
 
 .cuadricula.lineas-venta {
-  --columnas: minmax(52px, 80px) minmax(72px, 120px) minmax(160px, 1fr) minmax(64px, 90px) minmax(90px, 120px)
+  --columnas: minmax(52px, 80px) minmax(72px, 120px) minmax(160px, 1fr) minmax(64px, 90px) minmax(90px, 120px) minmax(80px, 110px)
     minmax(44px, 64px) minmax(90px, 120px) 40px;
 }
 
@@ -191,4 +191,18 @@
 
 .cuadricula-datos .acciones-fila .boton:hover {
   background: var(--activo);
+}
+
+/* Acciones por fila más compactas: Ficha · Editar · Eliminar caben en una línea sin agrandar la tabla */
+.cuadricula-datos .fila-dato .boton {
+  padding: 5px 10px;
+  font-size: var(--letra-xs);
+}
+
+.cuadricula-datos .fila-dato .acciones-fila {
+  gap: var(--espacio-2);
+}
+
+.boton-enlace:hover {
+  color: var(--texto);
 }

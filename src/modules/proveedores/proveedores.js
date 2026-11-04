@@ -6,6 +6,7 @@ import { icono, ICONO_PAPELERA } from '../../core/iconos.js';
 import { puede } from '../../core/autorizacion.js';
 import { cargarHtml, seccion, repetir } from '../../core/template.js';
 import * as servicioProveedores from '../../services/proveedores.service.js';
+import { conectarImportacion } from '../../components/importar-csv/importar-csv.js';
 import { dibujarSelector, montarSelectorProductos } from '../../components/selector-productos/selector-productos.js';
 import { mostrarComprobanteDeOrden } from '../../components/recibo/comprobantes.js';
 import { cargarPlantillasCuadricula, montarCuadricula } from '../../components/cuadricula-datos/cuadricula-datos.js';
@@ -56,6 +57,7 @@ export function montar(raiz, contexto) {
     saldo: aPesos(servicioProveedores.saldoConProveedor(proveedor.id)),
   }));
   const cuadriculaProveedores = montarCuadricula(buscar('#cuadricula-proveedores', raiz), {
+    exportar: { modulo: 'proveedores', archivo: 'proveedores' },
     plantillas: plantillasCuadricula,
     titulo: 'Proveedores',
     vacio: 'Aún no hay proveedores. Crea uno con "Nuevo proveedor".',
@@ -70,6 +72,10 @@ export function montar(raiz, contexto) {
       { clave: 'acciones', titulo: 'Acciones', ancho: '270px', filtrable: false, html: (fila) => repetir(documento, 'acciones-proveedor', [{ id: fila.id, edicion: botonesEdicion(fila.id) }]) },
     ],
     filas: filasProveedores(),
+  });
+  conectarImportacion(raiz, contexto, {
+    modulo: 'proveedores', formato: 'proveedores', registros: () => estado.proveedores, importar: servicioProveedores.importarProveedores,
+    alImportar: () => cuadriculaProveedores.actualizar(filasProveedores()),
   });
 
   const formulario = montarFormulario(buscar('#formulario-proveedor', raiz), {
@@ -231,6 +237,7 @@ export function montar(raiz, contexto) {
 
   const accionesOrdenAbierta = (orden) => (orden.estado === 'abierta' && puede('inventario', 'crear') ? repetir(documento, 'acciones-orden-abierta', [{ id: orden.id }]) : '');
   montarCuadricula(buscar('#cuadricula-ordenes', raiz), {
+    exportar: { modulo: 'proveedores', archivo: 'ordenes-de-compra' },
     plantillas: plantillasCuadricula,
     titulo: 'Órdenes de compra',
     vacio: 'Aún no hay órdenes de compra.',

@@ -14,6 +14,21 @@ const lineasDe = (items, campoValor) => items.map((item) => ({
   detalle: `${item.referencia ? `${item.referencia} · ` : ''}${item.cantidad} × ${aPesos(item[campoValor])}`,
   valor: aPesos(item.cantidad * item[campoValor]),
 }));
+// Línea de una venta, remisión, cotización o nota: "cantidad × precio", su descuento si tiene y el total de la línea
+const lineasDeVenta = (items) => items.map((item) => ({
+  nombre: item.nombre,
+  detalle: `${item.referencia ? `${item.referencia} · ` : ''}${item.cantidad} × ${aPesos(item.valorUnitario)}${item.descuento ? ` · desc. ${aPesos(item.descuento)}` : ''}`,
+  valor: aPesos(item.total),
+}));
+
+// Descuentos del documento (de las líneas y de la venta) antes del IVA; nada si no tiene
+function totalesDeDescuento(documento) {
+  const descuentoLineas = documento.items.reduce((acumulado, item) => acumulado + item.descuento, 0);
+  const totales = [];
+  if (descuentoLineas) totales.push({ etiqueta: 'Descuentos en líneas', valor: `- ${aPesos(descuentoLineas)}` });
+  if (documento.descuentoVenta) totales.push({ etiqueta: 'Descuento de la venta', valor: `- ${aPesos(documento.descuentoVenta)}` });
+  return totales;
+}
 const unidades = (items) => items.reduce((acumulado, item) => acumulado + item.cantidad, 0);
 const buscarVentaPorId = (id) => estado.ventas.find((venta) => venta.id === id);
 
@@ -56,7 +71,7 @@ export function mostrarReciboDeVenta(documento) {
     datos.splice(1, 0, ['Pago', documento.metodo]);
     const notasDeLaFactura = registrado ? devolucionesDeVenta(documento.id) : [];
     const devuelto = notasDeLaFactura.reduce((acumulado, nota) => acumulado + nota.total, 0);
-    totales.push(...totalesDeImpuestos(documento));
+    totales.push(...totalesDeDescuento(documento), ...totalesDeImpuestos(documento));
     totales.push({ etiqueta: 'TOTAL', valor: aPesos(documento.total), fuerte: !devuelto });
     if (esEfectivo(documento.metodoId) && documento.recibido) {
       totales.push({ etiqueta: 'Monto recibido', valor: aPesos(documento.recibido) });
@@ -73,13 +88,13 @@ export function mostrarReciboDeVenta(documento) {
       notas.push(`Venta a crédito a ${documento.plazoDias} días: el valor queda como deuda del cliente.`);
     }
   } else if (tipo === 'remision') {
-    totales.push({ etiqueta: 'VALOR DE LA MERCANCÍA', valor: aPesos(documento.total), fuerte: true });
+    totales.push(...totalesDeDescuento(documento), { etiqueta: 'VALOR DE LA MERCANCÍA', valor: aPesos(documento.total), fuerte: true });
     notas.push('Mercancía entregada. Este documento no es una factura ni un comprobante de pago.');
     if (documento.convertidoEn) notas.push(`Facturada en ${documento.convertidoEn}`);
     firmas = ['Entregó', 'Recibí conforme'];
   } else {
     datos.push(['Válida hasta', aFecha(documento.vigenciaHasta)]);
-    totales.push(...totalesDeImpuestos(documento));
+    totales.push(...totalesDeDescuento(documento), ...totalesDeImpuestos(documento));
     totales.push({ etiqueta: 'TOTAL COTIZADO', valor: aPesos(documento.total), fuerte: true });
     notas.push('Oferta sujeta a existencias. No es una factura ni descuenta inventario.');
     if (documento.convertidoEn) notas.push(`Pasada a ${documento.convertidoEn}`);
@@ -95,7 +110,7 @@ export function mostrarReciboDeVenta(documento) {
     titulo: registrado ? etiqueta : `Vista previa · ${etiqueta}`,
     subtitulo: registrado ? `N° ${documento.id}` : 'Sin registrar',
     datos,
-    lineas: lineasDe(documento.items, 'valorUnitario'),
+    lineas: lineasDeVenta(documento.items),
     totales,
     sello,
     notas,
@@ -128,7 +143,7 @@ export function mostrarComprobanteDeDevolucion(nota) {
     titulo: ETIQUETA_NOTA[nota.tipo],
     subtitulo: `N° ${nota.id} · sobre la factura ${nota.ventaId}`,
     datos,
-    lineas: lineasDe(nota.items, 'valorUnitario'),
+    lineas: lineasDeVenta(nota.items),
     totales,
     sello: nota.tipo === 'anulacion' ? 'ANULADA' : '',
     notas: [`Motivo: ${nota.motivo}`, reembolso],

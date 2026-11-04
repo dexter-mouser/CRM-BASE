@@ -5,6 +5,7 @@ import { siguienteCodigo } from '../core/codigos.js';
 import { exigirPermiso } from '../core/autorizacion.js';
 import { exigirCorreo, exigirEntero, exigirFecha, exigirTelefono, exigirTexto } from '../core/validacion.js';
 import { exigirElemento } from './catalogos.service.js';
+import { columnasDefinidas, exigirUnico, validarFilas } from '../core/importacion.js';
 import { registrarAuditoria } from './auditoria.service.js';
 import { aFechaLocal, fechaDeHoy } from '../core/format.js';
 
@@ -116,4 +117,45 @@ export function cambiarEstadoEmpleado(id, activo) {
   empleado.fechaRetiro = activo ? '' : fechaDeHoy();
   registrarAuditoria('empleados', activo ? 'Empleado reintegrado' : 'Empleado retirado', `${empleado.nombre}${!activo && usuario ? ' · usuario desactivado' : ''}`);
   guardarEstado();
+}
+
+// --- Importación CSV ---------------------------------------------------------------------------------------
+const sinTildes = (texto) => String(texto).normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().trim();
+
+// La sucursal se escribe con su nombre; la sigla del documento en mayúsculas; la comisión admite coma decimal
+function datosDeFila(fila) {
+  const { id, sucursal, ...datos } = columnasDefinidas(fila);
+  if (sucursal !== undefined) {
+    const tienda = estado.tiendas.find((candidata) => sinTildes(candidata.nombre) === sinTildes(sucursal));
+    if (!tienda) throw new Error(`no existe la sucursal «${sucursal}»`);
+    datos.tiendaId = tienda.id;
+  }
+  if (datos.tipoDocumento !== undefined) datos.tipoDocumento = datos.tipoDocumento.toUpperCase();
+  if (datos.comision !== undefined) datos.comision = datos.comision.replace(',', '.') || 0;
+  return datos;
+}
+
+// Una fila con el código de un empleado existente lo actualiza (conserva su usuario); sin código, lo registra activo
+export function importarEmpleados(filas) {
+  exigirPermiso('empleados', 'importar', 'importar empleados');
+  const documentos = new Set();
+  const validas = validarFilas(filas, (fila) => {
+    const actual = fila.id ? buscarEmpleado(fila.id) : null;
+    if (fila.id && !actual) throw new Error(`no existe el empleado ${fila.id}: deja el código vacío para crearlo`);
+    const limpios = prepararDatos({ ...actual, ...datosDeFila(fila) }, actual?.id ?? null);
+    exigirUnico(documentos, `${limpios.tipoDocumento} ${limpios.documento}`, `el documento ${limpios.documento} está dos veces en el archivo`);
+    return { actual, limpios };
+  });
+  let agregados = 0;
+  validas.forEach(({ actual, limpios }) => {
+    if (actual) Object.assign(actual, limpios);
+    else {
+      estado.empleados.push({ id: siguienteCodigo(estado.empleados.map((existente) => existente.id), 'E', 3), ...limpios, activo: true });
+      agregados += 1;
+    }
+  });
+  const actualizados = validas.length - agregados;
+  registrarAuditoria('empleados', 'Empleados importados', `${agregados} nuevos, ${actualizados} actualizados`);
+  guardarEstado();
+  return { agregados, actualizados };
 }

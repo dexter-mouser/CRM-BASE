@@ -7,7 +7,10 @@ import { siguienteCodigo } from '../core/codigos.js';
 import { exigirPermiso } from '../core/autorizacion.js';
 import { validarCliente } from '../core/validacion.js';
 import { registrarAuditoria } from './auditoria.service.js';
-import { esCredito, exigirElemento, rangosCartera, rangoPorDias } from './catalogos.service.js';
+import { esCredito, exigirElemento, idPorNombre, rangosCartera, rangoPorDias } from './catalogos.service.js';
+import { LISTAS_PRECIO } from './inventario.service.js';
+import { columnasDefinidas, exigirUnico, validarFilas } from '../core/importacion.js';
+import { leerLista, leerSiNo } from './csv.service.js';
 
 const normalizar = (texto) => String(texto).normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().trim();
 const aCredito = (registro) => esCredito(registro.metodoId);
@@ -129,4 +132,50 @@ export function eliminarCliente(id) {
   estado.clientes = estado.clientes.filter((candidato) => candidato.id !== id);
   registrarAuditoria('clientes', 'Cliente eliminado', `${cliente.id} · ${cliente.nombre}`);
   guardarEstado();
+}
+
+// --- Importación CSV ---------------------------------------------------------------------------------------
+// Convierte lo escrito en el archivo a los códigos que se guardan: tipo de persona y etiquetas por su nombre del
+// catálogo, lista de precios por su número (1, 2 o 3; vacío = la de la sucursal) y "Sí"/"No" de la autorización
+function datosDeFila(fila) {
+  const datos = { ...fila };
+  if (fila.tipoPersona !== undefined) datos.tipoPersona = idPorNombre('tiposPersona', fila.tipoPersona, 'El tipo de persona');
+  if (fila.tipoDocumento !== undefined) datos.tipoDocumento = fila.tipoDocumento.toUpperCase();
+  if (fila.etiquetas !== undefined) datos.etiquetas = leerLista(fila.etiquetas).map((nombre) => idPorNombre('etiquetasCliente', nombre, 'La etiqueta'));
+  if (fila.listaPrecio !== undefined) {
+    const lista = LISTAS_PRECIO.find((candidata) => candidata.numero === fila.listaPrecio.trim());
+    if (fila.listaPrecio.trim() && !lista) throw new Error('La lista de precios debe ser 1, 2, 3 o quedar vacía');
+    datos.listaPrecio = lista?.id ?? '';
+  }
+  if (fila.autorizaDatos !== undefined) datos.autorizaDatos = leerSiNo(fila.autorizaDatos);
+  delete datos.id;
+  return columnasDefinidas(datos);
+}
+
+// Una fila con el código de un cliente existente lo actualiza; sin código, crea uno nuevo
+export function importarClientes(filas) {
+  exigirPermiso('clientes', 'importar', 'importar clientes');
+  const nombres = new Set();
+  const documentos = new Set();
+  const validas = validarFilas(filas, (fila) => {
+    const actual = fila.id ? buscarCliente(fila.id) : null;
+    if (fila.id && !actual) throw new Error(`no existe el cliente ${fila.id}: deja el código vacío para crearlo`);
+    const limpios = prepararDatos({ ...actual, ...datosDeFila(fila) }, actual?.id ?? null);
+    if (actual?.generico && limpios.limiteCredito) throw new Error('el consumidor final no puede tener cupo de crédito');
+    exigirUnico(nombres, normalizar(limpios.nombre), `${limpios.nombre} está dos veces en el archivo`);
+    exigirUnico(documentos, limpios.documento && `${limpios.tipoDocumento} ${limpios.documento}`, `el documento ${limpios.documento} está dos veces en el archivo`);
+    return { actual, limpios };
+  });
+  let agregados = 0;
+  validas.forEach(({ actual, limpios }) => {
+    if (actual) Object.assign(actual, limpios);
+    else {
+      estado.clientes.push({ id: siguienteCodigo(estado.clientes.map((existente) => existente.id), 'C', 3), ...limpios, creadoEn: new Date().toISOString() });
+      agregados += 1;
+    }
+  });
+  const actualizados = validas.length - agregados;
+  registrarAuditoria('clientes', 'Clientes importados', `${agregados} nuevos, ${actualizados} actualizados`);
+  guardarEstado();
+  return { agregados, actualizados };
 }

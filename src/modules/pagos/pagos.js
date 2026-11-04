@@ -34,6 +34,7 @@ export async function dibujar(contexto) {
 export function montar(raiz, contexto) {
   const tipo = TIPO_POR_SECCION[contexto.seccion] ?? 'abono';
   montarCuadricula(buscar('#cuadricula-pagos', raiz), {
+    exportar: { modulo: 'pagos', archivo: 'pagos' },
     plantillas: plantillasCuadricula,
     titulo: 'Historial de pagos',
     vacio: 'Aún no hay pagos registrados.',

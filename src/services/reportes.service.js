@@ -44,7 +44,7 @@ export function reporteDeVentas(desde, hasta) {
   for (const venta of ventas) {
     porMetodo.set(venta.metodoId, (porMetodo.get(venta.metodoId) ?? 0) + venta.total);
     for (const item of venta.items) {
-      const ingreso = item.cantidad * item.valorUnitario;
+      const ingreso = item.total;
       utilidad += ingreso - item.cantidad * costoDe(item.productoId);
       const anterior = porProducto.get(item.productoId) ?? { id: item.productoId, nombre: item.nombre, cantidad: 0, total: 0 };
       anterior.cantidad += item.cantidad;
@@ -55,7 +55,7 @@ export function reporteDeVentas(desde, hasta) {
   for (const devolucion of devoluciones) {
     porMetodo.set(devolucion.metodoId, (porMetodo.get(devolucion.metodoId) ?? 0) - devolucion.total);
     for (const item of devolucion.items) {
-      const ingreso = item.cantidad * item.valorUnitario;
+      const ingreso = item.total;
       utilidad -= ingreso - item.cantidad * costoDe(item.productoId);
       const anterior = porProducto.get(item.productoId);
       if (anterior) {

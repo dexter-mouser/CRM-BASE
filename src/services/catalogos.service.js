@@ -9,6 +9,7 @@ import { estado, guardarEstado } from '../core/store.js';
 import { exigirPermiso } from '../core/autorizacion.js';
 import { exigirEntero, exigirTexto } from '../core/validacion.js';
 import { registrarAuditoria } from './auditoria.service.js';
+import { validarFilas } from '../core/importacion.js';
 
 // Tipo de cada medio de pago: efectivo entra a la caja, crédito queda como deuda del cliente, otro va al banco
 export const TIPOS_METODO = [['efectivo', 'Efectivo'], ['credito', 'Crédito'], ['otro', 'Otro']];
@@ -304,6 +305,7 @@ export function guardarParametros(datos) {
   exigirEdicion();
   const nuevos = structuredClone(estado.ajustes.parametros);
   if (datos.vigenciaCotizacion !== undefined) nuevos.vigenciaCotizacion = exigirEntero(datos.vigenciaCotizacion, 'la vigencia de la cotización', { minimo: 1, maximo: 365 });
+  if (datos.descuentoMaximo !== undefined) nuevos.descuentoMaximo = exigirEntero(datos.descuentoMaximo, 'el descuento máximo', { maximo: 100 });
   if (datos.plazoCredito !== undefined) nuevos.plazoCredito = exigirEntero(datos.plazoCredito, 'el plazo de pago', { minimo: 0, maximo: 365 });
   if (datos.diasInactividad !== undefined) nuevos.diasInactividad = exigirEntero(datos.diasInactividad, 'los días sin comprar', { minimo: 1, maximo: 3650 });
   if (datos.cortesCartera !== undefined) nuevos.cortesCartera = exigirCortes(datos.cortesCartera);
@@ -317,4 +319,48 @@ export function guardarParametros(datos) {
   estado.ajustes.parametros = nuevos;
   registrarAuditoria('ajustes', 'Parámetros', Object.keys(datos).join(', '));
   guardarEstado();
+}
+
+// --- Catálogos en CSV ----------------------------------------------------------------------------------------
+// Todos los catálogos en una sola tabla: una fila por elemento con el nombre de su catálogo
+export const elementosParaCsv = () => Object.entries(CATALOGOS)
+  .flatMap(([clave, catalogo]) => elementos(clave).map((elemento) => ({ ...elemento, catalogo: catalogo.titulo })));
+
+const claveDeCatalogo = (titulo) => Object.keys(CATALOGOS).find((clave) => normalizar(CATALOGOS[clave].titulo) === normalizar(titulo));
+
+// El tipo de un medio de pago se escribe con su código (efectivo, credito, otro) o con su nombre
+const tipoDeMetodoEscrito = (texto) => TIPOS_METODO.find(([valor, nombre]) => [valor, nombre].map(normalizar).includes(normalizar(texto)))?.[0] ?? texto;
+
+// Una fila con el código de un elemento existente lo actualiza (nombre, activo y columnas extra); sin código o con
+// uno nuevo, lo agrega con las mismas reglas de la pantalla. Si una fila falla, los catálogos quedan como estaban
+function aplicarFilaDeCatalogo(fila) {
+  const clave = claveDeCatalogo(fila.catalogo);
+  if (!clave) throw new Error(`no existe el catálogo «${fila.catalogo}»`);
+  const extras = {};
+  if (clave === 'metodosPago' && fila.tipo) extras.tipo = tipoDeMetodoEscrito(fila.tipo);
+  if (clave === 'motivosPerdida' && fila.pideDetalle !== undefined) extras.pideDetalle = fila.pideDetalle;
+  const codigo = CATALOGOS[clave].codigo?.tipo === 'sigla' ? String(fila.id ?? '').toUpperCase() : String(fila.id ?? '');
+  const existente = codigo && buscarElemento(clave, codigo);
+  if (existente) actualizarElemento(clave, codigo, { nombre: fila.nombre || existente.nombre, ...extras });
+  const id = existente ? codigo : agregarElemento(clave, { nombre: fila.nombre, codigo: fila.id, ...extras }).id;
+  if (fila.activo !== undefined && fila.activo !== buscarElemento(clave, id).activo) cambiarActivo(clave, id, fila.activo);
+}
+
+export function importarCatalogos(filas) {
+  exigirPermiso('ajustes', 'importar', 'importar catálogos');
+  const anteriores = structuredClone(estado.ajustes.catalogos);
+  const registrosDeAuditoria = estado.auditoria.length;
+  try {
+    validarFilas(filas, aplicarFilaDeCatalogo);
+  } catch (error) {
+    estado.ajustes.catalogos = anteriores;
+    estado.auditoria.length = registrosDeAuditoria;
+    guardarEstado();
+    throw error;
+  }
+  // Un solo registro de auditoría por importación en lugar de uno por elemento
+  estado.auditoria.length = registrosDeAuditoria;
+  registrarAuditoria('ajustes', 'Catálogos importados', `${filas.length} fila(s)`);
+  guardarEstado();
+  return filas.length;
 }

@@ -120,7 +120,7 @@
         <button type="button" class="boton peligro" id="confirmar-copia-si">Sí, restaurar</button>
         <button type="button" class="boton" id="confirmar-copia-no">Cancelar</button>
       </div>
-      <div class="acciones-fila margen-superior-grande">
+      <div class="acciones-fila margen-superior-grande" id="fila-exportar-tablas">
         <select id="tabla-csv" class="campo" aria-label="Tabla a exportar">
           <option value="ventas">Ventas</option>
           <option value="devoluciones">Devoluciones y anulaciones</option>
@@ -130,6 +130,10 @@
           <option value="auditoria">Auditoría</option>
         </select>
         <button type="button" class="boton" id="descargar-tabla">Exportar CSV</button>
+      </div>
+      <div class="acciones-fila margen-superior-grande">
+        <button type="button" class="boton" id="descargar-catalogos" title="Todos los catálogos en una tabla, para editarla e importarla">Descargar catálogos CSV</button>
+        <label class="boton archivo" id="etiqueta-importar-catalogos">Importar catálogos CSV<input type="file" id="importar-catalogos" accept=".csv,text/csv" hidden></label>
       </div>
     </div>
   </section>

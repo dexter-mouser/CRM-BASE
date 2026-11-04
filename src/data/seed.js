@@ -37,6 +37,7 @@ const CATALOGOS = {
 const PARAMETROS = {
   vigenciaCotizacion: 15,
   plazoCredito: 30,
+  descuentoMaximo: 20,
   diasInactividad: 60,
   cortesCartera: [30, 60, 90],
   moneda: 'COP',
@@ -45,7 +46,7 @@ const PARAMETROS = {
 };
 
 const semilla = {
-  version: 11,
+  version: 12,
   productos: [
     // Producto genérico: servicios, reparaciones y artículos sin código. Su nombre y su valor se escriben en cada venta.
     {

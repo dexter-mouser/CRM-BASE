@@ -158,15 +158,15 @@ export function validarLineas(lineas, campoValor, etiquetaValor) {
 
 // --- Esquema de la copia de seguridad -------------------------------------------------------------------
 // Tipos: texto, textoOpcional, entero, enteroNoNegativo, fecha, booleano, objeto, lista:<esquema>
-const ESQUEMA_ITEM_VENTA = { productoId: 'texto', nombre: 'texto', cantidad: 'enteroNoNegativo', valorUnitario: 'enteroNoNegativo' };
+const ESQUEMA_ITEM_VENTA = { productoId: 'texto', nombre: 'texto', cantidad: 'enteroNoNegativo', valorUnitario: 'enteroNoNegativo', total: 'enteroNoNegativo' };
 
 export const ESQUEMA_DATOS = {
   productos: { id: 'texto', referencia: 'textoOpcional', nombre: 'texto', categoriaId: 'texto', unidadId: 'texto', costo: 'enteroNoNegativo', existencias: 'entero' },
-  ventas: { id: 'texto', fecha: 'fecha', cliente: 'texto', metodoId: 'texto', metodo: 'texto', total: 'enteroNoNegativo', items: ['lista', ESQUEMA_ITEM_VENTA] },
+  ventas: { id: 'texto', fecha: 'fecha', cliente: 'texto', metodoId: 'texto', metodo: 'texto', descuentoVenta: 'enteroNoNegativo', total: 'enteroNoNegativo', items: ['lista', ESQUEMA_ITEM_VENTA] },
   facturas: { numero: 'texto', proveedor: 'texto', fecha: 'texto', total: 'enteroNoNegativo', items: ['lista', { productoId: 'texto', nombre: 'texto', cantidad: 'enteroNoNegativo', costoUnitario: 'enteroNoNegativo' }] },
   clientes: { id: 'texto', nombre: 'texto', telefono: 'textoOpcional', correo: 'textoOpcional', direccion: 'textoOpcional' },
   pagos: { id: 'texto', fecha: 'fecha', tipo: 'texto', tercero: 'texto', metodoId: 'texto', metodo: 'texto', valor: 'enteroNoNegativo' },
-  documentos: { id: 'texto', tipo: 'texto', fecha: 'fecha', cliente: 'texto', total: 'enteroNoNegativo', items: ['lista', ESQUEMA_ITEM_VENTA] },
+  documentos: { id: 'texto', tipo: 'texto', fecha: 'fecha', cliente: 'texto', descuentoVenta: 'enteroNoNegativo', total: 'enteroNoNegativo', items: ['lista', ESQUEMA_ITEM_VENTA] },
   devoluciones: { id: 'texto', ventaId: 'texto', fecha: 'fecha', tipo: 'texto', motivo: 'texto', metodoId: 'texto', metodo: 'texto', total: 'enteroNoNegativo', items: ['lista', ESQUEMA_ITEM_VENTA] },
   cajas: { id: 'texto', apertura: 'fecha', base: 'enteroNoNegativo' },
   movimientosCaja: { id: 'texto', cajaId: 'texto', fecha: 'fecha', tipo: 'texto', concepto: 'texto', valor: 'enteroNoNegativo' },

@@ -12,7 +12,7 @@ import { COLUMNAS_PRODUCTO, productosParaElegir } from '../../components/selecto
 import { bodegasActivas } from '../../services/bodegas.service.js';
 import { nombreDe, opcionesDe, primeroActivo } from '../../services/catalogos.service.js';
 import { buscarOrden } from '../../services/proveedores.service.js';
-import { descargarInventarioCsv, leerInventarioCsv } from '../../services/csv.service.js';
+import { conectarImportacion } from '../../components/importar-csv/importar-csv.js';
 import { cargarPlantillasBuscador } from '../../components/buscador-cuadricula/buscador-cuadricula.js';
 import { montarFactura } from './factura.js';
 import { mostrarComprobanteDeFactura } from '../../components/recibo/comprobantes.js';
@@ -91,6 +91,7 @@ export function montar(raiz, contexto) {
   });
 
   const cuadriculaProductos = montarCuadricula(buscar('#cuadricula-productos', raiz), {
+    exportar: { modulo: 'inventario', archivo: 'productos' },
     plantillas: plantillasCuadricula,
     titulo: 'Productos',
     vacio: 'Aún no hay productos. Agrega uno con "Nuevo producto".',
@@ -294,6 +295,7 @@ export function montar(raiz, contexto) {
   });
 
   montarCuadricula(buscar('#cuadricula-facturas-compra', raiz), {
+    exportar: { modulo: 'inventario', archivo: 'facturas-de-compra' },
     plantillas: plantillasCuadricula,
     titulo: 'Facturas de compra',
     vacio: 'Aún no hay facturas de compra.',
@@ -354,6 +356,7 @@ export function montar(raiz, contexto) {
     const lugar = bodegaId ? buscarBodega(bodegaId)?.nombre : 'todas las bodegas';
     buscar('#resumen-kardex', raiz).textContent = `${producto.nombre} · ID ${producto.id} · stock actual en ${lugar}: ${bodegaId ? (producto.stock?.[bodegaId] ?? 0) : producto.existencias}`;
     montarCuadricula(buscar('#cuadricula-kardex', raiz), {
+      exportar: { modulo: 'inventario', archivo: 'kardex' },
       plantillas: plantillasCuadricula,
       titulo: 'Movimientos',
       vacio: 'Este producto aún no tiene movimientos.',
@@ -378,21 +381,12 @@ export function montar(raiz, contexto) {
     });
   }
 
-  // Documentos CSV: se abren y se importan directamente en las hojas de cálculo del navegador
-  buscar('#descargar-csv', raiz).onclick = () => {
-    descargarInventarioCsv(estado.productos);
-    contexto.aviso('Documento CSV descargado correctamente');
-  };
-
-  buscar('#cargar-csv', raiz).onchange = async (evento) => {
-    const archivo = evento.target.files[0];
-    if (!archivo) return;
-    try {
-      const { agregados, actualizados } = importarProductos(await leerInventarioCsv(archivo));
-      contexto.aviso(`Documento cargado correctamente: ${agregados} nuevos, ${actualizados} actualizados`);
-      contexto.redibujar();
-    } catch (error) {
-      contexto.alerta(error.message || 'No se pudo leer el documento');
-    }
-  };
+  // Plantilla e importación CSV (el stock del archivo es el de la bodega de la sucursal activa)
+  conectarImportacion(raiz, contexto, {
+    modulo: 'inventario',
+    formato: 'productos',
+    registros: () => estado.productos.map((producto) => ({ ...producto, existencias: existenciasVisibles(producto) })),
+    importar: importarProductos,
+    alImportar: contexto.redibujar,
+  });
 }

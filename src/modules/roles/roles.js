@@ -111,6 +111,7 @@ export function montar(raiz, contexto) {
   }));
 
   const cuadriculaPersonas = montarCuadricula(buscar('#cuadricula-personas', raiz), {
+    exportar: { modulo: 'roles', archivo: 'usuarios' },
     plantillas: plantillasCuadricula,
     titulo: 'Personas',
     vacio: 'Aún no hay usuarios.',

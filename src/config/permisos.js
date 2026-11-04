@@ -9,23 +9,30 @@ export const ACCIONES = [
   { id: 'editar', etiqueta: 'Editar' },
   { id: 'eliminar', etiqueta: 'Eliminar' },
   { id: 'reabrir', etiqueta: 'Reabrir' },
+  { id: 'importar', etiqueta: 'Importar CSV' },
+  { id: 'exportar', etiqueta: 'Exportar CSV' },
 ];
 
-// "Reabrir" es un permiso especial: solo lo admiten los módulos que lo declaran
-const TODAS_LAS_ACCIONES = ['ver', 'crear', 'editar', 'eliminar'];
+// "Reabrir" e "Importar CSV" son permisos especiales: solo los admiten los módulos que los declaran.
+// "Exportar CSV" lo tiene todo módulo con cuadrículas o tablas que se puedan descargar.
+const TODAS_LAS_ACCIONES = ['ver', 'crear', 'editar', 'eliminar', 'exportar'];
+const DATOS_MAESTROS = ['ver', 'crear', 'editar', 'eliminar', 'importar', 'exportar'];
 
 // Módulos que no admiten todas las acciones
 const ACCIONES_POR_MODULO = {
   panel: ['ver'],
   'nueva-venta': ['ver', 'crear'],
-  ventas: ['ver', 'eliminar'],
-  auditoria: ['ver'],
-  reportes: ['ver'],
-  contabilidad: ['ver', 'crear', 'reabrir'],
-  ajustes: ['ver', 'editar'],
+  ventas: ['ver', 'eliminar', 'exportar'],
+  auditoria: ['ver', 'exportar'],
+  reportes: ['ver', 'exportar'],
+  contabilidad: ['ver', 'crear', 'reabrir', 'exportar'],
+  ajustes: ['ver', 'editar', 'importar', 'exportar'],
   embudo: ['ver', 'editar'],
-  tiendas: ['ver', 'crear', 'editar'],
-  empleados: ['ver', 'crear', 'editar'],
+  tiendas: ['ver', 'crear', 'editar', 'exportar'],
+  empleados: ['ver', 'crear', 'editar', 'importar', 'exportar'],
+  clientes: DATOS_MAESTROS,
+  inventario: DATOS_MAESTROS,
+  proveedores: DATOS_MAESTROS,
 };
 
 export const MODULOS_PERMISOS = MENU.map((opcion) => ({

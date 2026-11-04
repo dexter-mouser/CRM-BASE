@@ -7,7 +7,8 @@ import { mostrarReciboDeVenta as mostrarRecibo } from '../../components/recibo/c
 import { refrescarMarca } from '../../components/header/header.js';
 import { logoCompleto } from '../../components/logo/logo.js';
 import { aFecha } from '../../core/format.js';
-import { descargarCsv } from '../../services/csv.service.js';
+import { descargarCsv, descargarFormato, leerFormato, leerSiNo } from '../../services/csv.service.js';
+import { puede } from '../../core/autorizacion.js';
 import * as servicioAjustes from '../../services/ajustes.service.js';
 import * as servicioCopia from '../../services/copia.service.js';
 import * as servicioCatalogos from '../../services/catalogos.service.js';
@@ -49,10 +50,11 @@ const ventaDeEjemplo = () => {
     cliente: 'Cliente de ejemplo',
     metodoId,
     metodo: servicioCatalogos.nombreDe('metodosPago', metodoId),
+    descuentoVenta: 0,
     total: 37000,
     items: [
-      { nombre: 'Producto de ejemplo A', cantidad: 2, valorUnitario: 12500, iva: 19 },
-      { nombre: 'Producto de ejemplo B', cantidad: 1, valorUnitario: 12000, iva: 19 },
+      { nombre: 'Producto de ejemplo A', cantidad: 2, valorUnitario: 12500, descuento: 0, total: 25000, iva: 19 },
+      { nombre: 'Producto de ejemplo B', cantidad: 1, valorUnitario: 12000, descuento: 0, total: 12000, iva: 19 },
     ],
   };
 };
@@ -126,6 +128,7 @@ function montarParametros(raiz, contexto, ejecutar) {
     campos: [
       { clave: 'vigenciaCotizacion', etiqueta: 'Vigencia de la cotización (días)', tipo: 'entero', obligatorio: true, ancho: 2 },
       { clave: 'plazoCredito', etiqueta: 'Plazo de pago por defecto (días)', tipo: 'entero', obligatorio: true, ancho: 2, ayuda: 'Se ve escrito al crear clientes y proveedores' },
+      { clave: 'descuentoMaximo', etiqueta: 'Descuento máximo (%)', tipo: 'entero', obligatorio: true, ancho: 2, ayuda: 'Por venta, sumando líneas y venta; solo el Propietario puede superarlo' },
       ...prefijos.map(([clave, etiqueta]) => ({ clave: `prefijo-${clave}`, etiqueta: `Prefijo ${etiqueta.toLowerCase()}`, obligatorio: true, maximo: 4 })),
     ],
     despues: '<p class="texto-suave">Un prefijo nuevo solo aplica a los documentos que se registren desde ahora; los anteriores conservan su número.</p>',
@@ -327,5 +330,34 @@ export function montar(raiz, contexto) {
     const tabla = EXPORTACIONES[buscar('#tabla-csv', raiz).value];
     descargarCsv(tabla.archivo, tabla.columnas, tabla.filas());
     contexto.aviso('Documento CSV descargado correctamente');
+  };
+  montarCatalogosCsv(raiz, contexto);
+}
+
+// Exportar tablas y catálogos en CSV e importar catálogos, según los permisos de Ajustes
+function montarCatalogosCsv(raiz, contexto) {
+  const puedeExportar = puede('ajustes', 'exportar');
+  buscar('#fila-exportar-tablas', raiz).hidden = !puedeExportar;
+  buscar('#descargar-catalogos', raiz).hidden = !puedeExportar;
+  buscar('#etiqueta-importar-catalogos', raiz).hidden = !puede('ajustes', 'importar');
+  buscar('#descargar-catalogos', raiz).onclick = () => {
+    descargarFormato('catalogos', servicioCatalogos.elementosParaCsv());
+    contexto.aviso('Catálogos CSV descargados correctamente');
+  };
+  buscar('#importar-catalogos', raiz).onchange = async (evento) => {
+    const archivo = evento.target.files[0];
+    evento.target.value = '';
+    if (!archivo) return;
+    try {
+      // "Sí"/"No" del archivo; "Pide detalle" vacío no cambia nada (solo aplica a los motivos de pérdida)
+      const filas = (await leerFormato('catalogos', archivo)).map((fila) => ({
+        ...fila, activo: leerSiNo(fila.activo || undefined), pideDetalle: fila.pideDetalle ? leerSiNo(fila.pideDetalle) : undefined,
+      }));
+      const cantidad = servicioCatalogos.importarCatalogos(filas);
+      contexto.aviso(`${cantidad} fila(s) de catálogos importadas correctamente`);
+      contexto.redibujar();
+    } catch (error) {
+      contexto.alerta(error.message);
+    }
   };
 }

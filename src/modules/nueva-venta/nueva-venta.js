@@ -7,7 +7,7 @@ import { cargarHtml, seccion, repetir } from '../../core/template.js';
 import { sesionActual } from '../../core/sesion.js';
 import { buscarProductoPorCodigo, LISTAS_PRECIO, etiquetaDeLista } from '../../services/inventario.service.js';
 import { tiendaActiva, tiendaActivaId } from '../../core/tienda.js';
-import { armarVenta, registrarVenta, ultimoValorDeVenta, listaDeTienda, buscarDocumento, documentoPendiente, impuestosDe, consecutivoPrevisto, numeroDe, TIPOS_DOCUMENTO, DESTINOS_POSIBLES } from '../../services/ventas.service.js';
+import { armarVenta, registrarVenta, ultimoValorDeVenta, listaDeTienda, buscarDocumento, documentoPendiente, impuestosDe, consecutivoPrevisto, numeroDe, calcularLineas, leerDescuento, TIPOS_DOCUMENTO, DESTINOS_POSIBLES } from '../../services/ventas.service.js';
 import { activos, esEfectivo } from '../../services/catalogos.service.js';
 import { deudaDeCliente, consumidorFinal } from '../../services/clientes.service.js';
 import { puede } from '../../core/autorizacion.js';
@@ -54,20 +54,43 @@ export function montar(raiz, contexto) {
   let documentoOrigen = '';
   // Lista de precio de la venta: la del cliente si tiene una; si no, la de la sucursal activa
   let lista = listaDeTienda(tiendaActivaId());
-  const subtotal = (linea) => linea.cantidad * linea.valorUnitario;
-  const totalActual = () => lineas.reduce((acumulado, linea) => acumulado + subtotal(linea), 0);
+  const campoDescuento = buscar('#descuento-venta', raiz);
+
+  // Descuentos: se escriben en pesos ("5000") o en porcentaje ("10%"). Un texto que no se entiende queda marcado
+  // en rojo, cuenta como 0 en los totales y no deja registrar hasta corregirlo
+  const descuentoDe = (texto, base) => {
+    try {
+      return { valor: leerDescuento(texto, base), error: '' };
+    } catch (error) {
+      return { valor: 0, error: error.message };
+    }
+  };
+  const recalcularDescuento = (linea) => {
+    const { valor, error } = descuentoDe(linea.descuentoTexto, linea.cantidad * linea.valorUnitario);
+    linea.descuento = valor;
+    linea.errorDescuento = error;
+  };
+  const subtotal = (linea) => linea.cantidad * linea.valorUnitario - linea.descuento;
+  const descuentoVenta = () => descuentoDe(campoDescuento.value, lineas.reduce((acumulado, linea) => acumulado + subtotal(linea), 0));
+  const lineasCalculadas = () => calcularLineas(lineas, descuentoVenta().valor);
+  const totalActual = () => lineasCalculadas().reduce((acumulado, linea) => acumulado + linea.total, 0);
   const cobraEnEfectivo = () => tipo === 'factura' && esEfectivo(buscar('#metodo', raiz).value);
-  const datosDeVenta = () => ({
-    tipo,
-    clienteId: selectorCliente.elegido()?.id ?? '',
-    metodoId: buscar('#metodo', raiz).value,
-    observaciones: buscar('#observaciones', raiz).value,
-    // Vacío = valor exacto
-    recibido: cobraEnEfectivo() ? leerEntero(campoRecibido.value) : 0,
-    documentoOrigen,
-    listaPrecio: lista,
-    lineas,
-  });
+  const datosDeVenta = () => {
+    const errorDescuento = lineas.find((linea) => linea.errorDescuento)?.errorDescuento || descuentoVenta().error;
+    if (errorDescuento) throw new Error(errorDescuento);
+    return {
+      tipo,
+      clienteId: selectorCliente.elegido()?.id ?? '',
+      metodoId: buscar('#metodo', raiz).value,
+      observaciones: buscar('#observaciones', raiz).value,
+      // Vacío = valor exacto
+      recibido: cobraEnEfectivo() ? leerEntero(campoRecibido.value) : 0,
+      documentoOrigen,
+      listaPrecio: lista,
+      lineas,
+      descuentoVenta: descuentoVenta().valor,
+    };
+  };
 
   // Pago: solo la factura cobra; en efectivo se escribe el monto recibido y se muestra el cambio (o lo que falta)
   const pintarPago = () => {
@@ -124,10 +147,17 @@ export function montar(raiz, contexto) {
   });
 
   const pintarTotal = () => {
-    const total = totalActual();
+    const calculadas = lineasCalculadas();
+    const total = calculadas.reduce((acumulado, linea) => acumulado + linea.total, 0);
     const unidades = lineas.reduce((acumulado, linea) => acumulado + linea.cantidad, 0);
-    const impuestos = impuestosDe({ items: lineas }).filter((grupo) => grupo.tarifa);
+    const impuestos = impuestosDe({ items: calculadas }).filter((grupo) => grupo.tarifa);
     const iva = impuestos.reduce((acumulado, grupo) => acumulado + grupo.iva, 0);
+    const { valor: descuentoGeneral, error } = descuentoVenta();
+    const descuentos = lineas.reduce((acumulado, linea) => acumulado + linea.descuento, 0) + descuentoGeneral;
+    campoDescuento.setAttribute('aria-invalid', String(Boolean(error)));
+    campoDescuento.title = error;
+    buscar('#fila-descuentos', raiz).hidden = !descuentos;
+    buscar('#descuentos-venta', raiz).textContent = `- ${aPesos(descuentos)}`;
     buscar('#resumen-lineas', raiz).textContent = `${lineas.length} ${lineas.length === 1 ? 'línea' : 'líneas'} · ${unidades} ${unidades === 1 ? 'unidad' : 'unidades'}`;
     buscar('#subtotal-venta', raiz).textContent = aPesos(total - iva);
     buscar('#iva-venta', raiz).innerHTML = repetir(documento, 'linea-impuesto', impuestos.map((grupo) => ({ tarifa: grupo.tarifa, valor: aPesos(grupo.iva) })));
@@ -157,6 +187,9 @@ export function montar(raiz, contexto) {
       celdaNombre: repetir(documento, linea.generico ? 'nombre-generico' : 'nombre-fijo', [{ nombre: linea.nombre }]),
       cantidad: linea.cantidad || '',
       valorUnitario: linea.valorUnitario || '',
+      descuento: linea.descuentoTexto,
+      descuentoInvalido: String(Boolean(linea.errorDescuento)),
+      error: linea.errorDescuento,
       iva: linea.iva ?? 0,
       subtotal: aPesos(subtotal(linea)),
       icono: icono(ICONO_PAPELERA),
@@ -180,6 +213,9 @@ export function montar(raiz, contexto) {
         iva: producto.iva,
         cantidad: 1,
         valorUnitario: ultimoValorDeVenta(producto.id, lista),
+        descuentoTexto: '',
+        descuento: 0,
+        errorDescuento: '',
       });
       posicion = lineas.length - 1;
     }
@@ -191,7 +227,8 @@ export function montar(raiz, contexto) {
 
   montarBuscadorCuadricula(raiz, { plantillas: plantillasBuscador, alElegir: agregarProducto });
 
-  // Al escribir cantidad o valor solo se actualizan los totales, para no perder el foco del campo
+  // Al escribir cantidad, valor o descuento solo se actualizan los totales, para no perder el foco del campo.
+  // Un descuento en porcentaje se recalcula cuando cambian la cantidad o el valor
   contenedorLineas.addEventListener('input', (evento) => {
     const campo = evento.target.closest('[data-campo]');
     if (!campo) return;
@@ -201,17 +238,23 @@ export function montar(raiz, contexto) {
       linea.nombre = campo.value;
       return;
     }
-    linea[campo.dataset.campo] = leerEntero(campo.value);
+    if (campo.dataset.campo === 'descuento') linea.descuentoTexto = campo.value;
+    else linea[campo.dataset.campo] = leerEntero(campo.value);
+    recalcularDescuento(linea);
+    const campoDescuentoLinea = buscar('[data-campo="descuento"]', fila);
+    campoDescuentoLinea.setAttribute('aria-invalid', String(Boolean(linea.errorDescuento)));
+    campoDescuentoLinea.title = linea.errorDescuento;
     buscar('[data-subtotal]', fila).textContent = aPesos(subtotal(linea));
     pintarTotal();
   });
 
-  // Enter pasa del nombre (genérico) a la cantidad, de la cantidad al precio y del precio a la búsqueda de código
+  // Enter pasa del nombre (genérico) a la cantidad, de la cantidad al precio, del precio al descuento y del descuento
+  // a la búsqueda de código
   contenedorLineas.addEventListener('keydown', (evento) => {
     const campo = evento.target.closest('[data-campo]');
     if (evento.key !== 'Enter' || !campo) return;
     evento.preventDefault();
-    const siguientes = { nombre: '[data-campo="cantidad"]', cantidad: '[data-campo="valorUnitario"]' };
+    const siguientes = { nombre: '[data-campo="cantidad"]', cantidad: '[data-campo="valorUnitario"]', valorUnitario: '[data-campo="descuento"]' };
     const siguiente = siguientes[campo.dataset.campo]
       ? buscar(siguientes[campo.dataset.campo], campo.closest('.fila-linea'))
       : buscar('[data-filtro="id"]', raiz);
@@ -229,8 +272,10 @@ export function montar(raiz, contexto) {
   buscar('#vaciar-venta', raiz).onclick = () => {
     lineas.length = 0;
     campoRecibido.value = '';
+    campoDescuento.value = '';
     pintarLineas();
   };
+  campoDescuento.addEventListener('input', pintarTotal);
 
   buscar('#vista-previa-recibo', raiz).onclick = () => {
     try {
@@ -277,9 +322,12 @@ export function montar(raiz, contexto) {
     documentoOrigen = origen.id;
     origen.items.forEach((item) => {
       const producto = estado.productos.find((candidato) => candidato.id === item.productoId);
-      lineas.push({ ...item, generico: Boolean(producto?.generico), iva: item.iva ?? producto?.iva ?? 0 });
+      const linea = { ...item, generico: Boolean(producto?.generico), descuentoTexto: item.descuento ? String(item.descuento) : '' };
+      recalcularDescuento(linea);
+      lineas.push(linea);
     });
-    lista = origen.listaPrecio ?? lista;
+    campoDescuento.value = origen.descuentoVenta ? String(origen.descuentoVenta) : '';
+    lista = origen.listaPrecio;
     // El documento conserva su cliente; los guardados sin cliente quedan con el consumidor final
     selectorCliente.elegir(origen.clienteId || consumidorFinal()?.id, false);
     if (origen.observaciones) buscar('#observaciones', raiz).value = origen.observaciones;

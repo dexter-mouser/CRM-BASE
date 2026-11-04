@@ -6,6 +6,7 @@ import { cargarHtml, seccion, repetir } from '../../core/template.js';
 import { opcionesDe, primeroActivo } from '../../services/catalogos.service.js';
 import { nombreDeTienda, enTiendaActiva } from '../../core/tienda.js';
 import * as servicioEmpleados from '../../services/empleados.service.js';
+import { conectarImportacion } from '../../components/importar-csv/importar-csv.js';
 import { cargarPlantillasCuadricula, montarCuadricula } from '../../components/cuadricula-datos/cuadricula-datos.js';
 import { cargarPlantillasFicha, crearFicha } from '../../components/ficha-registro/ficha-registro.js';
 import { cargarPlantillasFormulario, montarFormulario } from '../../components/formulario/formulario.js';
@@ -106,8 +107,13 @@ export function montar(raiz, contexto) {
   const abrirFormulario = (empleado) => formulario.abrir(empleado);
   buscar('#nuevo-empleado', raiz).onclick = () => abrirFormulario(null);
 
+  conectarImportacion(raiz, contexto, {
+    modulo: 'empleados', formato: 'empleados', registros: () => estado.empleados, importar: servicioEmpleados.importarEmpleados, alImportar: contexto.redibujar,
+  });
+
   const editar = puede('empleados', 'editar');
   montarCuadricula(buscar('#cuadricula-empleados', raiz), {
+    exportar: { modulo: 'empleados', archivo: 'empleados' },
     plantillas: plantillasCuadricula,
     titulo: 'Empleados',
     vacio: 'Aún no hay empleados en esta sucursal.',
