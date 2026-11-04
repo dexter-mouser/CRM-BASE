@@ -1,5 +1,6 @@
 import { buscar } from '../../core/dom.js';
-import { estado } from '../../core/store.js';
+import { buscarCliente } from '../../services/clientes.service.js';
+import { usuariosActivos } from '../../services/roles.service.js';
 import { aFecha, fechaDeHoy } from '../../core/format.js';
 import { puede, rolActual, usuarioActual } from '../../core/autorizacion.js';
 import { cargarHtml, seccion, repetir } from '../../core/template.js';
@@ -11,17 +12,18 @@ import { cargarPlantillasFormulario, montarFormulario } from '../../components/f
 import { COLUMNAS_CLIENTE, clientesParaElegir } from '../../components/selector-registro/registros.js';
 import { nombreDe, opcionesDe, primeroActivo } from '../../services/catalogos.service.js';
 import { importarActividades } from '../../services/importacion.service.js';
+import { mensajeDeError } from '../../core/errores.js';
 
 let documento;
 let plantillasCuadricula;
 let plantillasFicha;
 let plantillasFormulario;
 
-const nombreCliente = (id) => estado.clientes.find((cliente) => cliente.id === id)?.nombre ?? id;
+const nombreCliente = (id) => buscarCliente(id)?.nombre ?? id;
 
 // Clientes que se buscan y eligen en el formulario (el consumidor final no tiene seguimiento)
 const clientesConDatos = () => clientesParaElegir((cliente) => !cliente.generico);
-const buscarActividad = (id) => estado.actividades.find((actividad) => actividad.id === id);
+const { buscarActividad } = servicioActividades;
 
 export async function dibujar() {
   documento = await cargarHtml(new URL('./seguimiento.html', import.meta.url));
@@ -41,7 +43,7 @@ export function montar(raiz, contexto) {
       contexto.aviso(mensaje);
       return true;
     } catch (error) {
-      contexto.alerta(error.message);
+      contexto.alerta(mensajeDeError(error));
       return false;
     }
   };
@@ -77,7 +79,7 @@ export function montar(raiz, contexto) {
       { clave: 'vence', etiqueta: 'Fecha de la tarea', tipo: 'fecha', valor: fechaDeHoy, obligatorio: true },
       {
         clave: 'responsableCorreo', etiqueta: 'Responsable', tipo: 'seleccion', valor: () => usuarioActual()?.correo ?? '',
-        opciones: () => estado.usuarios.filter((usuario) => usuario.activo).map((usuario) => [usuario.correo, usuario.nombre]),
+        opciones: () => usuariosActivos().map((usuario) => [usuario.correo, usuario.nombre]),
       },
       { clave: 'resultado', etiqueta: 'Resultado', maximo: 300, ancho: 'completo', ejemplo: 'En qué quedó' },
     ],
@@ -158,7 +160,7 @@ export function montar(raiz, contexto) {
       estado: estadoDe(tarea).texto,
       acciones: repetir(documento, 'acciones-tarea', [{ id: tarea.id, editar: botonEditar(tarea.id), eliminar: botonEliminar(tarea.id), completar: botonCompletar(tarea) }]),
     })));
-    historial.actualizar(estado.actividades.slice().reverse().map((actividad) => ({
+    historial.actualizar(servicioActividades.listarActividades().slice().reverse().map((actividad) => ({
       id: actividad.id,
       fecha: aFecha(actividad.fecha),
       cliente: nombreCliente(actividad.clienteId),

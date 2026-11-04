@@ -5,9 +5,11 @@ import { iniciarSesion } from '../../core/sesion.js';
 import { icono, ICONO_OJO, ICONO_OJO_TACHADO } from '../../core/iconos.js';
 import { USUARIOS, CUENTAS_PRUEBA } from '../../config/acceso.js';
 import { MENU } from '../../config/nav.js';
-import { estado, guardarEstado } from '../../core/store.js';
+import { buscarRol, buscarUsuarioActivoPorCorreo } from '../../services/roles.service.js';
 import { DOMINIO_CORREO } from '../../core/validacion.js';
-import { registrarAuditoria } from '../../services/auditoria.service.js';
+import { registrarFallaDeAlmacenamiento } from '../../core/preferencias.js';
+import { registrarEventoDeAcceso } from '../../services/auditoria.service.js';
+import { mensajeDeError } from '../../core/errores.js';
 
 // Bloqueo temporal tras varios intentos fallidos seguidos (en el servidor este control debe repetirse por usuario e IP)
 const CLAVE_INTENTOS = 'generico.intentos';
@@ -19,10 +21,19 @@ const MENSAJES_AVISO = {
 };
 
 const leerIntentos = () => {
-  try { return JSON.parse(localStorage.getItem(CLAVE_INTENTOS)) ?? { fallos: 0, hasta: 0 }; } catch { return { fallos: 0, hasta: 0 }; }
+  try {
+    return JSON.parse(localStorage.getItem(CLAVE_INTENTOS)) ?? { fallos: 0, hasta: 0 };
+  } catch (error) {
+    registrarFallaDeAlmacenamiento(error);
+    return { fallos: 0, hasta: 0 };
+  }
 };
 const guardarIntentos = (datos) => {
-  try { localStorage.setItem(CLAVE_INTENTOS, JSON.stringify(datos)); } catch { /* sin almacenamiento */ }
+  try {
+    localStorage.setItem(CLAVE_INTENTOS, JSON.stringify(datos));
+  } catch (error) {
+    registrarFallaDeAlmacenamiento(error);
+  }
 };
 const minutosDeBloqueo = () => Math.ceil((leerIntentos().hasta - Date.now()) / 60000);
 
@@ -30,7 +41,7 @@ export async function dibujar() {
   const documento = await cargarHtml(new URL('./acceso.html', import.meta.url));
   const cuentas = CUENTAS_PRUEBA.map((cuenta) => ({
     correo: cuenta.correo,
-    rol: estado.roles.find((rol) => rol.id === cuenta.rolId)?.nombre ?? '',
+    rol: buscarRol(cuenta.rolId)?.nombre ?? '',
   }));
   return seccion(documento, 'principal', { logo: logoCompleto(40), cuentas: repetir(documento, 'cuenta-prueba', cuentas) });
 }
@@ -76,14 +87,21 @@ export function montar(raiz) {
       datos.fallos = 0;
     }
     guardarIntentos(datos);
-    registrarAuditoria('acceso', 'Intento de ingreso fallido', motivo, 'Sin identificar');
-    guardarEstado();
+    try {
+      registrarEventoDeAcceso('Intento de ingreso fallido', motivo, 'Sin identificar');
+    } catch (falla) {
+      // El aviso del intento fallido sigue siendo lo que la persona necesita ver
+      console.error('No se pudo auditar el intento fallido', falla);
+    }
   };
-  const entrar = (usuario) => {
+  const entrar = (usuario, campo) => {
+    try {
+      registrarEventoDeAcceso('Ingreso', usuario.correo, usuario.nombre);
+      iniciarSesion(usuario, recordar.checked);
+    } catch (falla) {
+      return fallar(mensajeDeError(falla), campo);
+    }
     guardarIntentos({ fallos: 0, hasta: 0 });
-    registrarAuditoria('acceso', 'Ingreso', usuario.correo, usuario.nombre);
-    guardarEstado();
-    iniciarSesion(usuario, recordar.checked);
     location.replace(destinoSeguro());
   };
 
@@ -98,8 +116,8 @@ export function montar(raiz) {
     if (!correo) return fallar('Escribe tu correo.', campo);
     if (bloqueado(campo)) return;
     // Pueden entrar las personas activas de Roles y permisos y el acceso de prueba
-    const persona = estado.usuarios.find((candidato) => candidato.correo === correo && candidato.activo);
-    if (persona) return entrar({ usuario: persona.correo, nombre: persona.nombre, correo: persona.correo });
+    const persona = buscarUsuarioActivoPorCorreo(correo);
+    if (persona) return entrar({ usuario: persona.correo, nombre: persona.nombre, correo: persona.correo }, campo);
     registrarFallo(correo);
     fallar('Ese correo no está autorizado. Pide acceso al dueño de la tienda.', campo);
   };
@@ -111,8 +129,8 @@ export function montar(raiz) {
     if (bloqueado(campoClave)) return;
     const usuario = USUARIOS.find((candidato) =>
       candidato.usuario === campoUsuario.value.trim() && candidato.clave === campoClave.value);
-    const activa = usuario && estado.usuarios.some((persona) => persona.correo === usuario.correo && persona.activo);
-    if (activa) return entrar(usuario);
+    const activa = usuario && Boolean(buscarUsuarioActivoPorCorreo(usuario.correo));
+    if (activa) return entrar(usuario, campoClave);
     registrarFallo(campoUsuario.value.trim());
     fallar('Usuario o clave incorrectos. Revisa los datos e inténtalo de nuevo.', campoClave);
   };
@@ -126,7 +144,8 @@ export function montar(raiz) {
     try {
       await navigator.clipboard.writeText(correo);
       textoCopiado.textContent = `Correo ${correo} copiado correctamente`;
-    } catch {
+    } catch (error) {
+      console.error('No se pudo copiar al portapapeles', error);
       buscar('#correo', raiz).value = correo;
       textoCopiado.textContent = 'No se pudo copiar: el correo quedó escrito en el campo';
     }

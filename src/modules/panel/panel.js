@@ -1,11 +1,12 @@
 import { buscar } from '../../core/dom.js';
-import { estado, guardarEstado } from '../../core/store.js';
+import { ordenDelPanel, guardarOrdenDelPanel } from '../../services/ajustes.service.js';
+import { trasladosPorRecibir } from '../../services/bodegas.service.js';
 import { aPesos, fechaDeHoy, formatoFecha } from '../../core/format.js';
 import { sesionActual } from '../../core/sesion.js';
 import { cargarHtml, seccion, repetir } from '../../core/template.js';
-import { resumirItems, estaAnulada } from '../../services/ventas.service.js';
+import { listarVentas, resumirItems, estaAnulada } from '../../services/ventas.service.js';
 import { cajaAbierta, efectivoEnCaja } from '../../services/caja.service.js';
-import { clientesConDeuda, deudaDeCliente } from '../../services/clientes.service.js';
+import { listarClientes, clientesConDeuda, deudaDeCliente } from '../../services/clientes.service.js';
 import { ventasEntre, totalNetoEntre, ventasPorDia } from '../../services/reportes.service.js';
 import { habilitarReordenamiento } from '../../components/reordenar/reordenar.js';
 import { ACCESOS_PRINCIPALES, enlaceDeSeccion } from '../../config/nav.js';
@@ -13,10 +14,11 @@ import { gruposVisibles } from '../../components/sidebar/sidebar.js';
 import { puede } from '../../core/autorizacion.js';
 import { icono } from '../../core/iconos.js';
 import { enTiendaActiva, tiendaActiva } from '../../core/tienda.js';
-import { existenciasVisibles, productosBajoMinimo, bodegaActiva } from '../../services/inventario.service.js';
+import { listarProductos, existenciasVisibles, productosBajoMinimo, bodegaActiva } from '../../services/inventario.service.js';
 import { alertasDeCotizaciones } from '../../services/embudo.service.js';
 import { tareasPendientes, estaVencidaTarea } from '../../services/actividades.service.js';
 import { cargarPlantillasTabla, montarTablaResumen } from '../../components/tabla-resumen/tabla-resumen.js';
+import { mensajeDeError } from '../../core/errores.js';
 
 // Últimas ventas: se calculan al dibujar y se pintan con la tabla de resumen al montar
 let ultimasVentas = [];
@@ -41,7 +43,7 @@ export async function dibujar(contexto) {
   const semana = ventasPorDia(7);
   const mayorDia = Math.max(...semana.map((dia) => dia.total), 0);
   const conDeuda = clientesConDeuda();
-  const productosNegativos = estado.productos.filter((producto) => existenciasVisibles(producto) < 0).length;
+  const productosNegativos = listarProductos().filter((producto) => existenciasVisibles(producto) < 0).length;
 
   const metricas = [
     {
@@ -66,16 +68,16 @@ export async function dibujar(contexto) {
       etiqueta: 'Productos en negativo',
       valor: productosNegativos,
       formato: 'numero',
-      detalle: `de ${estado.productos.length} productos`,
+      detalle: `de ${listarProductos().length} productos`,
     },
   ];
   const porcentajes = [
     calcularPorcentaje(metricas[0].valor, mayorDia),
     cajaAbierta() ? 100 : 0,
-    calcularPorcentaje(conDeuda.length, estado.clientes.length),
-    calcularPorcentaje(productosNegativos, estado.productos.length),
+    calcularPorcentaje(conDeuda.length, listarClientes().length),
+    calcularPorcentaje(productosNegativos, listarProductos().length),
   ];
-  const tarjetas = estado.orden.map((indice) => ({ indice, ...metricas[indice], porcentaje: porcentajes[indice] }));
+  const tarjetas = ordenDelPanel().map((indice) => ({ indice, ...metricas[indice], porcentaje: porcentajes[indice] }));
 
   const formatoDia = formatoFecha({ weekday: 'short' });
   const barras = semana.map((dia, posicion) => ({
@@ -84,7 +86,7 @@ export async function dibujar(contexto) {
     titulo: `${formatoDia.format(dia.fecha)}: ${aPesos(dia.total)}`,
   }));
   const etiquetas = semana.map((dia) => ({ texto: formatoDia.format(dia.fecha).replace('.', '') }));
-  ultimasVentas = estado.ventas.filter(enTiendaActiva).slice(-5).reverse().map((venta) => ({
+  ultimasVentas = listarVentas().filter(enTiendaActiva).slice(-5).reverse().map((venta) => ({
     cliente: venta.cliente,
     productos: resumirItems(venta),
     metodo: venta.metodo,
@@ -134,7 +136,7 @@ function pendientes(documento) {
   }
   if (puede('bodegas', 'ver')) {
     const bodega = bodegaActiva();
-    const porRecibir = estado.traslados.filter((traslado) => traslado.estado === 'enviado' && (!bodega || traslado.destinoId === bodega.id)).length;
+    const porRecibir = trasladosPorRecibir(bodega?.id).length;
     if (porRecibir) lista.push({ texto: `${porRecibir} ${porRecibir === 1 ? 'traslado' : 'traslados'} por recibir`, enlace: 'bodegas.html#traslados' });
   }
   if (puede('caja', 'ver') && tiendaActiva() && !cajaAbierta()) lista.push({ texto: `La caja de ${tiendaActiva().nombre} está cerrada`, enlace: 'caja.html' });
@@ -159,9 +161,12 @@ export function montar(raiz, contexto) {
   habilitarReordenamiento(buscar('#contenedor-tarjetas', raiz), {
     selector: '.resumen',
     alCambiar: (orden) => {
-      estado.orden = orden;
-      guardarEstado();
-      contexto.aviso('Orden de las tarjetas actualizado correctamente');
+      try {
+        guardarOrdenDelPanel(orden);
+        contexto.aviso('Orden de las tarjetas actualizado correctamente');
+      } catch (error) {
+        contexto.alerta(mensajeDeError(error));
+      }
     },
   });
 }

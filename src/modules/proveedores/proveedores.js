@@ -1,5 +1,4 @@
 import { buscar } from '../../core/dom.js';
-import { estado } from '../../core/store.js';
 import { aPesos, aFecha } from '../../core/format.js';
 import { leerEntero, activarCamposNumericos } from '../../core/numeros.js';
 import { icono, ICONO_PAPELERA } from '../../core/iconos.js';
@@ -16,6 +15,7 @@ import { montarSelectorRegistro } from '../../components/selector-registro/selec
 import { COLUMNAS_PROVEEDOR, proveedoresParaElegir } from '../../components/selector-registro/registros.js';
 import { parametro } from '../../services/catalogos.service.js';
 import { importarOrdenes } from '../../services/importacion.service.js';
+import { mensajeDeError } from '../../core/errores.js';
 
 let documento;
 let plantillasCuadricula;
@@ -44,7 +44,7 @@ export function montar(raiz, contexto) {
       contexto.aviso(mensaje);
       return resultado ?? true;
     } catch (error) {
-      contexto.alerta(error.message);
+      contexto.alerta(mensajeDeError(error));
       return false;
     }
   };
@@ -52,14 +52,14 @@ export function montar(raiz, contexto) {
   // --- Proveedores -----------------------------------------------------------------------------------------
   const puedeEditar = puede('proveedores', 'editar');
   const botonesEdicion = (id) => (puedeEditar || puede('proveedores', 'eliminar') ? repetir(documento, 'botones-edicion-proveedor', [{ id }]) : '');
-  const filasProveedores = () => estado.proveedores.map((proveedor) => ({
+  const filasProveedores = () => servicioProveedores.listarProveedores().map((proveedor) => ({
     ...proveedor,
     plazo: `${proveedor.plazoDias} días`,
     saldo: aPesos(servicioProveedores.saldoConProveedor(proveedor.id)),
   }));
   const cuadriculaProveedores = montarCuadricula(buscar('#cuadricula-proveedores', raiz), {
     exportar: { modulo: 'proveedores', archivo: 'proveedores' },
-    importar: { modulo: 'proveedores', formato: 'proveedores', registros: () => estado.proveedores, importar: servicioProveedores.importarProveedores, alImportar: contexto.redibujar },
+    importar: { modulo: 'proveedores', formato: 'proveedores', registros: () => servicioProveedores.listarProveedores(), importar: servicioProveedores.importarProveedores, alImportar: contexto.redibujar },
     plantillas: plantillasCuadricula,
     titulo: 'Proveedores',
     vacio: 'Aún no hay proveedores. Crea uno con "Nuevo proveedor".',
@@ -78,7 +78,7 @@ export function montar(raiz, contexto) {
   conectarImportacion({
     plantilla: buscar('[data-plantilla-csv]', raiz),
     entrada: buscar('[data-importar-csv]', raiz),
-    modulo: 'proveedores', formato: 'proveedores', registros: () => estado.proveedores, importar: servicioProveedores.importarProveedores,
+    modulo: 'proveedores', formato: 'proveedores', registros: () => servicioProveedores.listarProveedores(), importar: servicioProveedores.importarProveedores,
     alImportar: () => cuadriculaProveedores.actualizar(filasProveedores()),
   });
 
@@ -116,9 +116,9 @@ export function montar(raiz, contexto) {
   const abrirFichaProveedor = (id) => fichaProveedor.abrir(id, () => {
     const proveedor = servicioProveedores.buscarProveedor(id);
     if (!proveedor) return null;
-    const facturas = estado.facturas.filter((factura) => factura.proveedorId === id);
-    const pagos = estado.pagos.filter((pago) => pago.tipo === 'proveedor' && pago.terceroId === id);
-    const ordenes = estado.ordenesCompra.filter((orden) => orden.proveedorId === id);
+    const facturas = servicioProveedores.facturasDe(id);
+    const pagos = servicioProveedores.pagosA(id);
+    const ordenes = servicioProveedores.ordenesDeProveedor(id);
     return {
       etiqueta: 'Ficha del proveedor',
       titulo: `${proveedor.nombre} · ${proveedor.id}`,
@@ -222,7 +222,7 @@ export function montar(raiz, contexto) {
     alSalir: () => buscar('#orden-observaciones', raiz).focus(),
   });
   buscar('#nueva-orden', raiz).onclick = () => {
-    if (!estado.proveedores.length) return contexto.alerta('Crea primero un proveedor');
+    if (!servicioProveedores.listarProveedores().length) return contexto.alerta('Crea primero un proveedor');
     panelOrden.hidden = false;
     panelOrden.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
     proveedorOrden.enfocar();
@@ -255,7 +255,7 @@ export function montar(raiz, contexto) {
       { clave: 'estado', titulo: 'Estado', ancho: '150px' },
       { clave: 'acciones', titulo: 'Acciones', ancho: '370px', filtrable: false, html: (fila) => fila.acciones },
     ],
-    filas: estado.ordenesCompra.slice().reverse().map((orden) => ({
+    filas: servicioProveedores.listarOrdenes().slice().reverse().map((orden) => ({
       id: orden.id,
       fecha: aFecha(orden.fecha),
       proveedor: orden.proveedor,

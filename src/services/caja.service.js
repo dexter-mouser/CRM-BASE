@@ -11,6 +11,7 @@ import { esEfectivo } from './catalogos.service.js';
 
 // Cada tienda tiene su propia caja. Sin tienda indicada se usa la sucursal activa.
 const tiendaDe = (registro) => registro.tiendaId;
+export const buscarCaja = (id) => estado.cajas.find((caja) => caja.id === id);
 export const cajaAbierta = (tiendaId = tiendaActivaId()) => estado.cajas.find((caja) => !caja.cierre && tiendaDe(caja) === tiendaId) ?? null;
 export const cajasDeLaVista = () => estado.cajas.filter((caja) => tiendaActivaId() === TODAS_LAS_TIENDAS || tiendaDe(caja) === tiendaActivaId());
 

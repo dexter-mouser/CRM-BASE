@@ -1,10 +1,11 @@
 import { buscar, buscarTodos } from '../../core/dom.js';
-import { estado } from '../../core/store.js';
+import { listarPagos } from '../../services/pagos.service.js';
+import { usuariosActivos } from '../../services/roles.service.js';
 import { aPesos, aFecha, fechaDeHoy, conMoneda } from '../../core/format.js';
 import { puede, usuarioActual } from '../../core/autorizacion.js';
 import { cargarHtml, seccion, repetir, rellenar } from '../../core/template.js';
 import { nombreDe, opcionesDe, parametro, primeroActivo } from '../../services/catalogos.service.js';
-import { resumirItems, TIPOS_DOCUMENTO as TIPOS_DE_VENTA, ETIQUETA_NOTA } from '../../services/ventas.service.js';
+import { listarDocumentos, listarNotas, resumirItems, TIPOS_DOCUMENTO as TIPOS_DE_VENTA, ETIQUETA_NOTA } from '../../services/ventas.service.js';
 import * as servicioClientes from '../../services/clientes.service.js';
 import { conectarImportacion } from '../../components/importar-csv/importar-csv.js';
 import { LISTAS_PRECIO, etiquetaDeLista } from '../../services/inventario.service.js';
@@ -13,6 +14,7 @@ import { etapaDe, etiquetaDeEtapa } from '../../services/embudo.service.js';
 import { cargarPlantillasCuadricula, montarCuadricula } from '../../components/cuadricula-datos/cuadricula-datos.js';
 import { refrescarAlertas } from '../../components/header/header.js';
 import { cargarPlantillasFormulario, montarFormulario } from '../../components/formulario/formulario.js';
+import { mensajeDeError } from '../../core/errores.js';
 
 let documento;
 let plantillasCuadricula;
@@ -61,12 +63,12 @@ export function montar(raiz, contexto) {
       contexto.aviso(mensaje);
       return true;
     } catch (error) {
-      contexto.alerta(error.message);
+      contexto.alerta(mensajeDeError(error));
       return false;
     }
   };
 
-  const filasClientes = () => estado.clientes.map((cliente) => {
+  const filasClientes = () => servicioClientes.listarClientes().map((cliente) => {
     const deuda = servicioClientes.deudaDeCliente(cliente);
     return {
       ...cliente,
@@ -80,7 +82,7 @@ export function montar(raiz, contexto) {
 
   const cuadriculaClientes = montarCuadricula(buscar('#cuadricula-clientes', raiz), {
     exportar: { modulo: 'clientes', archivo: 'clientes' },
-    importar: { modulo: 'clientes', formato: 'clientes', registros: () => estado.clientes, importar: servicioClientes.importarClientes, alImportar: contexto.redibujar },
+    importar: { modulo: 'clientes', formato: 'clientes', registros: () => servicioClientes.listarClientes(), importar: servicioClientes.importarClientes, alImportar: contexto.redibujar },
     plantillas: plantillasCuadricula,
     titulo: 'Clientes',
     vacio: 'Aún no hay clientes. Crea uno con "Nuevo cliente".',
@@ -100,7 +102,7 @@ export function montar(raiz, contexto) {
   conectarImportacion({
     plantilla: buscar('[data-plantilla-csv]', raiz),
     entrada: buscar('[data-importar-csv]', raiz),
-    modulo: 'clientes', formato: 'clientes', registros: () => estado.clientes, importar: servicioClientes.importarClientes, alImportar: pintarLista,
+    modulo: 'clientes', formato: 'clientes', registros: () => servicioClientes.listarClientes(), importar: servicioClientes.importarClientes, alImportar: pintarLista,
   });
 
   // --- Formulario ------------------------------------------------------------------------------------------
@@ -222,7 +224,7 @@ export function montar(raiz, contexto) {
         { clave: 'productos', titulo: 'Productos', ancho: 'minmax(0, 2fr)' }, { clave: 'estado', titulo: 'Estado', ancho: '150px' },
         { clave: 'total', titulo: 'Total', ancho: '112px', alinear: 'derecha' },
       ],
-      filas: estado.documentos.filter((registro) => registro.clienteId === cliente.id).reverse().map((registro) => ({
+      filas: listarDocumentos().filter((registro) => registro.clienteId === cliente.id).reverse().map((registro) => ({
         id: registro.id, tipo: TIPOS_DE_VENTA[registro.tipo].etiqueta, fecha: aFecha(registro.fecha), productos: resumirItems(registro),
         estado: registro.tipo === 'cotizacion' ? etiquetaDeEtapa(etapaDe(registro)) : (registro.anulado ? 'Anulada' : (registro.convertidoEn ? `Pasada a ${registro.convertidoEn}` : 'Pendiente')),
         total: aPesos(registro.total),
@@ -234,7 +236,7 @@ export function montar(raiz, contexto) {
         { clave: 'id', titulo: 'N°', ancho: '90px' }, { clave: 'fecha', titulo: 'Fecha', ancho: '130px' },
         { clave: 'metodo', titulo: 'Medio de pago', ancho: 'minmax(0, 1fr)' }, { clave: 'valor', titulo: 'Valor', ancho: '112px', alinear: 'derecha' },
       ],
-      filas: estado.pagos.filter((pago) => pago.tipo === 'abono' && pago.terceroId === cliente.id).reverse()
+      filas: listarPagos().filter((pago) => pago.tipo === 'abono' && pago.terceroId === cliente.id).reverse()
         .map((pago) => ({ id: pago.id, fecha: aFecha(pago.fecha), metodo: pago.metodo, valor: aPesos(pago.valor) })),
     });
     cuadricula('#cuadricula-devoluciones-cliente', {
@@ -244,7 +246,7 @@ export function montar(raiz, contexto) {
         { clave: 'ventaId', titulo: 'Factura', ancho: '84px' }, { clave: 'motivo', titulo: 'Motivo', ancho: 'minmax(0, 1fr)' },
         { clave: 'total', titulo: 'Total', ancho: '112px', alinear: 'derecha' },
       ],
-      filas: estado.devoluciones.filter((nota) => nota.clienteId === cliente.id).reverse()
+      filas: listarNotas().filter((nota) => nota.clienteId === cliente.id).reverse()
         .map((nota) => ({ id: nota.id, fecha: aFecha(nota.fecha), tipo: ETIQUETA_NOTA[nota.tipo], ventaId: nota.ventaId, motivo: nota.motivo, total: aPesos(nota.total) })),
     });
 
@@ -277,7 +279,7 @@ export function montar(raiz, contexto) {
       { clave: 'vence', etiqueta: 'Fecha de la tarea', tipo: 'fecha', valor: fechaDeHoy, obligatorio: true },
       {
         clave: 'responsableCorreo', etiqueta: 'Responsable', tipo: 'seleccion', valor: () => usuarioActual()?.correo ?? '',
-        opciones: () => estado.usuarios.filter((usuario) => usuario.activo).map((usuario) => [usuario.correo, usuario.nombre]),
+        opciones: () => usuariosActivos().map((usuario) => [usuario.correo, usuario.nombre]),
       },
       { clave: 'descripcion', etiqueta: 'Descripción', ancho: 'completo', maximo: 300, obligatorio: true, ejemplo: 'Qué se habló o qué hay que hacer' },
     ],

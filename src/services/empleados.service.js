@@ -11,6 +11,8 @@ import { aFechaLocal, fechaDeHoy } from '../core/format.js';
 
 export const CARGOS = ['Gerente', 'Administrador de tienda', 'Asesor mayorista', 'Cajero', 'Cajera', 'Vendedor', 'Vendedora', 'Técnico de reparación', 'Auxiliar de bodega', 'Domiciliario', 'Contador'];
 
+export const listarEmpleados = () => estado.empleados;
+export const empleadoDeUsuario = (usuarioId) => estado.empleados.find((empleado) => empleado.usuarioId === usuarioId);
 export const buscarEmpleado = (id) => estado.empleados.find((empleado) => empleado.id === id);
 export const usuarioDeEmpleado = (empleado) => estado.usuarios.find((usuario) => usuario.id === empleado.usuarioId) ?? null;
 

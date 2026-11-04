@@ -8,6 +8,10 @@ import { registrarAuditoria } from './auditoria.service.js';
 
 const normalizar = (texto) => String(texto).normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().trim();
 
+export const listarRoles = () => estado.roles;
+export const listarUsuarios = () => estado.usuarios;
+export const usuariosActivos = () => estado.usuarios.filter((usuario) => usuario.activo);
+export const buscarUsuarioActivoPorCorreo = (correo) => usuariosActivos().find((usuario) => usuario.correo === correo);
 export const buscarRol = (id) => estado.roles.find((rol) => rol.id === id);
 export const miembrosDeRol = (rolId) => estado.usuarios.filter((usuario) => usuario.rolId === rolId).length;
 
@@ -96,7 +100,7 @@ export function eliminarRol(id) {
   guardarEstado();
 }
 
-const buscarUsuario = (id) => estado.usuarios.find((usuario) => usuario.id === id);
+export const buscarUsuario = (id) => estado.usuarios.find((usuario) => usuario.id === id);
 
 const quedaOtroPropietarioActivo = (usuarioId) =>
   estado.usuarios.some((usuario) => usuario.id !== usuarioId && usuario.activo && usuario.rolId === ID_ROL_PROPIETARIO);

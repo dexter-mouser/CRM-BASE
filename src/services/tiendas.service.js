@@ -8,6 +8,8 @@ import { aFechaLocal, fechaDeHoy } from '../core/format.js';
 
 const normalizar = (texto) => String(texto).normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().trim();
 
+export const listarTiendas = () => estado.tiendas;
+export const tiendasActivas = () => estado.tiendas.filter((tienda) => tienda.activa);
 export const buscarTienda = (id) => estado.tiendas.find((tienda) => tienda.id === id);
 
 // Ventas del mes en curso, caja y personas de una tienda

@@ -1,11 +1,11 @@
 import { buscar } from '../../core/dom.js';
-import { estado } from '../../core/store.js';
+import { ajustesDeRecibo } from '../../services/ajustes.service.js';
 import { aPesos, aFecha } from '../../core/format.js';
 import { leerEntero, activarCamposNumericos } from '../../core/numeros.js';
 import { icono, ICONO_PAPELERA } from '../../core/iconos.js';
 import { cargarHtml, seccion, repetir } from '../../core/template.js';
 import { sesionActual } from '../../core/sesion.js';
-import { buscarProductoPorCodigo, LISTAS_PRECIO, etiquetaDeLista } from '../../services/inventario.service.js';
+import { buscarProductoPorCodigo, buscarProductoPorId, LISTAS_PRECIO, etiquetaDeLista } from '../../services/inventario.service.js';
 import { tiendaActiva, tiendaActivaId } from '../../core/tienda.js';
 import { armarVenta, registrarVenta, ultimoValorDeVenta, listaDeTienda, buscarDocumento, documentoPendiente, impuestosDe, consecutivoPrevisto, numeroDe, calcularLineas, leerDescuento, TIPOS_DOCUMENTO, DESTINOS_POSIBLES } from '../../services/ventas.service.js';
 import { activos, esEfectivo } from '../../services/catalogos.service.js';
@@ -15,6 +15,7 @@ import { cargarPlantillasBuscador, montarBuscadorCuadricula } from '../../compon
 import { cargarPlantillasSelector, montarSelectorRegistro } from '../../components/selector-registro/selector-registro.js';
 import { COLUMNAS_CLIENTE, clientesParaElegir } from '../../components/selector-registro/registros.js';
 import { mostrarReciboDeVenta as mostrarRecibo } from '../../components/recibo/comprobantes.js';
+import { mensajeDeError } from '../../core/errores.js';
 
 let documento;
 let plantillasBuscador;
@@ -40,7 +41,7 @@ export async function dibujar() {
     sucursal: tiendaActiva()?.nombre ?? '—',
     vendedor: sesionActual()?.nombre ?? '—',
     // Lo habitual se ve escrito: el mensaje del recibo de Ajustes, editable en cada documento
-    mensaje: estado.ajustes.recibo.pie ?? '',
+    mensaje: ajustesDeRecibo().pie ?? '',
   });
 }
 
@@ -62,7 +63,7 @@ export function montar(raiz, contexto) {
     try {
       return { valor: leerDescuento(texto, base), error: '' };
     } catch (error) {
-      return { valor: 0, error: error.message };
+      return { valor: 0, error: mensajeDeError(error) };
     }
   };
   const recalcularDescuento = (linea) => {
@@ -281,7 +282,7 @@ export function montar(raiz, contexto) {
     try {
       mostrarRecibo(armarVenta(datosDeVenta()));
     } catch (error) {
-      contexto.alerta(error.message);
+      contexto.alerta(mensajeDeError(error));
     }
   };
 
@@ -298,7 +299,7 @@ export function montar(raiz, contexto) {
       history.replaceState(null, '', location.pathname);
       buscar('#ver-recibo', raiz).focus();
     } catch (error) {
-      contexto.alerta(error.message);
+      contexto.alerta(mensajeDeError(error));
     }
   };
 
@@ -321,7 +322,7 @@ export function montar(raiz, contexto) {
     tipoInicial = destinos.includes(parametros.get('tipo')) ? parametros.get('tipo') : destinos[0];
     documentoOrigen = origen.id;
     origen.items.forEach((item) => {
-      const producto = estado.productos.find((candidato) => candidato.id === item.productoId);
+      const producto = buscarProductoPorId(item.productoId);
       const linea = { ...item, generico: Boolean(producto?.generico), descuentoTexto: item.descuento ? String(item.descuento) : '' };
       recalcularDescuento(linea);
       lineas.push(linea);

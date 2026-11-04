@@ -10,6 +10,9 @@ import { exigirTiendaActiva } from '../core/tienda.js';
 import { activos, nombreDe } from './catalogos.service.js';
 
 // Medios con los que se puede pagar: los activos que no son a crédito (crédito es dejar la deuda pendiente)
+export const listarPagos = () => estado.pagos;
+export const buscarPago = (id) => estado.pagos.find((pago) => pago.id === id);
+
 export const metodosDePago = () => activos('metodosPago').filter((metodo) => metodo.tipo !== 'credito').map((metodo) => [metodo.id, metodo.nombre]);
 
 // Proveedores a los que se les debe algo (facturas de compra menos pagos)

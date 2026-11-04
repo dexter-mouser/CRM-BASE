@@ -137,6 +137,13 @@ function armarItems(lineas, nombres, descuentoVenta) {
 
 // --- Documentos sin factura: remisiones y cotizaciones ---------------------------------------------------
 export const buscarDocumento = (id) => estado.documentos.find((documento) => documento.id === id);
+
+// Lecturas para las pantallas: devuelven los registros guardados; quien los reordena hace antes una copia
+export const listarVentas = () => estado.ventas;
+export const listarDocumentos = () => estado.documentos;
+export const listarNotas = () => estado.devoluciones;
+export const buscarVenta = (id) => estado.ventas.find((venta) => venta.id === id);
+export const buscarNota = (id) => estado.devoluciones.find((nota) => nota.id === id);
 export const documentoPendiente = (documento) => !documento.convertidoEn && !documento.anulado;
 
 // Unidades ya entregadas por una remisión, por producto (para no descontar dos veces al facturarla)
@@ -388,21 +395,21 @@ function crearNota(venta, tipo, cantidades, motivo) {
   return nota;
 }
 
-const buscarVenta = (id) => {
-  const venta = estado.ventas.find((candidata) => candidata.id === id);
+const exigirVenta = (id) => {
+  const venta = buscarVenta(id);
   if (!venta) throw new Error('La factura no existe');
   return venta;
 };
 
 export function devolverProductos(ventaId, cantidades, motivo) {
   exigirPermiso('ventas', 'eliminar', 'registrar devoluciones');
-  return crearNota(buscarVenta(ventaId), 'devolucion', cantidades, motivo);
+  return crearNota(exigirVenta(ventaId), 'devolucion', cantidades, motivo);
 }
 
 // Solo se anula una factura del día o de días con la contabilidad abierta; si no, se registra una devolución
 export function anularVenta(ventaId, motivo) {
   exigirPermiso('ventas', 'eliminar', 'anular facturas');
-  const venta = buscarVenta(ventaId);
+  const venta = exigirVenta(ventaId);
   if (aFechaLocal(venta.fecha) <= ultimoDiaCerrado()) {
     throw new Error('La contabilidad de ese día ya está cerrada: registra una devolución en lugar de anular');
   }

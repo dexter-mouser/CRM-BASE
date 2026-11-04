@@ -31,6 +31,7 @@ import { buscar, buscarTodos, escaparHtml } from '../../core/dom.js';
 import { cargarHtml, rellenar, repetir } from '../../core/template.js';
 import { leerEntero, activarCamposNumericos } from '../../core/numeros.js';
 import { cargarPlantillasSelector, montarSelectorRegistro } from '../selector-registro/selector-registro.js';
+import { mensajeDeError } from '../../core/errores.js';
 
 // Plantillas del formulario más las del selector de registros (campos tipo registro)
 export async function cargarPlantillasFormulario() {
@@ -201,7 +202,7 @@ export function montarFormulario(contenedor, {
     try {
       datos = leer();
     } catch (error) {
-      alError(error.message);
+      alError(mensajeDeError(error));
       return;
     }
     if (alGuardar?.(datos, registroAbierto) === false) return;

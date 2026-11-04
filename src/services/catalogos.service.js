@@ -114,6 +114,7 @@ export const esCredito = (id) => tipoDeMetodo(id) === 'credito';
 export const etapasAbiertas = () => elementos('etapasEmbudo').filter((etapa) => !ETAPAS_CERRADAS.includes(etapa.id));
 
 // --- Parámetros --------------------------------------------------------------------------------------------
+export const parametros = () => estado.ajustes.parametros;
 export const parametro = (clave) => estado.ajustes.parametros[clave];
 export const prefijoDe = (documento) => estado.ajustes.parametros.prefijos[documento];
 

@@ -1,6 +1,6 @@
 // Logo de la marca: el de Ajustes (imagen y nombre comercial) o, sin imagen, la G de Genérico con el color de acento.
 // El glifo usa las variables del tema, por lo que cambia con el modo claro/oscuro.
-import { estado } from '../../core/store.js';
+import { marcaActual } from '../../services/ajustes.service.js';
 import { escaparHtml } from '../../core/dom.js';
 
 const GLIFO =
@@ -15,6 +15,6 @@ const logoIcono = (tamano) =>
 const logoImagen = (logo, tamano) => `<img class="logo-imagen" src="${escaparHtml(logo)}" width="${tamano}" height="${tamano}" alt="">`;
 
 export function logoCompleto(tamano = 32) {
-  const { nombreComercial, logo } = estado.ajustes.marca;
+  const { nombreComercial, logo } = marcaActual();
   return `<span class="logo">${logo ? logoImagen(logo, tamano) : logoIcono(tamano)}<span>${escaparHtml(nombreComercial)}</span></span>`;
 }

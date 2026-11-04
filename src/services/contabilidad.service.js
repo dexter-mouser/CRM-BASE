@@ -18,6 +18,8 @@ function sumarDias(dia, cantidad) {
 
 const diaDeAyer = () => sumarDias(fechaDeHoy(), -1);
 
+export const listarCierres = () => estado.contabilidad;
+export const buscarCierre = (dia) => estado.contabilidad.find((cierre) => cierre.dia === dia);
 export const ultimoDiaCerrado = () => estado.contabilidad.reduce((mayor, cierre) => (cierre.dia > mayor ? cierre.dia : mayor), '');
 
 // Resumen de lo ocurrido en un día; el costo usa el costo del producto al momento de calcularlo

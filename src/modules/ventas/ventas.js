@@ -1,4 +1,3 @@
-import { estado } from '../../core/store.js';
 import { aPesos, aFecha } from '../../core/format.js';
 import { leerEntero, activarCamposNumericos } from '../../core/numeros.js';
 import { cargarHtml, seccion, repetir } from '../../core/template.js';
@@ -6,15 +5,15 @@ import { buscar } from '../../core/dom.js';
 import { puede } from '../../core/autorizacion.js';
 import * as servicioVentas from '../../services/ventas.service.js';
 import { mostrarReciboDeVenta, mostrarComprobanteDeDevolucion } from '../../components/recibo/comprobantes.js';
-import { enTiendaActiva } from '../../core/tienda.js';
 import { cargarPlantillasCuadricula, montarCuadricula } from '../../components/cuadricula-datos/cuadricula-datos.js';
 import { cargarPlantillasFicha, crearFicha } from '../../components/ficha-registro/ficha-registro.js';
-import { nombreDeTienda } from '../../core/tienda.js';
+import { enTiendaActiva, nombreDeTienda } from '../../core/tienda.js';
 import { etiquetaDeLista } from '../../services/inventario.service.js';
 import { cargarPlantillasSelector, montarSelectorRegistro } from '../../components/selector-registro/selector-registro.js';
 import { COLUMNAS_FACTURA, facturasParaElegir } from '../../components/selector-registro/registros.js';
 import { esEfectivo } from '../../services/catalogos.service.js';
 import { importarFacturas, importarNotas, importarRemisionesYCotizaciones } from '../../services/importacion.service.js';
+import { mensajeDeError } from '../../core/errores.js';
 
 let documento;
 let plantillasCuadricula;
@@ -36,7 +35,7 @@ const insignia = (texto, clase) => repetir(documento, 'insignia', [{ texto, clas
 const etiquetaDe = (tipo) => servicioVentas.TIPOS_DOCUMENTO[tipo].etiqueta;
 
 // Facturas de la sucursal activa a las que aún se les puede hacer una nota
-const facturasConPendientes = () => estado.ventas.filter(enTiendaActiva).reverse()
+const facturasConPendientes = () => servicioVentas.listarVentas().filter(enTiendaActiva).reverse()
   .filter((venta) => !servicioVentas.estaAnulada(venta) && servicioVentas.pendientesDeDevolver(venta).length > 0);
 
 export async function dibujar() {
@@ -62,7 +61,7 @@ export function montar(raiz, contexto) {
   if (!puede('nueva-venta', 'crear')) ['#nueva-factura', '#nueva-remision', '#nueva-cotizacion'].forEach((selector) => { buscar(selector, raiz).hidden = true; });
   if (!puedeAnular) buscar('#nueva-nota', raiz).hidden = true;
 
-  const filasFacturas = () => estado.ventas.filter(enTiendaActiva).reverse().map((venta) => {
+  const filasFacturas = () => servicioVentas.listarVentas().filter(enTiendaActiva).reverse().map((venta) => {
     const situacion = estadoDeFactura(venta);
     const acciones = accionesFactura(venta);
     return {
@@ -78,7 +77,7 @@ export function montar(raiz, contexto) {
     };
   });
 
-  const filasDocumentos = () => estado.documentos.filter(enTiendaActiva).reverse().map((registro) => {
+  const filasDocumentos = () => servicioVentas.listarDocumentos().filter(enTiendaActiva).reverse().map((registro) => {
     const acciones = accionesDocumento(registro);
     return {
       id: registro.id,
@@ -92,7 +91,7 @@ export function montar(raiz, contexto) {
     };
   });
 
-  const filasNotas = () => estado.devoluciones.filter(enTiendaActiva).reverse().map((nota) => ({
+  const filasNotas = () => servicioVentas.listarNotas().filter(enTiendaActiva).reverse().map((nota) => ({
     id: nota.id,
     fecha: aFecha(nota.fecha),
     ventaId: nota.ventaId,
@@ -190,7 +189,7 @@ export function montar(raiz, contexto) {
 
   const fichaFactura = crearFicha(buscar('#ficha-factura', raiz), plantillasFicha);
   const abrirFichaFactura = (id) => fichaFactura.abrir(id, () => {
-    const venta = estado.ventas.find((candidata) => candidata.id === id);
+    const venta = servicioVentas.buscarVenta(id);
     if (!venta) return null;
     const notas = servicioVentas.devolucionesDeVenta(venta.id);
     return {
@@ -255,7 +254,7 @@ export function montar(raiz, contexto) {
 
   const fichaNota = crearFicha(buscar('#ficha-nota', raiz), plantillasFicha);
   const abrirFichaNota = (id) => fichaNota.abrir(id, () => {
-    const nota = estado.devoluciones.find((candidata) => candidata.id === id);
+    const nota = servicioVentas.buscarNota(id);
     if (!nota) return null;
     return {
       etiqueta: `Ficha de la ${servicioVentas.ETIQUETA_NOTA[nota.tipo].toLowerCase()}`,
@@ -313,13 +312,13 @@ export function montar(raiz, contexto) {
       try {
         alConfirmar(buscar('#motivo-devolucion', zona).value);
       } catch (error) {
-        contexto.alerta(error.message);
+        contexto.alerta(mensajeDeError(error));
       }
     };
   }
 
   function panelDeFactura(ventaId, esAnulacion) {
-    const venta = estado.ventas.find((candidata) => candidata.id === ventaId);
+    const venta = servicioVentas.buscarVenta(ventaId);
     const pendientes = servicioVentas.pendientesDeDevolver(venta).map((item) => ({ ...item, valorUnitario: aPesos(item.valorUnitario) }));
     abrirPanel({
       titulo: esAnulacion ? `Anular la factura ${venta.id}` : `Devolver productos de la factura ${venta.id}`,
@@ -372,7 +371,7 @@ export function montar(raiz, contexto) {
     if (ficha?.dataset.fichaDocumento) return abrirFichaDocumento(ficha.dataset.fichaDocumento);
     if (ficha?.dataset.fichaNota) return abrirFichaNota(ficha.dataset.fichaNota);
     const recibo = evento.target.closest('[data-recibo]');
-    if (recibo) return mostrarReciboDeVenta(estado.ventas.find((venta) => venta.id === recibo.dataset.recibo));
+    if (recibo) return mostrarReciboDeVenta(servicioVentas.buscarVenta(recibo.dataset.recibo));
     const devolver = evento.target.closest('[data-devolver]');
     if (devolver) return panelDeFactura(devolver.dataset.devolver, false);
     const anular = evento.target.closest('[data-anular]');
@@ -382,6 +381,6 @@ export function montar(raiz, contexto) {
     const verDocumento = evento.target.closest('[data-documento]');
     if (verDocumento) return mostrarReciboDeVenta(servicioVentas.buscarDocumento(verDocumento.dataset.documento));
     const comprobante = evento.target.closest('[data-comprobante]');
-    if (comprobante) mostrarComprobanteDeDevolucion(estado.devoluciones.find((nota) => nota.id === comprobante.dataset.comprobante));
+    if (comprobante) mostrarComprobanteDeDevolucion(servicioVentas.buscarNota(comprobante.dataset.comprobante));
   });
 }

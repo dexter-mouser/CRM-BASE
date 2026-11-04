@@ -1,5 +1,4 @@
 import { buscar } from '../../core/dom.js';
-import { estado } from '../../core/store.js';
 import { aPesos, aFecha, conMoneda, formatoFecha } from '../../core/format.js';
 import { cargarHtml, seccion, repetir } from '../../core/template.js';
 import * as servicioCaja from '../../services/caja.service.js';
@@ -8,6 +7,7 @@ import { cargarPlantillasCuadricula, montarCuadricula } from '../../components/c
 import { cargarPlantillasFicha, crearFicha } from '../../components/ficha-registro/ficha-registro.js';
 import { cargarPlantillasFormulario, montarFormulario } from '../../components/formulario/formulario.js';
 import { importarMovimientosDeCaja } from '../../services/importacion.service.js';
+import { mensajeDeError } from '../../core/errores.js';
 
 let documento;
 let plantillasCuadricula;
@@ -86,7 +86,7 @@ export function montar(raiz, contexto) {
   ].map(([etiqueta, valor]) => ({ etiqueta, valor: aPesos(valor) }));
   const ficha = crearFicha(buscar('#ficha-cierre', raiz), plantillasFicha);
   const abrirFicha = (id) => ficha.abrir(id, () => {
-    const cerrada = estado.cajas.find((candidata) => candidata.id === id);
+    const cerrada = servicioCaja.buscarCaja(id);
     if (!cerrada?.cierre) return null;
     const resumen = servicioCaja.resumenDeCaja(cerrada);
     return {
@@ -126,7 +126,7 @@ export function montar(raiz, contexto) {
       contexto.redibujar();
       return true;
     } catch (error) {
-      contexto.alerta(error.message);
+      contexto.alerta(mensajeDeError(error));
       return false;
     }
   };

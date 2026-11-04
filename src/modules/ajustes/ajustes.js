@@ -1,5 +1,4 @@
 import { buscar, buscarTodos } from '../../core/dom.js';
-import { estado } from '../../core/store.js';
 import { cargarHtml, seccion, repetir } from '../../core/template.js';
 import { leerTema, aplicarTema, aplicarMarca } from '../../core/tema.js';
 import { leerMenuRecogido, establecerMenuRecogido } from '../../components/sidebar/sidebar.js';
@@ -10,25 +9,31 @@ import { aFecha } from '../../core/format.js';
 import { descargarCsv, descargarFormato, leerFormato, leerSiNo } from '../../services/csv.service.js';
 import { puede } from '../../core/autorizacion.js';
 import * as servicioAjustes from '../../services/ajustes.service.js';
+import { listarVentas, listarNotas } from '../../services/ventas.service.js';
+import { listarClientes } from '../../services/clientes.service.js';
+import { listarPagos } from '../../services/pagos.service.js';
+import { listarCierres } from '../../services/contabilidad.service.js';
+import { registrosDeAuditoria } from '../../services/auditoria.service.js';
 import * as servicioCopia from '../../services/copia.service.js';
 import * as servicioCatalogos from '../../services/catalogos.service.js';
 import { cargarPlantillasFormulario, montarFormulario } from '../../components/formulario/formulario.js';
 import { cargarPlantillasEditor, montarEditorCatalogo } from '../../components/editor-catalogo/editor-catalogo.js';
+import { mensajeDeError } from '../../core/errores.js';
 
 // Tablas que se pueden exportar a CSV desde Ajustes
 const EXPORTACIONES = {
   ventas: { archivo: 'ventas.csv', columnas: ['N°', 'Fecha', 'Cliente', 'Pago', 'Total', 'Atendió'],
-    filas: () => estado.ventas.map((v) => [v.id, aFecha(v.fecha), v.cliente, v.metodo, v.total, v.usuario ?? '']) },
+    filas: () => listarVentas().map((v) => [v.id, aFecha(v.fecha), v.cliente, v.metodo, v.total, v.usuario ?? '']) },
   devoluciones: { archivo: 'devoluciones.csv', columnas: ['N°', 'Fecha', 'Venta', 'Tipo', 'Motivo', 'Total', 'Registró'],
-    filas: () => estado.devoluciones.map((d) => [d.id, aFecha(d.fecha), d.ventaId, d.tipo, d.motivo, d.total, d.usuario]) },
+    filas: () => listarNotas().map((d) => [d.id, aFecha(d.fecha), d.ventaId, d.tipo, d.motivo, d.total, d.usuario]) },
   clientes: { archivo: 'clientes.csv', columnas: ['ID', 'Nombre', 'Teléfono', 'Correo', 'Dirección'],
-    filas: () => estado.clientes.map((c) => [c.id, c.nombre, c.telefono, c.correo, c.direccion]) },
+    filas: () => listarClientes().map((c) => [c.id, c.nombre, c.telefono, c.correo, c.direccion]) },
   pagos: { archivo: 'pagos.csv', columnas: ['N°', 'Fecha', 'Tipo', 'Cliente o proveedor', 'Concepto', 'Medio de pago', 'Valor'],
-    filas: () => estado.pagos.map((p) => [p.id, aFecha(p.fecha), p.tipo, p.tercero, p.concepto, p.metodo, p.valor]) },
+    filas: () => listarPagos().map((p) => [p.id, aFecha(p.fecha), p.tipo, p.tercero, p.concepto, p.metodo, p.valor]) },
   contabilidad: { archivo: 'dias-cerrados.csv', columnas: ['Día', 'Ventas', 'Total vendido', 'Devoluciones', 'Utilidad', 'Crédito', 'Abonos', 'Pagos a proveedores', 'Compras', 'Diferencia de caja'],
-    filas: () => estado.contabilidad.map((c) => [c.dia, c.cantidadVentas, c.totalVentas, c.devoluciones ?? 0, c.utilidad, c.ventasCredito ?? 0, c.abonosClientes, c.pagosProveedores, c.comprasFacturadas, c.diferenciaCaja]) },
+    filas: () => listarCierres().map((c) => [c.dia, c.cantidadVentas, c.totalVentas, c.devoluciones ?? 0, c.utilidad, c.ventasCredito ?? 0, c.abonosClientes, c.pagosProveedores, c.comprasFacturadas, c.diferenciaCaja]) },
   auditoria: { archivo: 'auditoria.csv', columnas: ['N°', 'Fecha', 'Usuario', 'Módulo', 'Acción', 'Detalle'],
-    filas: () => estado.auditoria.map((a) => [a.id, aFecha(a.fecha), a.usuario, a.modulo, a.accion, a.detalle]) },
+    filas: () => registrosDeAuditoria().reverse().map((a) => [a.id, aFecha(a.fecha), a.usuario, a.modulo, a.accion, a.detalle]) },
 };
 
 let documento;
@@ -66,7 +71,7 @@ const formularioDeAjustes = (raiz, contexto, selector, opciones) => montarFormul
 
 // Marca: nombre y color en un formulario; el logo se guarda al elegir el archivo
 function montarMarca(raiz, contexto, ejecutar) {
-  const marca = () => estado.ajustes.marca;
+  const marca = () => servicioAjustes.marcaActual();
   const aplicar = () => {
     aplicarMarca(marca().acento);
     refrescarMarca();
@@ -102,7 +107,7 @@ function montarMarca(raiz, contexto, ejecutar) {
 
 // Parámetros de cada sección: cada formulario guarda solo los suyos
 function montarParametros(raiz, contexto, ejecutar) {
-  const parametros = () => estado.ajustes.parametros;
+  const parametros = () => servicioCatalogos.parametros();
   const prefijos = Object.entries(servicioCatalogos.DOCUMENTOS_CON_PREFIJO);
   const guardar = (datos) => ejecutar(() => servicioCatalogos.guardarParametros(datos), 'Parámetros guardados correctamente');
   formularioDeAjustes(raiz, contexto, '#formulario-moneda', {
@@ -193,7 +198,7 @@ export function montar(raiz, contexto) {
       contexto.aviso(mensaje);
       return true;
     } catch (error) {
-      contexto.alerta(error.message);
+      contexto.alerta(mensajeDeError(error));
       return false;
     }
   };
@@ -229,7 +234,7 @@ export function montar(raiz, contexto) {
   formulario('#formulario-tienda', {
     clave: 'tienda',
     textoGuardar: 'Guardar datos del negocio',
-    valores: () => estado.ajustes.tienda,
+    valores: () => servicioAjustes.datosDelNegocio(),
     campos: [
       { clave: 'nombre', etiqueta: 'Nombre', obligatorio: true },
       { clave: 'nit', etiqueta: 'NIT', maximo: 30 },
@@ -243,7 +248,7 @@ export function montar(raiz, contexto) {
     clave: 'recibo',
     textoGuardar: 'Guardar recibo',
     columnas: 2,
-    valores: () => estado.ajustes.recibo,
+    valores: () => servicioAjustes.ajustesDeRecibo(),
     campos: [
       { clave: 'pie', etiqueta: 'Mensaje al final del recibo', maximo: 300 },
       {
@@ -259,7 +264,7 @@ export function montar(raiz, contexto) {
   montarCatalogos(raiz, ejecutar);
 
   const permitirSinExistencias = buscar('#permitir-sin-existencias', raiz);
-  permitirSinExistencias.checked = estado.ajustes.ventas.permitirSinExistencias;
+  permitirSinExistencias.checked = servicioAjustes.permiteVenderSinExistencias();
   permitirSinExistencias.onchange = () => ejecutar(
     () => servicioAjustes.establecerPermitirSinExistencias(permitirSinExistencias.checked),
     permitirSinExistencias.checked
@@ -269,7 +274,7 @@ export function montar(raiz, contexto) {
 
   // Recibo
   const mostrarDatos = buscar('#mostrar-datos-tienda', raiz);
-  mostrarDatos.checked = estado.ajustes.recibo.mostrarDatosTienda;
+  mostrarDatos.checked = servicioAjustes.ajustesDeRecibo().mostrarDatosTienda;
   mostrarDatos.onchange = () => ejecutar(
     () => servicioAjustes.establecerMostrarDatosTienda(mostrarDatos.checked),
     'Datos del negocio en el recibo actualizados correctamente',
@@ -298,7 +303,7 @@ export function montar(raiz, contexto) {
       await servicioCopia.descargarCopia();
       contexto.aviso('Copia de seguridad descargada correctamente');
     } catch (error) {
-      contexto.alerta(error.message);
+      contexto.alerta(mensajeDeError(error));
     }
   };
 
@@ -315,7 +320,7 @@ export function montar(raiz, contexto) {
       confirmacionCopia.hidden = false;
       buscar('#confirmar-copia-no', raiz).focus();
     } catch (error) {
-      contexto.alerta(error.message);
+      contexto.alerta(mensajeDeError(error));
     }
   };
   buscar('#confirmar-copia-no', raiz).onclick = () => { confirmacionCopia.hidden = true; copiaLeida = null; };
@@ -357,7 +362,7 @@ function montarCatalogosCsv(raiz, contexto) {
       contexto.aviso(`${cantidad} fila(s) de catálogos importadas correctamente`);
       contexto.redibujar();
     } catch (error) {
-      contexto.alerta(error.message);
+      contexto.alerta(mensajeDeError(error));
     }
   };
 }

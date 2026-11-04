@@ -1,5 +1,5 @@
 // Auditoría: registro de quién hizo qué y cuándo. Solo se agregan registros; ninguna pantalla los edita ni los borra.
-import { estado } from '../core/store.js';
+import { estado, guardarEstado } from '../core/store.js';
 import { siguienteCodigo } from '../core/codigos.js';
 import { nombreDeUsuario } from '../core/autorizacion.js';
 
@@ -19,3 +19,9 @@ export function registrarAuditoria(modulo, accion, detalle = '', usuario = nombr
 }
 
 export const registrosDeAuditoria = () => estado.auditoria.slice().reverse();
+
+// El ingreso no pasa por ningún servicio que guarde: este evento se guarda solo
+export function registrarEventoDeAcceso(accion, detalle, usuario) {
+  registrarAuditoria('acceso', accion, detalle, usuario);
+  guardarEstado();
+}
