@@ -21,10 +21,17 @@ export function guardarDatosTienda({ nombre, nit, telefono, ciudad, direccion })
   guardarEstado();
 }
 
-export function guardarMensajeRecibo(pie) {
+// Anchos de papel de las impresoras de tirilla (punto de venta)
+export const ANCHOS_TIRILLA = [80, 58];
+
+// Recibo: mensaje final y ancho de la tirilla
+export function guardarRecibo({ pie, anchoTirilla }) {
   exigirPermiso('ajustes', 'editar', 'cambiar los ajustes');
+  const ancho = Number(anchoTirilla);
+  if (!ANCHOS_TIRILLA.includes(ancho)) throw new Error('Elige el ancho de la tirilla');
   estado.ajustes.recibo.pie = exigirTexto(pie, 'el mensaje del recibo', { obligatorio: false, maximo: LIMITES.textoLargo });
-  registrarAuditoria('ajustes', 'Mensaje del recibo', '');
+  estado.ajustes.recibo.anchoTirilla = ancho;
+  registrarAuditoria('ajustes', 'Recibo', `Tirilla de ${ancho} mm`);
   guardarEstado();
 }
 
@@ -59,11 +66,11 @@ export function establecerPermitirSinExistencias(valor) {
   guardarEstado();
 }
 
-// Vuelve el inventario, las ventas, las remisiones y cotizaciones, los clientes y su seguimiento, los proveedores,
-// los pagos, la caja, los traslados y la contabilidad a los datos de ejemplo. También los catálogos y parámetros,
-// porque esos datos usan sus códigos. Los datos del negocio, la marca, el recibo, roles, personas, tiendas, bodegas,
-// empleados y la auditoría no cambian
-export function restablecerDatosDePrueba() {
+// Deja el inventario, las ventas, las remisiones y cotizaciones, los clientes y su seguimiento, los proveedores, los
+// pagos, la caja, los traslados y la contabilidad como en la instalación (vacíos, con el Consumidor final y el producto
+// genérico). También los catálogos y parámetros, porque esos datos usan sus códigos. Los datos del negocio, la marca,
+// el recibo, roles, personas, tiendas, bodegas, empleados y la auditoría no cambian
+export function restablecerDatosIniciales() {
   exigirPermiso('ajustes', 'editar', 'cambiar los ajustes');
   const datos = structuredClone(semilla);
   const claves = ['productos', 'ventas', 'documentos', 'facturas', 'orden', 'clientes', 'pagos', 'cajas', 'movimientosCaja', 'contabilidad',
@@ -72,6 +79,6 @@ export function restablecerDatosDePrueba() {
   estado.ajustes.catalogos = datos.ajustes.catalogos;
   estado.ajustes.parametros = datos.ajustes.parametros;
   borrarBusquedas();
-  registrarAuditoria('ajustes', 'Datos de ejemplo restablecidos', '');
+  registrarAuditoria('ajustes', 'Datos iniciales restablecidos', '');
   guardarEstado();
 }

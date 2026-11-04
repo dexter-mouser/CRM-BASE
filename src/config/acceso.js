@@ -4,9 +4,7 @@ export const USUARIOS = [
   { usuario: 'admin', clave: 'admin123', nombre: 'Administrador', correo: 'demo@generico.com' },
 ];
 
-// Cuentas de prueba que se muestran en el ingreso (el rol debe existir en Roles y permisos)
+// Cuenta de prueba que se muestra en el ingreso: solo el administrador (U-001 de la semilla)
 export const CUENTAS_PRUEBA = [
   { id: 'U-001', nombre: 'Administrador', correo: 'demo@generico.com', rolId: 'propietario' },
-  { id: 'U-002', nombre: 'Camila Duarte', correo: 'camila@generico.com', rolId: 'cajero' },
-  { id: 'U-003', nombre: 'Felipe Mora', correo: 'felipe@generico.com', rolId: 'bodega' },
 ];

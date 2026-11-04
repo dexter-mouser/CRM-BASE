@@ -3,7 +3,7 @@
 //  factura) | Perdida (con un motivo del catálogo; algunos motivos piden detalle).
 // Una cotización vencida que no se ganó ni se perdió genera una alerta para su vendedor hasta que registre el motivo.
 import { estado, guardarEstado } from '../core/store.js';
-import { exigirPermiso, usuarioActual } from '../core/autorizacion.js';
+import { exigirPermiso, rolActual, usuarioActual } from '../core/autorizacion.js';
 import { exigirTexto, LIMITES } from '../core/validacion.js';
 import { registrarAuditoria } from './auditoria.service.js';
 import { buscarElemento, elementos, estaActivo, etapasAbiertas, exigirElemento, nombreDe, ETAPAS_CERRADAS } from './catalogos.service.js';
@@ -35,10 +35,7 @@ const buscarCotizacion = (id) => {
   return cotizacion;
 };
 
-const esPropietarioActual = () => {
-  const usuario = usuarioActual();
-  return Boolean(estado.roles.find((rol) => rol.id === usuario?.rolId)?.protegido);
-};
+const esPropietarioActual = () => Boolean(rolActual()?.protegido);
 
 // Alertas del perfil de la sesión: cotizaciones vencidas sin cerrar de ese vendedor (el Propietario ve todas)
 export function alertasDeCotizaciones() {

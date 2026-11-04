@@ -1,5 +1,7 @@
 // Sesión del navegador. Si la persona elige "mantener la sesión", vive en localStorage; si no, en sessionStorage.
 const CLAVE_SESION = 'generico.sesion';
+// Rol que el Propietario está viendo en esta pestaña (lo usa autorizacion.js); se quita al cerrar sesión
+export const CLAVE_VER_COMO = 'generico.ver-como';
 const DURACION_MS = 8 * 60 * 60 * 1000;
 // Las páginas protegidas viven en paginas/; el ingreso está en la raíz
 const RUTA_INGRESO = '../index.html';
@@ -28,6 +30,7 @@ export function cerrarSesion(motivo = '') {
   try {
     sessionStorage.removeItem(CLAVE_SESION);
     localStorage.removeItem(CLAVE_SESION);
+    sessionStorage.removeItem(CLAVE_VER_COMO);
   } catch { /* sin almacenamiento */ }
   location.replace(motivo ? `${RUTA_INGRESO}?aviso=${motivo}` : RUTA_INGRESO);
 }

@@ -80,6 +80,10 @@ export function validarProducto({
   if (!unidadId) throw new Error('Elige la unidad de medida');
   exigirEntero(iva, 'la tarifa de IVA', { maximo: 100 });
   const esGenerico = generico === true;
+  // Los tres precios son obligatorios (mayores que 0); el genérico no tiene precio fijo: se escribe en cada venta
+  const precioMinimo = esGenerico ? 0 : 1;
+  const enCero = [precioSurtido, precioMayor, precioDetal].findIndex((precio) => precio === 0);
+  if (!esGenerico && enCero >= 0) throw new Error(`Escribe el precio ${enCero + 1}: debe ser mayor que 0`);
   const idLimpio = limpiarTexto(id);
   if (idLimpio && !PATRONES.codigoProducto.test(idLimpio)) throw new Error(`El ID "${idLimpio}" solo puede tener números`);
   return {
@@ -89,9 +93,9 @@ export function validarProducto({
     categoriaId,
     unidadId,
     costo: exigirEntero(costo, 'el costo'),
-    precioSurtido: exigirEntero(precioSurtido, 'el precio 1'),
-    precioMayor: exigirEntero(precioMayor, 'el precio 2'),
-    precioDetal: exigirEntero(precioDetal, 'el precio 3'),
+    precioSurtido: exigirEntero(precioSurtido, 'el precio 1', { minimo: precioMinimo }),
+    precioMayor: exigirEntero(precioMayor, 'el precio 2', { minimo: precioMinimo }),
+    precioDetal: exigirEntero(precioDetal, 'el precio 3', { minimo: precioMinimo }),
     iva,
     stockMinimo: esGenerico ? 0 : exigirEntero(stockMinimo, 'el stock mínimo'),
     existencias: esGenerico ? 0 : exigirEntero(existencias, 'el stock', { minimo: -LIMITES.valorMaximo }),

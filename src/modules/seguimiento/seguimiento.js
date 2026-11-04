@@ -1,7 +1,7 @@
 import { buscar } from '../../core/dom.js';
 import { estado } from '../../core/store.js';
 import { aFecha, fechaDeHoy } from '../../core/format.js';
-import { puede, usuarioActual } from '../../core/autorizacion.js';
+import { puede, rolActual, usuarioActual } from '../../core/autorizacion.js';
 import { cargarHtml, seccion, repetir } from '../../core/template.js';
 import * as servicioActividades from '../../services/actividades.service.js';
 import { cargarPlantillasCuadricula, montarCuadricula } from '../../components/cuadricula-datos/cuadricula-datos.js';
@@ -142,7 +142,7 @@ export function montar(raiz, contexto) {
 
   function pintar() {
     const pendientes = servicioActividades.tareasPendientes();
-    const esPropietario = estado.roles.find((rol) => rol.id === usuarioActual()?.rolId)?.protegido;
+    const esPropietario = rolActual()?.protegido;
     buscar('#alcance-tareas', raiz).textContent = esPropietario ? 'Ves las tareas de todas las personas.' : 'Ves solo las tareas asignadas a ti.';
     tareas.actualizar(pendientes.map((tarea) => ({
       vence: aFecha(tarea.vence.slice(0, 10)),

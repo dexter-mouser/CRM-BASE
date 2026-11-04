@@ -521,3 +521,37 @@ aside.recogido .secciones-grupo {
     font-size: var(--letra-xxs);
   }
 }
+
+/* Franja de "Ver como este rol": siempre a la vista, sobre la barra inferior en celular */
+.franja-ver-como {
+  position: fixed;
+  bottom: var(--espacio-5);
+  left: 50%;
+  z-index: 40;
+  display: flex;
+  align-items: center;
+  gap: var(--espacio-4);
+  max-width: calc(100vw - 32px);
+  padding: var(--espacio-3) var(--espacio-3) var(--espacio-3) var(--espacio-5);
+  border-radius: var(--radio-pildora);
+  background: var(--texto);
+  color: var(--fondo);
+  box-shadow: var(--sombra-2);
+  transform: translateX(-50%);
+}
+
+.franja-ver-como .boton {
+  flex: none;
+  white-space: nowrap;
+}
+
+@media (max-width: 800px) {
+  .franja-ver-como {
+    right: var(--espacio-5);
+    bottom: 84px;
+    left: var(--espacio-5);
+    justify-content: space-between;
+    max-width: none;
+    transform: none;
+  }
+}

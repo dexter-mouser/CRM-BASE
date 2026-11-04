@@ -11,15 +11,19 @@ let dialogo;
 let formato = 'tirilla';
 const estiloDePagina = document.createElement('style');
 
-// El tamaño de papel de @page no se puede cambiar con una clase: se escribe al imprimir según el formato elegido
+// El tamaño de papel de @page no se puede cambiar con una clase: se escribe al imprimir según el formato elegido.
+// La tirilla usa el ancho de Ajustes → Recibo (80 o 58 mm)
+const anchoTirilla = () => estado.ajustes.recibo.anchoTirilla;
 const PAGINAS = {
-  tirilla: '@page { size: 80mm auto; margin: 4mm; }',
-  carta: '@page { size: A4; margin: 15mm; }',
+  tirilla: () => `@page { size: ${anchoTirilla()}mm auto; margin: ${anchoTirilla() === 58 ? 2 : 4}mm; }`,
+  carta: () => '@page { size: A4; margin: 15mm; }',
 };
 
 function elegirFormato(nuevo) {
   formato = nuevo;
   dialogo.classList.toggle('recibo-carta', nuevo === 'carta');
+  dialogo.classList.toggle('recibo-58', anchoTirilla() === 58);
+  buscar('[data-formato="tirilla"]', dialogo).textContent = `Tirilla ${anchoTirilla()} mm`;
   buscarTodos('[data-formato]', dialogo).forEach((boton) => boton.setAttribute('aria-pressed', String(boton.dataset.formato === nuevo)));
 }
 
@@ -38,7 +42,7 @@ async function prepararDialogo() {
   // Al imprimir con el comprobante abierto, el CSS oculta la aplicación y deja solo el comprobante
   addEventListener('beforeprint', () => {
     if (!dialogo.open) return;
-    estiloDePagina.textContent = PAGINAS[formato];
+    estiloDePagina.textContent = PAGINAS[formato]();
     document.body.classList.add('imprimiendo-recibo');
   });
   addEventListener('afterprint', () => document.body.classList.remove('imprimiendo-recibo'));

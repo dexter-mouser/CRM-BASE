@@ -1,4 +1,4 @@
-/* Recibo: vista previa en pantalla e impresión (ancho de 80 mm, como un recibo de punto de venta) */
+/* Recibo: vista previa en pantalla e impresión (tirilla de 80 o 58 mm, como un recibo de punto de venta) */
 .recibo-dialogo {
   width: min(360px, 94vw);
   padding: 0;
@@ -105,6 +105,11 @@
     background: none;
   }
 
+  /* Tirilla de 58 mm: unos 50 mm imprimibles */
+  body.imprimiendo-recibo .recibo-dialogo.recibo-58 {
+    width: 50mm;
+  }
+
   body.imprimiendo-recibo .recibo-dialogo.recibo-carta {
     width: 100%;
   }
@@ -205,4 +210,19 @@
     border-color: #000;
     color: #000;
   }
+}
+
+/* Tirilla de 58 mm (Ajustes → Recibo): vista previa más angosta y letra más pequeña */
+.recibo-dialogo.recibo-58:not(.recibo-carta) {
+  width: min(270px, 94vw);
+}
+
+.recibo-dialogo.recibo-58:not(.recibo-carta) .recibo {
+  padding: 16px 12px;
+  font-size: 11px;
+}
+
+.recibo-dialogo.recibo-58:not(.recibo-carta) .recibo-marca {
+  font-size: 16px;
+  letter-spacing: 1px;
 }

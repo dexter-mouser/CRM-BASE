@@ -238,11 +238,17 @@ export function montar(raiz, contexto) {
   });
   formulario('#formulario-recibo', {
     clave: 'recibo',
-    textoGuardar: 'Guardar mensaje',
-    columnas: 1,
+    textoGuardar: 'Guardar recibo',
+    columnas: 2,
     valores: () => estado.ajustes.recibo,
-    campos: [{ clave: 'pie', etiqueta: 'Mensaje al final del recibo', maximo: 300 }],
-    alGuardar: ({ pie }) => ejecutar(() => servicioAjustes.guardarMensajeRecibo(pie), 'Mensaje del recibo guardado correctamente'),
+    campos: [
+      { clave: 'pie', etiqueta: 'Mensaje al final del recibo', maximo: 300 },
+      {
+        clave: 'anchoTirilla', etiqueta: 'Ancho de la tirilla', tipo: 'seleccion', obligatorio: true, ayuda: 'El de la impresora de punto de venta',
+        opciones: servicioAjustes.ANCHOS_TIRILLA.map((ancho) => [ancho, `${ancho} mm`]),
+      },
+    ],
+    alGuardar: (datos) => ejecutar(() => servicioAjustes.guardarRecibo(datos), 'Recibo guardado correctamente'),
   });
 
   montarMarca(raiz, contexto, ejecutar);
@@ -280,7 +286,7 @@ export function montar(raiz, contexto) {
   };
   buscar('#confirmar-restablecer-si', raiz).onclick = () => {
     confirmacion.hidden = true;
-    if (ejecutar(servicioAjustes.restablecerDatosDePrueba, 'Datos de prueba restablecidos correctamente')) contexto.redibujar();
+    if (ejecutar(servicioAjustes.restablecerDatosIniciales, 'Datos iniciales restablecidos correctamente')) contexto.redibujar();
   };
 
   // Copia de seguridad: descarga, restauración validada y exportación de tablas a CSV

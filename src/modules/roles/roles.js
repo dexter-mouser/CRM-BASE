@@ -2,7 +2,7 @@ import { buscar } from '../../core/dom.js';
 import { estado } from '../../core/store.js';
 import { cargarHtml, seccion, repetir } from '../../core/template.js';
 import { ACCIONES, MODULOS_PERMISOS } from '../../config/permisos.js';
-import { puede } from '../../core/autorizacion.js';
+import { esPropietario, puede, verComoRol } from '../../core/autorizacion.js';
 import * as servicioRoles from '../../services/roles.service.js';
 import { cargarPlantillasCuadricula, montarCuadricula } from '../../components/cuadricula-datos/cuadricula-datos.js';
 import { cargarPlantillasFicha, crearFicha } from '../../components/ficha-registro/ficha-registro.js';
@@ -68,6 +68,7 @@ export function montar(raiz, contexto) {
     buscar('#rol-titulo', raiz).textContent = rol.nombre;
     buscar('#rol-descripcion-actual', raiz).textContent = rol.descripcion || 'Sin descripción';
     buscar('#editar-rol', raiz).disabled = rol.protegido;
+    buscar('#ver-como-rol', raiz).disabled = rol.protegido;
     buscar('#eliminar-rol', raiz).disabled = rol.protegido;
     buscar('#confirmar-eliminar-rol', raiz).hidden = true;
 
@@ -184,6 +185,17 @@ export function montar(raiz, contexto) {
 
   buscar('#nuevo-rol', raiz).onclick = () => formularioRol.abrir(null);
   buscar('#editar-rol', raiz).onclick = () => formularioRol.abrir(rolActual());
+
+  // Ver como este rol: solo el Propietario; la app se recorre desde el panel con el menú y los permisos del rol
+  buscar('#ver-como-rol', raiz).hidden = !esPropietario();
+  buscar('#ver-como-rol', raiz).onclick = () => {
+    try {
+      verComoRol(rolActual().id);
+      location.href = 'panel.html';
+    } catch (error) {
+      contexto.alerta(error.message);
+    }
+  };
 
   // Elegir un rol de la lista
   buscar('#lista-roles', raiz).addEventListener('click', (evento) => {

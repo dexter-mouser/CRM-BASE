@@ -27,7 +27,7 @@ Se valida **toda** la tabla antes de cambiar nada. Si una fila falla, no se impo
 | Campo | Regla |
 |---|---|
 | Categoría y unidad | Código obligatorio de un elemento activo de su catálogo en Ajustes (al editar se acepta el que ya tenía) |
-| Precio de venta | Entero ≥ 0, incluye el IVA |
+| Precios de venta (1, 2 y 3) | Enteros mayores que 0, incluyen el IVA; obligatorios salvo en el producto genérico |
 | IVA | Una tarifa activa del catálogo de Ajustes (19, 5 o 0 en la semilla) |
 | Stock mínimo | Entero ≥ 0 |
 
@@ -82,3 +82,4 @@ Formato `generico-copia-1` con `version`, `fecha`, `huella` (SHA-256 de `datos`)
 | Cortes de cartera | De 1 a 6 enteros en días, de menor a mayor y sin repetir |
 | Moneda y formato | Código de 3 letras (COP, USD) y un formato regional válido (es-CO) |
 | Marca | Nombre comercial hasta 40 caracteres, color `#rrggbb` y logo PNG, JPG, WEBP o SVG de hasta 200 KB (vacío = el de Genérico) |
+| Ancho de la tirilla | 80 o 58 mm |

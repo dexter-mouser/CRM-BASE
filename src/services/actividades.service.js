@@ -2,7 +2,7 @@
 // fecha de vencimiento y responsable. Una tarea queda pendiente hasta que se marca como hecha.
 import { estado, guardarEstado } from '../core/store.js';
 import { siguienteCodigo } from '../core/codigos.js';
-import { exigirPermiso, usuarioActual, nombreDeUsuario } from '../core/autorizacion.js';
+import { exigirPermiso, rolActual, usuarioActual, nombreDeUsuario } from '../core/autorizacion.js';
 import { exigirFecha, exigirTexto, LIMITES } from '../core/validacion.js';
 import { registrarAuditoria } from './auditoria.service.js';
 import { exigirElemento, nombreDe } from './catalogos.service.js';
@@ -17,7 +17,7 @@ export const estaVencidaTarea = (actividad, ahora = Date.now()) => esPendiente(a
 // Tareas pendientes de la persona de la sesión (el rol protegido ve las de todos)
 export function tareasPendientes() {
   const usuario = usuarioActual();
-  const esPropietario = estado.roles.find((rol) => rol.id === usuario?.rolId)?.protegido;
+  const esPropietario = rolActual()?.protegido;
   return estado.actividades
     .filter((actividad) => esPendiente(actividad) && (esPropietario || actividad.responsableCorreo === usuario?.correo))
     .sort((a, b) => new Date(a.vence) - new Date(b.vence));

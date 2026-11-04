@@ -4,7 +4,7 @@ import { icono, ICONO_HAMBURGUESA, ICONO_CAMPANA, ICONO_LUPA, ICONO_MAS } from '
 import { aFecha } from '../../core/format.js';
 import { estado } from '../../core/store.js';
 import { alertasDeCotizaciones } from '../../services/embudo.service.js';
-import { puede } from '../../core/autorizacion.js';
+import { puede, rolVisto, volverAMiRol } from '../../core/autorizacion.js';
 import { GRUPOS, enlaceDeSeccion } from '../../config/nav.js';
 import { tiendasPermitidas, puedeVerTodas, tiendaActivaId, elegirTienda, nombreDeTienda, TODAS_LAS_TIENDAS } from '../../core/tienda.js';
 import { tareasPendientes, estaVencidaTarea } from '../../services/actividades.service.js';
@@ -21,6 +21,7 @@ export async function montarEncabezado(ranura, { alAlternarMenu, sesion }) {
   buscar('#alternar-menu').onclick = alAlternarMenu;
   prepararBotonTema(buscar('#alternar-tema'), (tema) => mostrarAviso(`Tema ${tema} aplicado correctamente`));
   refrescarMarca();
+  pintarVerComo(documento);
 
   const iniciales = sesion.nombre.split(' ').slice(0, 2).map((palabra) => palabra[0]).join('').toUpperCase();
   const avatar = buscar('#usuario');
@@ -169,4 +170,15 @@ export function refrescarMarca() {
   const enlace = buscar('.marca');
   enlace.innerHTML = logoCompleto(32);
   enlace.setAttribute('aria-label', `${estado.ajustes.marca.nombreComercial}, ir al panel`);
+}
+
+// Franja fija mientras el Propietario ve la app como otro rol; "Volver a mi rol" regresa a Roles con su vista propia
+function pintarVerComo(documento) {
+  const rol = rolVisto();
+  if (!rol) return;
+  document.body.insertAdjacentHTML('beforeend', repetir(documento, 'franja-ver-como', [{ rol: rol.nombre }]));
+  buscar('#volver-a-mi-rol').onclick = () => {
+    volverAMiRol();
+    location.href = 'roles.html';
+  };
 }

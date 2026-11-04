@@ -143,15 +143,17 @@ export function montar(raiz, contexto) {
         clave: 'iva', etiqueta: 'IVA', tipo: 'seleccion', obligatorio: true, ayuda: 'Los precios incluyen el IVA',
         valor: () => primeroActivo('tarifasIva'), opciones: (producto) => opcionesDe('tarifasIva', producto ? String(producto.iva) : ''),
       },
-      ...LISTAS_PRECIO.map((lista) => ({ clave: lista.campo, etiqueta: conMoneda(nombreDePrecio(lista)), tipo: 'entero', valor: 0 })),
+      // Los tres precios son obligatorios (el genérico los oculta: su valor se escribe en cada venta)
+      ...LISTAS_PRECIO.map((lista) => ({ clave: lista.campo, etiqueta: conMoneda(nombreDePrecio(lista)), tipo: 'entero', obligatorio: true })),
       { clave: 'stockMinimo', etiqueta: 'Stock mínimo', tipo: 'entero', valor: 0 },
       { clave: 'existencias', etiqueta: 'Stock inicial', tipo: 'entero-negativo', valor: 0 },
       {
         // "Genérico" se elige al crear el producto; después no cambia (su historia de stock depende de eso).
-        // Un producto genérico no maneja stock: se ocultan el stock y el mínimo
+        // Un producto genérico no maneja stock ni precio fijo: se ocultan los precios, el stock y el mínimo
         clave: 'generico', tipo: 'casilla', ancho: 'completo',
         etiqueta: 'Producto genérico: no maneja stock y su nombre y valor se escriben en cada venta (servicios, reparaciones, artículos sin código)',
-        alCambiar: (generico, formularioProducto) => ['stockMinimo', 'existencias'].forEach((clave) => formularioProducto.mostrar(clave, !generico)),
+        alCambiar: (generico, formularioProducto) => [...LISTAS_PRECIO.map((lista) => lista.campo), 'stockMinimo', 'existencias']
+          .forEach((clave) => formularioProducto.mostrar(clave, !generico)),
       },
     ],
     alGuardar: (datos, producto) => {
