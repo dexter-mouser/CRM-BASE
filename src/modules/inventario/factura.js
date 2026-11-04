@@ -10,6 +10,7 @@ import { mostrarComprobanteDeFactura } from '../../components/recibo/comprobante
 import { montarBuscadorCuadricula } from '../../components/buscador-cuadricula/buscador-cuadricula.js';
 import { montarSelectorRegistro } from '../../components/selector-registro/selector-registro.js';
 import { COLUMNAS_PROVEEDOR, proveedoresParaElegir } from '../../components/selector-registro/registros.js';
+import { mensajeDeError } from '../../core/errores.js';
 
 // Devuelve cargarOrden(orden): llena el panel con el proveedor y los productos de una orden de compra
 export function montarFactura(raiz, contexto, documento, plantillasBuscador, plantillasSelector) {
@@ -125,7 +126,7 @@ export function montarFactura(raiz, contexto, documento, plantillasBuscador, pla
       contexto.redibujar();
       mostrarComprobanteDeFactura(factura);
     } catch (error) {
-      contexto.alerta(error.message);
+      contexto.alerta(mensajeDeError(error));
     }
   };
 

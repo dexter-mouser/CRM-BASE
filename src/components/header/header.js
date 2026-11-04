@@ -2,7 +2,8 @@ import { buscar, buscarTodos } from '../../core/dom.js';
 import { cargarHtml, repetir } from '../../core/template.js';
 import { icono, ICONO_HAMBURGUESA, ICONO_CAMPANA, ICONO_LUPA, ICONO_MAS } from '../../core/iconos.js';
 import { aFecha } from '../../core/format.js';
-import { estado } from '../../core/store.js';
+import { buscarCliente } from '../../services/clientes.service.js';
+import { marcaActual } from '../../services/ajustes.service.js';
 import { alertasDeCotizaciones } from '../../services/embudo.service.js';
 import { puede, rolVisto, volverAMiRol } from '../../core/autorizacion.js';
 import { GRUPOS, enlaceDeSeccion } from '../../config/nav.js';
@@ -11,7 +12,12 @@ import { tareasPendientes, estaVencidaTarea } from '../../services/actividades.s
 import { prepararBotonTema } from '../../core/tema.js';
 import { vistaActual } from '../../core/router.js';
 import { mostrarAviso } from '../toast/toast.js';
+import { registrarFallaDeAlmacenamiento } from '../../core/preferencias.js';
 import { logoCompleto } from '../logo/logo.js';
+import { mensajeDeError } from '../../core/errores.js';
+
+// Aviso que deja el cambio de tienda para mostrarlo después de recargar
+const CLAVE_AVISO_PENDIENTE = 'generico.aviso-pendiente';
 
 export async function montarEncabezado(ranura, { alAlternarMenu, sesion }) {
   const documento = await cargarHtml(new URL('./header.html', import.meta.url));
@@ -86,20 +92,26 @@ function montarSelectorDeTienda(documento) {
     try {
       elegirTienda(selector.value);
       const nombre = selector.value === TODAS_LAS_TIENDAS ? 'Todas las sucursales' : nombreDeTienda(selector.value);
-      try { sessionStorage.setItem('generico.aviso-pendiente', `${nombre}: vista aplicada correctamente`); } catch { /* sin almacenamiento */ }
+      try {
+        sessionStorage.setItem(CLAVE_AVISO_PENDIENTE, `${nombre}: vista aplicada correctamente`);
+      } catch (error) {
+        registrarFallaDeAlmacenamiento(error);
+      }
       location.reload();
     } catch (error) {
-      mostrarAviso(error.message, 'alerta');
+      mostrarAviso(mensajeDeError(error), 'alerta');
     }
   };
   // Aviso que dejó el cambio de tienda antes de recargar
   try {
-    const pendiente = sessionStorage.getItem('generico.aviso-pendiente');
+    const pendiente = sessionStorage.getItem(CLAVE_AVISO_PENDIENTE);
     if (pendiente) {
-      sessionStorage.removeItem('generico.aviso-pendiente');
+      sessionStorage.removeItem(CLAVE_AVISO_PENDIENTE);
       mostrarAviso(pendiente);
     }
-  } catch { /* sin almacenamiento */ }
+  } catch (error) {
+    registrarFallaDeAlmacenamiento(error);
+  }
 }
 
 // Alertas del perfil de la sesión: cotizaciones vencidas sin motivo (de ese vendedor) y tareas vencidas o de hoy.
@@ -130,16 +142,24 @@ function montarAlertas(documento) {
   const cotizaciones = pintarAlertas(documento);
 
   let avisadas = false;
-  try { avisadas = sessionStorage.getItem(CLAVE_ALERTAS_AVISADAS) === '1'; } catch { /* sin almacenamiento */ }
+  try {
+    avisadas = sessionStorage.getItem(CLAVE_ALERTAS_AVISADAS) === '1';
+  } catch (error) {
+    registrarFallaDeAlmacenamiento(error);
+  }
   if (cotizaciones && !avisadas) {
     mostrarAviso(`Tienes ${cotizaciones} cotización(es) vencida(s): registra el motivo en el Embudo`, 'alerta');
-    try { sessionStorage.setItem(CLAVE_ALERTAS_AVISADAS, '1'); } catch { /* sin almacenamiento */ }
+    try {
+      sessionStorage.setItem(CLAVE_ALERTAS_AVISADAS, '1');
+    } catch (error) {
+      registrarFallaDeAlmacenamiento(error);
+    }
   }
 }
 
 // Pinta el contador y la lista; devuelve cuántas cotizaciones vencidas hay
 function pintarAlertas(documento) {
-  const nombreCliente = (id) => estado.clientes.find((cliente) => cliente.id === id)?.nombre ?? id;
+  const nombreCliente = (id) => buscarCliente(id)?.nombre ?? id;
   const finDeHoy = new Date().setHours(23, 59, 59, 999);
   const cotizaciones = alertasDeCotizaciones().map((cotizacion) => ({
     enlace: `embudo.html?perdida=${encodeURIComponent(cotizacion.id)}`,
@@ -169,7 +189,7 @@ function pintarAlertas(documento) {
 export function refrescarMarca() {
   const enlace = buscar('.marca');
   enlace.innerHTML = logoCompleto(32);
-  enlace.setAttribute('aria-label', `${estado.ajustes.marca.nombreComercial}, ir al panel`);
+  enlace.setAttribute('aria-label', `${marcaActual().nombreComercial}, ir al panel`);
 }
 
 // Franja fija mientras el Propietario ve la app como otro rol; "Volver a mi rol" regresa a Roles con su vista propia

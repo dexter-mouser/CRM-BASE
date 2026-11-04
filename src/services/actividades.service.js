@@ -9,6 +9,8 @@ import { exigirElemento, nombreDe } from './catalogos.service.js';
 
 const DIA_MS = 86_400_000;
 
+export const listarActividades = () => estado.actividades;
+export const buscarActividad = (id) => estado.actividades.find((actividad) => actividad.id === id);
 export const actividadesDeCliente = (clienteId) => estado.actividades.filter((actividad) => actividad.clienteId === clienteId);
 
 export const esPendiente = (actividad) => actividad.tipo === 'tarea' && !actividad.completada;

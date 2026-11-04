@@ -1,6 +1,7 @@
 // Importación validada por CSV: se revisan todas las filas antes de dar algo por hecho; si alguna falla no se importa
 // ninguna y el mensaje dice en qué filas está el problema (la fila 1 del archivo es el encabezado).
 import { estado, guardarEstado } from './store.js';
+import { mensajeDeError } from './errores.js';
 
 const MAXIMO_FILAS = 5000;
 const PROBLEMAS_A_MOSTRAR = 3;
@@ -16,7 +17,7 @@ export function validarFilas(elementos, validar, etiqueta = (elemento, posicion)
     try {
       return validar(elemento);
     } catch (error) {
-      problemas.push(`${etiqueta(elemento, posicion)}: ${error.message}`);
+      problemas.push(`${etiqueta(elemento, posicion)}: ${mensajeDeError(error)}`);
       return null;
     }
   });

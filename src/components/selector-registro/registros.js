@@ -1,10 +1,9 @@
 // Columnas y datos de cada tipo de registro que se elige con el selector (cliente, proveedor, producto, factura).
 // Todos los selectores de la app salen de aquí: cambiar una columna la cambia en todas las pantallas.
-import { estado } from '../../core/store.js';
 import { aPesos, aFecha } from '../../core/format.js';
-import { deudaDeCliente, cupoDisponible } from '../../services/clientes.service.js';
-import { saldoConProveedor } from '../../services/proveedores.service.js';
-import { etiquetaDeLista, existenciasVisibles } from '../../services/inventario.service.js';
+import { listarClientes, deudaDeCliente, cupoDisponible } from '../../services/clientes.service.js';
+import { listarProveedores, saldoConProveedor } from '../../services/proveedores.service.js';
+import { listarProductos, etiquetaDeLista, existenciasVisibles } from '../../services/inventario.service.js';
 import { listaDeTienda } from '../../services/ventas.service.js';
 import { tiendaActivaId, TODAS_LAS_TIENDAS } from '../../core/tienda.js';
 import { nombreDe } from '../../services/catalogos.service.js';
@@ -30,7 +29,7 @@ const listaDeCliente = (cliente) => {
 };
 
 // filtro: función opcional para dejar solo algunos (por ejemplo, sin el consumidor final o solo con deuda)
-export const clientesParaElegir = (filtro = () => true) => estado.clientes.filter(filtro).map((cliente) => ({
+export const clientesParaElegir = (filtro = () => true) => listarClientes().filter(filtro).map((cliente) => ({
   ...cliente,
   documentoTexto: documentoDe(cliente),
   listaTexto: etiquetaDeLista(listaDeCliente(cliente)),
@@ -48,7 +47,7 @@ export const COLUMNAS_PROVEEDOR = [
   { clave: 'saldoTexto', titulo: 'Por pagar', ancho: '110px', alinear: 'derecha' },
 ];
 
-export const proveedoresParaElegir = (filtro = () => true) => estado.proveedores.filter(filtro).map((proveedor) => ({
+export const proveedoresParaElegir = (filtro = () => true) => listarProveedores().filter(filtro).map((proveedor) => ({
   ...proveedor,
   plazoTexto: `${proveedor.plazoDias} días`,
   saldo: saldoConProveedor(proveedor.id),
@@ -64,7 +63,7 @@ export const COLUMNAS_PRODUCTO = [
   { clave: 'stockTexto', titulo: 'Stock', ancho: '80px', alinear: 'derecha' },
 ];
 
-export const productosParaElegir = (filtro = () => true) => estado.productos.filter(filtro).map((producto) => ({
+export const productosParaElegir = (filtro = () => true) => listarProductos().filter(filtro).map((producto) => ({
   ...producto,
   categoriaTexto: nombreDe('categorias', producto.categoriaId),
   stockTexto: producto.generico ? '—' : String(existenciasVisibles(producto)),

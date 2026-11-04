@@ -100,8 +100,15 @@ export function enviarTraslado({ origenId, destinoId, lineas, observaciones = ''
   return traslado;
 }
 
-const buscarTraslado = (id) => {
-  const traslado = estado.traslados.find((candidato) => candidato.id === id);
+export const listarBodegas = () => estado.bodegas;
+export const listarTraslados = () => estado.traslados;
+export const buscarTraslado = (id) => estado.traslados.find((traslado) => traslado.id === id);
+// Traslados en camino a la bodega (sin bodega: a cualquiera); todavía no suman en su stock
+export const trasladosPorRecibir = (bodegaId) =>
+  estado.traslados.filter((traslado) => traslado.estado === 'enviado' && (!bodegaId || traslado.destinoId === bodegaId));
+
+const exigirTrasladoEnviado = (id) => {
+  const traslado = exigirTrasladoEnviado(id);
   if (!traslado) throw new Error('El traslado no existe');
   if (traslado.estado !== 'enviado') throw new Error(`El traslado ${id} ya está ${ESTADOS_TRASLADO[traslado.estado].toLowerCase()}`);
   return traslado;
@@ -109,7 +116,7 @@ const buscarTraslado = (id) => {
 
 export function recibirTraslado(id) {
   exigirPermiso('bodegas', 'editar', 'recibir traslados');
-  const traslado = buscarTraslado(id);
+  const traslado = exigirTrasladoEnviado(id);
   traslado.items.forEach((item) => moverExistencias(buscarProductoPorId(item.productoId), item.cantidad, traslado.destinoId));
   traslado.estado = 'recibido';
   traslado.recibidoEn = new Date().toISOString();
@@ -122,7 +129,7 @@ export function recibirTraslado(id) {
 // Un traslado en tránsito se puede anular: la mercancía vuelve a la bodega de origen
 export function anularTraslado(id, motivo) {
   exigirPermiso('bodegas', 'eliminar', 'anular traslados');
-  const traslado = buscarTraslado(id);
+  const traslado = exigirTrasladoEnviado(id);
   const motivoLimpio = exigirMotivo(motivo);
   traslado.items.forEach((item) => moverExistencias(buscarProductoPorId(item.productoId), item.cantidad, traslado.origenId));
   traslado.estado = 'anulado';

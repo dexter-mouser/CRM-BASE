@@ -1,5 +1,5 @@
 import { buscar } from '../../core/dom.js';
-import { estado } from '../../core/store.js';
+import { empleadoDeUsuario } from '../../services/empleados.service.js';
 import { cargarHtml, seccion, repetir } from '../../core/template.js';
 import { ACCIONES, MODULOS_PERMISOS } from '../../config/permisos.js';
 import { esPropietario, puede, verComoRol } from '../../core/autorizacion.js';
@@ -9,6 +9,7 @@ import { cargarPlantillasFicha, crearFicha } from '../../components/ficha-regist
 import { nombreDeTienda } from '../../core/tienda.js';
 import { cargarPlantillasFormulario, montarFormulario } from '../../components/formulario/formulario.js';
 import { importarUsuarios } from '../../services/importacion.service.js';
+import { mensajeDeError } from '../../core/errores.js';
 
 let documento;
 let plantillasCuadricula;
@@ -26,7 +27,7 @@ export async function dibujar() {
   [plantillasCuadricula, plantillasFicha, plantillasFormulario] = await Promise.all([
     cargarPlantillasCuadricula(), cargarPlantillasFicha(), cargarPlantillasFormulario(),
   ]);
-  if (!servicioRoles.buscarRol(rolSeleccionadoId)) rolSeleccionadoId = estado.roles[0].id;
+  if (!servicioRoles.buscarRol(rolSeleccionadoId)) rolSeleccionadoId = servicioRoles.listarRoles()[0].id;
   return seccion(documento, 'principal', {
     roles: '',
     encabezados: repetir(documento, 'encabezado-accion', ACCIONES),
@@ -43,19 +44,19 @@ export function montar(raiz, contexto) {
       contexto.aviso(mensaje);
       return true;
     } catch (error) {
-      contexto.alerta(error.message);
+      contexto.alerta(mensajeDeError(error));
       return false;
     }
   };
 
-  const opcionesDeRoles = (seleccionadoId) => repetir(documento, 'opcion-rol', estado.roles.map((rol) => ({
+  const opcionesDeRoles = (seleccionadoId) => repetir(documento, 'opcion-rol', servicioRoles.listarRoles().map((rol) => ({
     id: rol.id,
     nombre: rol.nombre,
     seleccion: rol.id === seleccionadoId ? 'selected' : '',
   })));
 
   const pintarRoles = () => {
-    buscar('#lista-roles', raiz).innerHTML = repetir(documento, 'tarjeta-rol', estado.roles.map((rol) => ({
+    buscar('#lista-roles', raiz).innerHTML = repetir(documento, 'tarjeta-rol', servicioRoles.listarRoles().map((rol) => ({
       id: rol.id,
       nombre: rol.nombre,
       actual: String(rol.id === rolSeleccionadoId),
@@ -105,7 +106,7 @@ export function montar(raiz, contexto) {
     }));
   };
 
-  const filasPersonas = () => estado.usuarios.map((usuario) => ({
+  const filasPersonas = () => servicioRoles.listarUsuarios().map((usuario) => ({
     ...usuario,
     rolNombre: servicioRoles.buscarRol(usuario.rolId)?.nombre ?? '',
     estadoTexto: usuario.activo ? 'Activo' : 'Inactivo',
@@ -113,7 +114,7 @@ export function montar(raiz, contexto) {
 
   const cuadriculaPersonas = montarCuadricula(buscar('#cuadricula-personas', raiz), {
     exportar: { modulo: 'roles', archivo: 'usuarios' },
-    importar: { modulo: 'roles', formato: 'usuarios', registros: () => estado.usuarios, importar: importarUsuarios, alImportar: contexto.redibujar },
+    importar: { modulo: 'roles', formato: 'usuarios', registros: () => servicioRoles.listarUsuarios(), importar: importarUsuarios, alImportar: contexto.redibujar },
     plantillas: plantillasCuadricula,
     titulo: 'Personas',
     vacio: 'Aún no hay usuarios.',
@@ -130,9 +131,9 @@ export function montar(raiz, contexto) {
   // Ficha de la persona: el rol y el estado se cambian en la misma fila
   const fichaPersona = crearFicha(buscar('#ficha-persona', raiz), plantillasFicha);
   const abrirFichaPersona = (id) => fichaPersona.abrir(id, () => {
-    const usuario = estado.usuarios.find((candidato) => candidato.id === id);
+    const usuario = servicioRoles.buscarUsuario(id);
     if (!usuario) return null;
-    const empleado = estado.empleados.find((candidato) => candidato.usuarioId === usuario.id);
+    const empleado = empleadoDeUsuario(usuario.id);
     return {
       etiqueta: 'Ficha del usuario',
       titulo: `${usuario.nombre} · ${usuario.id}`,
@@ -196,7 +197,7 @@ export function montar(raiz, contexto) {
       verComoRol(rolActual().id);
       location.href = 'panel.html';
     } catch (error) {
-      contexto.alerta(error.message);
+      contexto.alerta(mensajeDeError(error));
     }
   };
 
@@ -222,7 +223,7 @@ export function montar(raiz, contexto) {
       buscar('#confirmar-eliminar-rol', raiz).hidden = true;
       return;
     }
-    rolSeleccionadoId = estado.roles[0].id;
+    rolSeleccionadoId = servicioRoles.listarRoles()[0].id;
     pintarTodo();
   };
 
@@ -261,7 +262,7 @@ export function montar(raiz, contexto) {
     campos: [
       { clave: 'nombre', etiqueta: 'Nombre', obligatorio: true },
       { clave: 'correo', etiqueta: 'Correo', obligatorio: true, ejemplo: 'nombre@generico.com', ayuda: 'Puedes escribir solo lo que va antes de la @' },
-      { clave: 'rolId', etiqueta: 'Rol', tipo: 'seleccion', valor: () => rolSeleccionadoId, opciones: () => estado.roles.map((rol) => [rol.id, rol.nombre]) },
+      { clave: 'rolId', etiqueta: 'Rol', tipo: 'seleccion', valor: () => rolSeleccionadoId, opciones: () => servicioRoles.listarRoles().map((rol) => [rol.id, rol.nombre]) },
     ],
     alGuardar: (datos) => {
       if (!ejecutar(() => servicioRoles.agregarUsuario(datos), 'Persona agregada correctamente')) return false;

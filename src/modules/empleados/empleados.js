@@ -1,5 +1,6 @@
 import { buscar } from '../../core/dom.js';
-import { estado } from '../../core/store.js';
+import { listarTiendas, tiendasActivas } from '../../services/tiendas.service.js';
+import { buscarUsuario, listarUsuarios } from '../../services/roles.service.js';
 import { aPesos, fechaDeHoy } from '../../core/format.js';
 import { puede } from '../../core/autorizacion.js';
 import { cargarHtml, seccion, repetir } from '../../core/template.js';
@@ -10,16 +11,16 @@ import { conectarImportacion } from '../../components/importar-csv/importar-csv.
 import { cargarPlantillasCuadricula, montarCuadricula } from '../../components/cuadricula-datos/cuadricula-datos.js';
 import { cargarPlantillasFicha, crearFicha } from '../../components/ficha-registro/ficha-registro.js';
 import { cargarPlantillasFormulario, montarFormulario } from '../../components/formulario/formulario.js';
+import { mensajeDeError } from '../../core/errores.js';
 
 let documento;
 let plantillasCuadricula;
 let plantillasFicha;
 let plantillasFormulario;
 
-const tiendasActivas = () => estado.tiendas.filter((tienda) => tienda.activa);
 
 // Los empleados de la sucursal activa (o de todas)
-const empleadosDeLaVista = () => estado.empleados.filter(enTiendaActiva);
+const empleadosDeLaVista = () => servicioEmpleados.listarEmpleados().filter(enTiendaActiva);
 
 export async function dibujar() {
   documento = await cargarHtml(new URL('./empleados.html', import.meta.url));
@@ -49,17 +50,17 @@ export function montar(raiz, contexto) {
       contexto.redibujar();
       return true;
     } catch (error) {
-      contexto.alerta(error.message);
+      contexto.alerta(mensajeDeError(error));
       return false;
     }
   };
 
   // Las casillas de acceso solo aplican si el empleado tiene usuario; usuario.tiendas vacío = todas
   const mostrarAcceso = (usuarioId, formulario) => {
-    const usuario = estado.usuarios.find((candidato) => candidato.id === usuarioId);
+    const usuario = buscarUsuario(usuarioId);
     formulario.mostrar('tiendasAcceso', Boolean(usuario));
     if (!usuario) return;
-    formulario.escribir({ tiendasAcceso: usuario.tiendas?.length ? usuario.tiendas : estado.tiendas.map((tienda) => tienda.id) });
+    formulario.escribir({ tiendasAcceso: usuario.tiendas?.length ? usuario.tiendas : listarTiendas().map((tienda) => tienda.id) });
   };
 
   const formulario = montarFormulario(buscar('#formulario-empleado', raiz), {
@@ -90,11 +91,11 @@ export function montar(raiz, contexto) {
       { clave: 'comision', etiqueta: 'Comisión (%)', tipo: 'decimal', valor: 0 },
       {
         clave: 'usuarioId', etiqueta: 'Usuario del sistema', tipo: 'seleccion', valor: '', alCambiar: mostrarAcceso,
-        opciones: () => [['', 'Sin usuario'], ...estado.usuarios.map((usuario) => [usuario.id, `${usuario.nombre} · ${usuario.correo}`])],
+        opciones: () => [['', 'Sin usuario'], ...listarUsuarios().map((usuario) => [usuario.id, `${usuario.nombre} · ${usuario.correo}`])],
       },
       {
         clave: 'tiendasAcceso', etiqueta: 'Sucursales a las que puede entrar con su usuario', tipo: 'casillas', ancho: 'completo',
-        opciones: () => estado.tiendas.map((tienda) => [tienda.id, tienda.nombre]),
+        opciones: () => listarTiendas().map((tienda) => [tienda.id, tienda.nombre]),
       },
     ],
     alGuardar: (datos, empleado) => {
@@ -110,13 +111,13 @@ export function montar(raiz, contexto) {
   conectarImportacion({
     plantilla: buscar('[data-plantilla-csv]', raiz),
     entrada: buscar('[data-importar-csv]', raiz),
-    modulo: 'empleados', formato: 'empleados', registros: () => estado.empleados, importar: servicioEmpleados.importarEmpleados, alImportar: contexto.redibujar,
+    modulo: 'empleados', formato: 'empleados', registros: () => servicioEmpleados.listarEmpleados(), importar: servicioEmpleados.importarEmpleados, alImportar: contexto.redibujar,
   });
 
   const editar = puede('empleados', 'editar');
   montarCuadricula(buscar('#cuadricula-empleados', raiz), {
     exportar: { modulo: 'empleados', archivo: 'empleados' },
-    importar: { modulo: 'empleados', formato: 'empleados', registros: () => estado.empleados, importar: servicioEmpleados.importarEmpleados, alImportar: contexto.redibujar },
+    importar: { modulo: 'empleados', formato: 'empleados', registros: () => servicioEmpleados.listarEmpleados(), importar: servicioEmpleados.importarEmpleados, alImportar: contexto.redibujar },
     plantillas: plantillasCuadricula,
     titulo: 'Empleados',
     vacio: 'Aún no hay empleados en esta sucursal.',

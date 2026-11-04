@@ -1,11 +1,10 @@
 import { buscar, escaparHtml } from '../../core/dom.js';
 import { puede } from '../../core/autorizacion.js';
-import { estado } from '../../core/store.js';
 import { aPesos, aFecha, fechaDeHoy, conMoneda } from '../../core/format.js';
 import { cargarHtml, seccion, repetir } from '../../core/template.js';
 import { cargarPlantillasCuadricula, montarCuadricula } from '../../components/cuadricula-datos/cuadricula-datos.js';
 import { cargarPlantillasFicha, crearFicha } from '../../components/ficha-registro/ficha-registro.js';
-import { LISTAS_PRECIO, nombreDePrecio, manejaStock, agregarProducto, actualizarProducto, eliminarProducto, importarProductos, kardexDeProducto, buscarProductoPorId, bodegaActiva, existenciasVisibles, buscarBodega, siguienteIdProducto } from '../../services/inventario.service.js';
+import { listarProductos, listarFacturasDeCompra, LISTAS_PRECIO, nombreDePrecio, manejaStock, agregarProducto, actualizarProducto, eliminarProducto, importarProductos, kardexDeProducto, buscarProductoPorId, bodegaActiva, existenciasVisibles, buscarBodega, siguienteIdProducto } from '../../services/inventario.service.js';
 import { cargarPlantillasFormulario, montarFormulario } from '../../components/formulario/formulario.js';
 import { montarSelectorRegistro } from '../../components/selector-registro/selector-registro.js';
 import { COLUMNAS_PRODUCTO, productosParaElegir } from '../../components/selector-registro/registros.js';
@@ -17,6 +16,7 @@ import { cargarPlantillasBuscador } from '../../components/buscador-cuadricula/b
 import { montarFactura } from './factura.js';
 import { mostrarComprobanteDeFactura } from '../../components/recibo/comprobantes.js';
 import { importarCompras } from '../../services/importacion.service.js';
+import { mensajeDeError } from '../../core/errores.js';
 
 const CAMPOS = ['referencia', 'nombre', 'categoriaId', 'unidadId', 'costo', 'precioSurtido', 'precioMayor', 'precioDetal', 'iva', 'stockMinimo', 'existencias'];
 let documento;
@@ -51,14 +51,14 @@ export function montar(raiz, contexto) {
       contexto.aviso(mensaje);
       return resultado ?? true;
     } catch (error) {
-      contexto.alerta(error.message);
+      contexto.alerta(mensajeDeError(error));
       return false;
     }
   };
 
   buscar('.vista', raiz).addEventListener('click', (evento) => {
     const boton = evento.target.closest('[data-factura]');
-    if (boton) mostrarComprobanteDeFactura(estado.facturas[Number(boton.dataset.factura)]);
+    if (boton) mostrarComprobanteDeFactura(listarFacturasDeCompra()[Number(boton.dataset.factura)]);
   });
 
   // --- Productos: cuadrícula, formulario (nuevo o edición) y ficha -----------------------------------------
@@ -75,7 +75,7 @@ export function montar(raiz, contexto) {
   const botonEditar = (id) => (puede('inventario', 'editar') ? repetir(documento, 'boton-editar-producto', [{ id }]) : '');
   const botonEliminar = (id) => (puede('inventario', 'eliminar') ? repetir(documento, 'boton-eliminar-producto', [{ id }]) : '');
 
-  const filasProductos = () => estado.productos.map((original) => {
+  const filasProductos = () => listarProductos().map((original) => {
     // Stock de la bodega de la sucursal activa (o el total con "Todas las sucursales")
     const producto = { ...original, existencias: existenciasVisibles(original) };
     const estado = estadoDe(producto);
@@ -93,7 +93,7 @@ export function montar(raiz, contexto) {
 
   const cuadriculaProductos = montarCuadricula(buscar('#cuadricula-productos', raiz), {
     exportar: { modulo: 'inventario', archivo: 'productos' },
-    importar: { modulo: 'inventario', formato: 'productos', registros: () => estado.productos.map((producto) => ({ ...producto, existencias: existenciasVisibles(producto) })), importar: importarProductos, alImportar: contexto.redibujar },
+    importar: { modulo: 'inventario', formato: 'productos', registros: () => listarProductos().map((producto) => ({ ...producto, existencias: existenciasVisibles(producto) })), importar: importarProductos, alImportar: contexto.redibujar },
     plantillas: plantillasCuadricula,
     titulo: 'Productos',
     vacio: 'Aún no hay productos. Agrega uno con "Nuevo producto".',
@@ -259,7 +259,7 @@ export function montar(raiz, contexto) {
 
   const fichaFactura = crearFicha(buscar('#ficha-factura-compra', raiz), plantillasFicha);
   const abrirFichaFactura = (indice) => fichaFactura.abrir(indice, () => {
-    const factura = estado.facturas[indice];
+    const factura = listarFacturasDeCompra()[indice];
     if (!factura) return null;
     return {
       etiqueta: 'Ficha de la factura de compra',
@@ -311,7 +311,7 @@ export function montar(raiz, contexto) {
       { clave: 'total', titulo: 'Total', ancho: '112px', alinear: 'derecha' },
       { clave: 'acciones', titulo: 'Acciones', ancho: '210px', filtrable: false, html: (fila) => repetir(documento, 'accion-factura-compra', [{ indice: fila.indice }]) },
     ],
-    filas: estado.facturas.map((factura, indice) => ({
+    filas: listarFacturasDeCompra().map((factura, indice) => ({
       indice,
       factura,
       numero: factura.numero,
@@ -345,7 +345,7 @@ export function montar(raiz, contexto) {
     etiqueta: 'productos',
     columnas: COLUMNAS_PRODUCTO,
     registros: () => productosParaElegir(conKardex),
-    elegido: () => (pedido && buscarProductoPorId(pedido) ? pedido : estado.productos.find(conKardex)?.id),
+    elegido: () => (pedido && buscarProductoPorId(pedido) ? pedido : listarProductos().find(conKardex)?.id),
     vacio: 'Elige el producto',
     alElegir: (producto) => abrirKardex(producto.id),
   });
@@ -390,7 +390,7 @@ export function montar(raiz, contexto) {
     entrada: buscar('[data-importar-csv]', raiz),
     modulo: 'inventario',
     formato: 'productos',
-    registros: () => estado.productos.map((producto) => ({ ...producto, existencias: existenciasVisibles(producto) })),
+    registros: () => listarProductos().map((producto) => ({ ...producto, existencias: existenciasVisibles(producto) })),
     importar: importarProductos,
     alImportar: contexto.redibujar,
   });

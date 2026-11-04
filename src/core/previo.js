@@ -6,11 +6,15 @@
     var tema = localStorage.getItem('generico.tema');
     if (tema !== 'claro' && tema !== 'oscuro') tema = matchMedia('(prefers-color-scheme: dark)').matches ? 'oscuro' : 'claro';
     raiz.dataset.tema = tema;
-  } catch (error) { /* sin almacenamiento */ }
+  } catch (error) {
+    console.error('No se pudo leer el tema guardado', error);
+  }
 
   // Color de marca de Ajustes antes de pintar (el mismo cálculo de aplicarMarca en tema.js)
   try {
-    var acento = JSON.parse(localStorage.getItem('generico.tienda')).ajustes.marca.acento;
+    // Sin datos guardados (app recién instalada) se usa el color del diseño
+    var guardado = localStorage.getItem('generico.tienda');
+    var acento = guardado ? JSON.parse(guardado).ajustes.marca.acento : '';
     if (/^#[0-9a-f]{6}$/.test(acento) && acento !== '#4553c9') {
       var canales = [1, 3, 5].map(function (inicio) {
         var canal = parseInt(acento.slice(inicio, inicio + 2), 16) / 255;
@@ -24,7 +28,9 @@
       raiz.style.setProperty('--marca-texto-oscuro', '#12142b');
       raiz.style.setProperty('--marca-suave-oscuro', 'color-mix(in srgb, ' + acento + ' 28%, #161615)');
     }
-  } catch (error) { /* sin datos guardados: se usa el color del diseño */ }
+  } catch (error) {
+    console.error('No se pudo leer el color de la marca', error);
+  }
 
   if (!('protegida' in raiz.dataset)) return;
 
@@ -32,7 +38,10 @@
     try {
       var datos = JSON.parse(window[almacen].getItem('generico.sesion'));
       return !!datos && datos.expira > Date.now();
-    } catch (error) { return false; }
+    } catch (error) {
+      console.error('No se pudo leer la sesión guardada', error);
+      return false;
+    }
   }
 
   if (!vigente('sessionStorage') && !vigente('localStorage')) {

@@ -9,6 +9,7 @@ import { elementos, opcionesDe, ETAPAS_CERRADAS } from '../../services/catalogos
 import { refrescarAlertas } from '../../components/header/header.js';
 import { cargarPlantillasFicha, crearFicha } from '../../components/ficha-registro/ficha-registro.js';
 import { cargarPlantillasFormulario, montarFormulario } from '../../components/formulario/formulario.js';
+import { mensajeDeError } from '../../core/errores.js';
 
 let documento;
 let plantillasFicha;
@@ -106,7 +107,7 @@ export function montar(raiz, contexto) {
       refrescarAlertas();
       return true;
     } catch (error) {
-      contexto.alerta(error.message);
+      contexto.alerta(mensajeDeError(error));
       return false;
     }
   };

@@ -16,6 +16,7 @@ const normalizar = (texto) => String(texto).normalize('NFD').replace(/[̀-ͯ]/g,
 const aCredito = (registro) => esCredito(registro.metodoId);
 const DIA_MS = 86_400_000;
 
+export const listarClientes = () => estado.clientes;
 export const buscarCliente = (id) => estado.clientes.find((cliente) => cliente.id === id);
 
 // Cliente fijo de las ventas de mostrador (generico: true): viene elegido en Registrar venta

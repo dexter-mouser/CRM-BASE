@@ -1,9 +1,8 @@
 import { buscar } from '../../core/dom.js';
 import { puede } from '../../core/autorizacion.js';
-import { estado } from '../../core/store.js';
 import { aPesos, aFecha, conMoneda } from '../../core/format.js';
 import { cargarHtml, seccion, repetir } from '../../core/template.js';
-import { deudaDeCliente } from '../../services/clientes.service.js';
+import { buscarCliente, deudaDeCliente } from '../../services/clientes.service.js';
 import { saldoConProveedor } from '../../services/proveedores.service.js';
 import * as servicioPagos from '../../services/pagos.service.js';
 import { mostrarComprobanteDePago } from '../../components/recibo/comprobantes.js';
@@ -13,6 +12,7 @@ import { cargarPlantillasFicha, crearFicha } from '../../components/ficha-regist
 import { cargarPlantillasFormulario, montarFormulario } from '../../components/formulario/formulario.js';
 import { COLUMNAS_CLIENTE, COLUMNAS_PROVEEDOR, clientesParaElegir, proveedoresParaElegir } from '../../components/selector-registro/registros.js';
 import { importarPagos } from '../../services/importacion.service.js';
+import { mensajeDeError } from '../../core/errores.js';
 
 let documento;
 let plantillasCuadricula;
@@ -49,7 +49,7 @@ export function montar(raiz, contexto) {
       { clave: 'valor', titulo: 'Valor', ancho: '104px', alinear: 'derecha' },
       { clave: 'acciones', titulo: 'Acciones', ancho: '200px', filtrable: false, html: (fila) => repetir(documento, 'accion-pago', [{ id: fila.id }]) },
     ],
-    filas: estado.pagos.filter((pago) => enTiendaActiva(pago) && pago.tipo === tipo).reverse().map((pago) => ({
+    filas: servicioPagos.listarPagos().filter((pago) => enTiendaActiva(pago) && pago.tipo === tipo).reverse().map((pago) => ({
       id: pago.id,
       fecha: aFecha(pago.fecha),
       tercero: pago.tercero,
@@ -62,7 +62,7 @@ export function montar(raiz, contexto) {
   // Ficha del pago (no se edita: mueve caja y deuda)
   const ficha = crearFicha(buscar('#ficha-pago', raiz), plantillasFicha);
   const abrirFicha = (id) => ficha.abrir(id, () => {
-    const pago = estado.pagos.find((candidato) => candidato.id === id);
+    const pago = servicioPagos.buscarPago(id);
     if (!pago) return null;
     const esAbono = pago.tipo === 'abono';
     return {
@@ -86,7 +86,7 @@ export function montar(raiz, contexto) {
     const fichaBoton = evento.target.closest('[data-ficha]');
     if (fichaBoton) return abrirFicha(fichaBoton.dataset.ficha);
     const boton = evento.target.closest('[data-comprobante]');
-    if (boton) mostrarComprobanteDePago(estado.pagos.find((pago) => pago.id === boton.dataset.comprobante));
+    if (boton) mostrarComprobanteDePago(servicioPagos.buscarPago(boton.dataset.comprobante));
   });
 
   // Tras registrar un pago se abre su comprobante para imprimirlo
@@ -98,7 +98,7 @@ export function montar(raiz, contexto) {
       mostrarComprobanteDePago(pago);
       return true;
     } catch (error) {
-      contexto.alerta(error.message);
+      contexto.alerta(mensajeDeError(error));
       return false;
     }
   };
@@ -122,7 +122,7 @@ export function montar(raiz, contexto) {
     campos: [
       {
         clave: 'clienteId', etiqueta: 'Cliente con deuda', tipo: 'registro', obligatorio: true, valor: '', plural: 'clientes con deuda', vacio: 'Elige el cliente que abona',
-        columnas: COLUMNAS_CLIENTE, registros: deudores, alCambiar: precargarValor((id) => deudaDeCliente(estado.clientes.find((cliente) => cliente.id === id))),
+        columnas: COLUMNAS_CLIENTE, registros: deudores, alCambiar: precargarValor((id) => deudaDeCliente(buscarCliente(id))),
       },
       { clave: 'valor', etiqueta: conMoneda('Valor'), tipo: 'entero', obligatorio: true },
       { clave: 'metodoId', etiqueta: 'Medio de pago', tipo: 'seleccion', opciones: opcionesMetodo, valor: () => opcionesMetodo()[0]?.[0] ?? '', obligatorio: true },

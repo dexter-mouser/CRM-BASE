@@ -1,11 +1,11 @@
 import { buscar } from '../../core/dom.js';
-import { estado } from '../../core/store.js';
 import { puede } from '../../core/autorizacion.js';
 import { aPesos, aFecha } from '../../core/format.js';
 import { cargarHtml, seccion, repetir } from '../../core/template.js';
 import * as servicioContabilidad from '../../services/contabilidad.service.js';
 import { cargarPlantillasCuadricula, montarCuadricula } from '../../components/cuadricula-datos/cuadricula-datos.js';
 import { cargarPlantillasFicha, crearFicha } from '../../components/ficha-registro/ficha-registro.js';
+import { mensajeDeError } from '../../core/errores.js';
 
 let documento;
 let plantillasCuadricula;
@@ -75,7 +75,7 @@ export function montar(raiz, contexto) {
     titulo: 'Días cerrados',
     vacio: 'Aún no hay días cerrados.',
     columnas: columnasCierres(),
-    filas: estado.contabilidad.slice().sort((a, b) => b.dia.localeCompare(a.dia)).map((cierre) => ({
+    filas: servicioContabilidad.listarCierres().slice().sort((a, b) => b.dia.localeCompare(a.dia)).map((cierre) => ({
       diaClave: cierre.dia,
       dia: aFecha(cierre.dia),
       cantidad: cierre.cantidadVentas,
@@ -94,7 +94,7 @@ export function montar(raiz, contexto) {
   // Ficha del día cerrado: su resumen guardado (no se edita; solo se puede reabrir el último día)
   const ficha = crearFicha(buscar('#ficha-cierre', raiz), plantillasFicha);
   const abrirFicha = (dia) => ficha.abrir(dia, () => {
-    const cierre = estado.contabilidad.find((candidato) => candidato.dia === dia);
+    const cierre = servicioContabilidad.buscarCierre(dia);
     if (!cierre) return null;
     return {
       etiqueta: 'Ficha del día cerrado',
@@ -131,7 +131,7 @@ export function montar(raiz, contexto) {
         contexto.aviso(`Contabilidad del ${aFecha(dia)} reabierta correctamente`);
         contexto.redibujar();
       } catch (error) {
-        contexto.alerta(error.message);
+        contexto.alerta(mensajeDeError(error));
       }
     };
   }
@@ -171,7 +171,7 @@ export function montar(raiz, contexto) {
       contexto.redibujar();
     } catch (error) {
       confirmacion.hidden = true;
-      contexto.alerta(error.message);
+      contexto.alerta(mensajeDeError(error));
     }
   };
 }

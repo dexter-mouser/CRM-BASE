@@ -12,11 +12,14 @@ const normalizar = (texto) => String(texto).normalize('NFD').replace(/[̀-ͯ]/g,
 
 export const ESTADOS_ORDEN = { abierta: 'Abierta', recibida: 'Recibida', anulada: 'Anulada' };
 
+export const listarProveedores = () => estado.proveedores;
+export const listarOrdenes = () => estado.ordenesCompra;
+export const ordenesDeProveedor = (id) => estado.ordenesCompra.filter((orden) => orden.proveedorId === id);
 export const buscarProveedor = (id) => estado.proveedores.find((proveedor) => proveedor.id === id);
 export const buscarOrden = (id) => estado.ordenesCompra.find((orden) => orden.id === id);
 
-const facturasDe = (proveedorId) => estado.facturas.filter((factura) => factura.proveedorId === proveedorId);
-const pagosA = (proveedorId) => estado.pagos.filter((pago) => pago.tipo === 'proveedor' && pago.terceroId === proveedorId);
+export const facturasDe = (proveedorId) => estado.facturas.filter((factura) => factura.proveedorId === proveedorId);
+export const pagosA = (proveedorId) => estado.pagos.filter((pago) => pago.tipo === 'proveedor' && pago.terceroId === proveedorId);
 
 // Lo que se le debe a un proveedor: facturas de compra menos pagos
 export const saldoConProveedor = (proveedorId) => Math.max(0,

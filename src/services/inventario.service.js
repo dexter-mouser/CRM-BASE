@@ -14,6 +14,8 @@ import { columnasDefinidas, exigirUnico, validarFilas } from '../core/importacio
 
 const quitarTildes = (texto) => String(texto).normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
 
+export const listarProductos = () => estado.productos;
+export const listarFacturasDeCompra = () => estado.facturas;
 export const buscarProductoPorId = (id) => estado.productos.find((producto) => producto.id === id);
 export const buscarBodega = (id) => estado.bodegas.find((bodega) => bodega.id === id);
 

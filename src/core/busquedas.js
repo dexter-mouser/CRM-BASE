@@ -17,7 +17,10 @@ export function leerBusquedas() {
   try {
     const guardadas = JSON.parse(preferencias.leer(CLAVE_BUSQUEDAS));
     return Array.isArray(guardadas) ? guardadas : [];
-  } catch { return []; }
+  } catch (error) {
+    console.error('Las búsquedas guardadas no se pudieron leer', error);
+    return [];
+  }
 }
 
 // La búsqueda más reciente va primero; si ya existía, se mueve al inicio sin repetirse

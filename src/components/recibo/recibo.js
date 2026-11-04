@@ -3,7 +3,7 @@
 // Datos: { titulo, subtitulo, datos: [[etiqueta, valor]], lineas: [{ nombre, detalle, valor }],
 //          totales: [{ etiqueta, valor, fuerte }], sello, notas: [texto], firmas: [texto] }
 import { buscar, buscarTodos } from '../../core/dom.js';
-import { estado } from '../../core/store.js';
+import { ajustesDeRecibo, datosDelNegocio } from '../../services/ajustes.service.js';
 import { cargarHtml, rellenar, repetir } from '../../core/template.js';
 
 let plantillas;
@@ -13,7 +13,7 @@ const estiloDePagina = document.createElement('style');
 
 // El tamaño de papel de @page no se puede cambiar con una clase: se escribe al imprimir según el formato elegido.
 // La tirilla usa el ancho de Ajustes → Recibo (80 o 58 mm)
-const anchoTirilla = () => estado.ajustes.recibo.anchoTirilla;
+const anchoTirilla = () => ajustesDeRecibo().anchoTirilla;
 const PAGINAS = {
   tirilla: () => `@page { size: ${anchoTirilla()}mm auto; margin: ${anchoTirilla() === 58 ? 2 : 4}mm; }`,
   carta: () => '@page { size: A4; margin: 15mm; }',
@@ -50,7 +50,7 @@ async function prepararDialogo() {
 
 // Líneas con los datos del negocio que se muestran bajo el nombre; las vacías no se muestran
 function datosDeLaTienda() {
-  const { tienda, recibo } = estado.ajustes;
+  const tienda = datosDelNegocio(), recibo = ajustesDeRecibo();
   if (!recibo.mostrarDatosTienda) return [];
   const lugar = [tienda.direccion, tienda.ciudad].filter(Boolean).join(', ');
   return [
@@ -64,11 +64,11 @@ const textos = (lista) => lista.map((texto) => ({ texto }));
 
 export async function mostrarComprobante(comprobante) {
   await prepararDialogo();
-  const { tienda } = estado.ajustes;
+  const tienda = datosDelNegocio();
   buscar('#contenido-recibo', dialogo).innerHTML = rellenar(plantillas.querySelector('#recibo-cuerpo').innerHTML, {
     tienda: tienda.nombre,
     datosTienda: repetir(plantillas, 'recibo-dato-tienda', textos(datosDeLaTienda())),
-    pie: comprobante.pie ?? estado.ajustes.recibo.pie,
+    pie: comprobante.pie ?? ajustesDeRecibo().pie,
     titulo: comprobante.titulo,
     subtitulo: comprobante.subtitulo,
     sello: comprobante.sello ? repetir(plantillas, 'recibo-sello', [{ texto: comprobante.sello }]) : '',

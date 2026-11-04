@@ -7,6 +7,21 @@ import { exigirPermiso } from '../core/autorizacion.js';
 import { exigirTelefono, exigirTexto, LIMITES } from '../core/validacion.js';
 import { registrarAuditoria } from './auditoria.service.js';
 
+// Lecturas de los ajustes para las pantallas y los comprobantes
+export const datosDelNegocio = () => estado.ajustes.tienda;
+export const ajustesDeRecibo = () => estado.ajustes.recibo;
+export const marcaActual = () => estado.ajustes.marca;
+export const permiteVenderSinExistencias = () => estado.ajustes.ventas.permitirSinExistencias;
+export const ordenDelPanel = () => estado.orden;
+
+// El orden de las tarjetas del panel es una lista de índices sin repetir
+export function guardarOrdenDelPanel(orden) {
+  const esValido = Array.isArray(orden) && orden.length === estado.orden.length
+    && orden.every((indice) => estado.orden.includes(indice)) && new Set(orden).size === orden.length;
+  if (!esValido) throw new Error('No se pudo cambiar el orden de las tarjetas');
+  estado.orden = orden;
+  guardarEstado();
+}
 
 export function guardarDatosTienda({ nombre, nit, telefono, ciudad, direccion }) {
   exigirPermiso('ajustes', 'editar', 'cambiar los ajustes');

@@ -1,21 +1,22 @@
 import { buscar } from '../../core/dom.js';
-import { estado } from '../../core/store.js';
+import { bodegasActivas } from '../../services/bodegas.service.js';
 import { aPesos } from '../../core/format.js';
 import { puede } from '../../core/autorizacion.js';
 import { cargarHtml, seccion, repetir } from '../../core/template.js';
-import { LISTAS_PRECIO, etiquetaDeLista } from '../../services/inventario.service.js';
-import { buscarTienda, resumenDeTienda, agregarTienda, actualizarTienda, cambiarEstadoTienda } from '../../services/tiendas.service.js';
+import { LISTAS_PRECIO, buscarBodega, etiquetaDeLista } from '../../services/inventario.service.js';
+import { buscarTienda, listarTiendas, resumenDeTienda, agregarTienda, actualizarTienda, cambiarEstadoTienda } from '../../services/tiendas.service.js';
 import { cargarPlantillasCuadricula, montarCuadricula } from '../../components/cuadricula-datos/cuadricula-datos.js';
 import { cargarPlantillasFicha, crearFicha } from '../../components/ficha-registro/ficha-registro.js';
 import { cargarPlantillasFormulario, montarFormulario } from '../../components/formulario/formulario.js';
 import { importarSucursales } from '../../services/importacion.service.js';
+import { mensajeDeError } from '../../core/errores.js';
 
 let documento;
 let plantillasCuadricula;
 let plantillasFicha;
 let plantillasFormulario;
 
-const nombreBodega = (id) => estado.bodegas.find((bodega) => bodega.id === id)?.nombre ?? '—';
+const nombreBodega = (id) => buscarBodega(id)?.nombre ?? '—';
 
 export async function dibujar() {
   documento = await cargarHtml(new URL('./tiendas.html', import.meta.url));
@@ -36,7 +37,7 @@ export function montar(raiz, contexto) {
       contexto.aviso(mensaje);
       return true;
     } catch (error) {
-      contexto.alerta(error.message);
+      contexto.alerta(mensajeDeError(error));
       return false;
     }
   };
@@ -47,7 +48,7 @@ export function montar(raiz, contexto) {
     claseEstado: tienda.activa ? 'peligro' : '',
   }]) : '');
 
-  const filas = () => estado.tiendas.map((tienda) => {
+  const filas = () => listarTiendas().map((tienda) => {
     const resumen = resumenDeTienda(tienda.id);
     return {
       ...tienda,
@@ -62,7 +63,7 @@ export function montar(raiz, contexto) {
 
   const cuadricula = montarCuadricula(buscar('#cuadricula-tiendas', raiz), {
     exportar: { modulo: 'tiendas', archivo: 'sucursales' },
-    importar: { modulo: 'tiendas', formato: 'sucursales', registros: () => estado.tiendas, importar: importarSucursales, alImportar: contexto.redibujar },
+    importar: { modulo: 'tiendas', formato: 'sucursales', registros: () => listarTiendas(), importar: importarSucursales, alImportar: contexto.redibujar },
     plantillas: plantillasCuadricula,
     titulo: 'Sucursales',
     vacio: 'Aún no hay sucursales. Crea una con "Nueva sucursal".',
@@ -98,7 +99,7 @@ export function montar(raiz, contexto) {
         clave: 'bodegaId', etiqueta: 'Bodega donde vende', tipo: 'seleccion', valor: '',
         opciones: () => [
           ...(formulario.registro() ? [] : [['', 'Crear una bodega nueva']]),
-          ...estado.bodegas.filter((bodega) => bodega.activa).map((bodega) => [bodega.id, `${bodega.nombre} · ${bodega.id}`]),
+          ...bodegasActivas().map((bodega) => [bodega.id, `${bodega.nombre} · ${bodega.id}`]),
         ],
       },
       { clave: 'listaPrecio', etiqueta: 'Lista de precio por defecto', tipo: 'seleccion', valor: 'detal', opciones: () => LISTAS_PRECIO.map((lista) => [lista.id, lista.numero]) },

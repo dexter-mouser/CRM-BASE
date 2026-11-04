@@ -1,25 +1,26 @@
 import { buscar } from '../../core/dom.js';
-import { estado } from '../../core/store.js';
+import { listarTiendas } from '../../services/tiendas.service.js';
 import { aPesos, aFecha } from '../../core/format.js';
 import { leerEntero, activarCamposNumericos } from '../../core/numeros.js';
 import { icono, ICONO_PAPELERA } from '../../core/iconos.js';
 import { puede } from '../../core/autorizacion.js';
 import { cargarHtml, seccion, repetir } from '../../core/template.js';
 import { nombreDeTienda } from '../../core/tienda.js';
-import { bodegaActiva, buscarBodega, existenciasEn } from '../../services/inventario.service.js';
+import { bodegaActiva, buscarBodega, buscarProductoPorId, existenciasEn, listarProductos } from '../../services/inventario.service.js';
 import * as servicioBodegas from '../../services/bodegas.service.js';
 import { dibujarSelector, montarSelectorProductos } from '../../components/selector-productos/selector-productos.js';
 import { cargarPlantillasCuadricula, montarCuadricula } from '../../components/cuadricula-datos/cuadricula-datos.js';
 import { cargarPlantillasFicha, crearFicha } from '../../components/ficha-registro/ficha-registro.js';
 import { cargarPlantillasFormulario, montarFormulario } from '../../components/formulario/formulario.js';
 import { importarBodegas, importarTraslados } from '../../services/importacion.service.js';
+import { mensajeDeError } from '../../core/errores.js';
 
 let documento;
 let plantillasCuadricula;
 let plantillasFicha;
 let plantillasFormulario;
 
-const porRecibirEn = (bodegaId) => estado.traslados.filter((traslado) => traslado.estado === 'enviado' && traslado.destinoId === bodegaId).length;
+const porRecibirEn = (bodegaId) => servicioBodegas.trasladosPorRecibir(bodegaId).length;
 
 export async function dibujar() {
   documento = await cargarHtml(new URL('./bodegas.html', import.meta.url));
@@ -45,7 +46,7 @@ export function montar(raiz, contexto) {
       contexto.aviso(mensaje);
       return resultado ?? true;
     } catch (error) {
-      contexto.alerta(error.message);
+      contexto.alerta(mensajeDeError(error));
       return false;
     }
   };
@@ -62,7 +63,7 @@ export function montar(raiz, contexto) {
       { clave: 'nombre', etiqueta: 'Nombre', maximo: 60, obligatorio: true, ejemplo: 'Bodega principal' },
       {
         clave: 'tiendaId', etiqueta: 'Sucursal', tipo: 'seleccion', valor: '',
-        opciones: () => [['', 'Ninguna (bodega central)'], ...estado.tiendas.map((tienda) => [tienda.id, tienda.nombre])],
+        opciones: () => [['', 'Ninguna (bodega central)'], ...listarTiendas().map((tienda) => [tienda.id, tienda.nombre])],
       },
       { clave: 'direccion', etiqueta: 'Dirección', maximo: 300, ancho: 'completo' },
     ],
@@ -81,7 +82,7 @@ export function montar(raiz, contexto) {
   const editar = puede('bodegas', 'editar');
   montarCuadricula(buscar('#cuadricula-bodegas', raiz), {
     exportar: { modulo: 'bodegas', archivo: 'bodegas' },
-    importar: { modulo: 'bodegas', formato: 'bodegas', registros: () => estado.bodegas, importar: importarBodegas, alImportar: contexto.redibujar },
+    importar: { modulo: 'bodegas', formato: 'bodegas', registros: () => servicioBodegas.listarBodegas(), importar: importarBodegas, alImportar: contexto.redibujar },
     plantillas: plantillasCuadricula,
     titulo: 'Bodegas',
     vacio: 'Aún no hay bodegas. Crea una con "Nueva bodega".',
@@ -95,7 +96,7 @@ export function montar(raiz, contexto) {
       { clave: 'estado', titulo: 'Estado', ancho: '84px' },
       { clave: 'acciones', titulo: 'Acciones', ancho: '290px', filtrable: false, html: (fila) => fila.acciones },
     ],
-    filas: estado.bodegas.map((bodega) => {
+    filas: servicioBodegas.listarBodegas().map((bodega) => {
       const resumen = servicioBodegas.resumenDeBodega(bodega.id);
       return {
         id: bodega.id,
@@ -141,7 +142,7 @@ export function montar(raiz, contexto) {
           { clave: 'cantidad', titulo: 'Cantidad', ancho: '96px', alinear: 'derecha' },
           { clave: 'valor', titulo: 'Valor al costo', ancho: '120px', alinear: 'derecha' },
         ],
-        filas: estado.productos.filter((producto) => existenciasEn(producto, bodega.id) !== 0).map((producto) => ({
+        filas: listarProductos().filter((producto) => existenciasEn(producto, bodega.id) !== 0).map((producto) => ({
           id: producto.id,
           nombre: producto.nombre,
           cantidad: String(existenciasEn(producto, bodega.id)),
@@ -175,7 +176,7 @@ export function montar(raiz, contexto) {
       ...activas.map((bodega) => ({ clave: bodega.id, titulo: bodega.nombre, ancho: 'minmax(90px, 1fr)', alinear: 'derecha' })),
       { clave: 'total', titulo: 'Total', ancho: '84px', alinear: 'derecha' },
     ],
-    filas: estado.productos.map((producto) => ({
+    filas: listarProductos().map((producto) => ({
       id: producto.id,
       nombre: producto.nombre,
       ...Object.fromEntries(activas.map((bodega) => [bodega.id, existenciasEn(producto, bodega.id)])),
@@ -188,7 +189,7 @@ export function montar(raiz, contexto) {
   const cuerpo = buscar('#lineas-traslado', raiz);
   const origen = buscar('#traslado-origen', raiz);
   const destino = buscar('#traslado-destino', raiz);
-  const disponibleEnOrigen = (productoId) => existenciasEn(estado.productos.find((producto) => producto.id === productoId), origen.value);
+  const disponibleEnOrigen = (productoId) => existenciasEn(buscarProductoPorId(productoId), origen.value);
   const pintarLineas = () => {
     cuerpo.innerHTML = repetir(documento, 'fila-linea-traslado', lineas.map((linea, posicion) => ({
       posicion, id: linea.productoId, nombre: linea.nombre, cantidad: linea.cantidad || '', disponible: disponibleEnOrigen(linea.productoId), icono: icono(ICONO_PAPELERA),
@@ -254,7 +255,7 @@ export function montar(raiz, contexto) {
       { clave: 'estado', titulo: 'Estado', ancho: '120px' },
       { clave: 'acciones', titulo: 'Acciones', ancho: '270px', filtrable: false, html: (fila) => fila.acciones },
     ],
-    filas: estado.traslados.slice().reverse().map((traslado) => ({
+    filas: servicioBodegas.listarTraslados().slice().reverse().map((traslado) => ({
       id: traslado.id,
       fecha: aFecha(traslado.fecha),
       origen: nombreBodega(traslado.origenId),
@@ -267,7 +268,7 @@ export function montar(raiz, contexto) {
   // Ficha del traslado: no se edita (mueve stock); se recibe o se anula
   const fichaTraslado = crearFicha(buscar('#ficha-traslado', raiz), plantillasFicha);
   const abrirFichaTraslado = (id) => fichaTraslado.abrir(id, () => {
-    const traslado = estado.traslados.find((candidato) => candidato.id === id);
+    const traslado = servicioBodegas.buscarTraslado(id);
     if (!traslado) return null;
     return {
       etiqueta: 'Ficha del traslado',

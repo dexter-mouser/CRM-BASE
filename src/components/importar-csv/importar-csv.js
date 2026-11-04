@@ -12,6 +12,7 @@
 import { puede } from '../../core/autorizacion.js';
 import { descargarFormato, leerFormato } from '../../services/csv.service.js';
 import { mostrarAviso } from '../toast/toast.js';
+import { mensajeDeError } from '../../core/errores.js';
 
 export function conectarImportacion({ plantilla, entrada, modulo, formato, registros, importar, alImportar }) {
   if (!puede(modulo, 'importar')) {
@@ -32,7 +33,7 @@ export function conectarImportacion({ plantilla, entrada, modulo, formato, regis
       mostrarAviso(`CSV importado correctamente: ${agregados} nuevo(s) y ${actualizados} actualizado(s)`);
       alImportar();
     } catch (error) {
-      mostrarAviso(error.message, 'alerta');
+      mostrarAviso(mensajeDeError(error), 'alerta');
     }
   };
 }

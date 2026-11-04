@@ -95,7 +95,7 @@ crm-tiendas/
 │   ├── config/                 nav.js (grupos del menú, secciones y accesos principales), routes.js (módulo de cada vista), acceso.js (usuarios de prueba),
 │   │                           permisos.js (módulos y acciones de los permisos)
 │   ├── core/                   previo, sesion, router, store, tienda (tienda activa y alcance), preferencias, template, tema, animate,
-│   │                           numeros, codigos, busquedas, format, iconos, dom
+│   │                           numeros, codigos, busquedas, format, iconos, dom, errores (mensajes de error para la pantalla)
 │   ├── components/             header/, sidebar/, logo/, toast/ (aviso), reordenar/ (arrastrar y soltar),
 │   │                           cabecera-seccion/ (cabecera destacada), ficha-registro/ (ficha de un registro),
 │   │                           buscador-cuadricula/ (fila de búsqueda), cuadricula-datos/ (cuadrícula de las listas),
@@ -144,6 +144,10 @@ Luego abre la dirección que indique (por ejemplo `http://localhost:8000`). Los 
 8. Las tablas de cifras sin búsqueda usan `montarTablaResumen(contenedor, { plantillas, columnas, filas, vacio })` de `components/tabla-resumen/`. Ningún módulo define colores ni tamaños: usa las clases de `components.css` y las variables de `tono.css`.
 
 Los campos numéricos se declaran con `data-numero="entero"` o `data-numero="entero-negativo"` (el formulario lo hace solo con los tipos `entero` y `entero-negativo`). Las reglas de negocio (registrar ventas y facturas, buscar productos) viven en `src/services/`, sin tocar la interfaz.
+
+Acceso a los datos: solo `src/services/` y `src/core/` importan `store.js`. Los módulos y componentes leen con las funciones de los servicios (`listarVentas`, `buscarCliente`, `listarProductos`, `marcaActual`…) y escriben con sus acciones (`registrarVenta`, `agregarCliente`…), nunca con `estado` directamente; así, cambiar dónde se guardan los datos solo toca los servicios. Si el navegador no puede guardar (sin espacio o bloqueado), `guardarEstado` lanza un error que la pantalla muestra como alerta.
+
+Errores: las reglas de negocio lanzan `Error` con un texto para la persona. Las pantallas lo muestran con `contexto.alerta(mensajeDeError(error))` (`src/core/errores.js`): un error de programación nunca se muestra tal cual; se ve un aviso genérico y el detalle queda en la consola.
 
 Plantillas: `{{x}}` inserta texto escapado, `{{{x}}}` inserta HTML y `<!--{{{x}}}-->` se usa dentro de tablas.
 

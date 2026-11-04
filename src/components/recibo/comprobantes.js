@@ -1,8 +1,7 @@
 // Arma los datos de cada comprobante imprimible a partir de los registros de la aplicación.
 import { aPesos, aFecha } from '../../core/format.js';
 import { mostrarComprobante } from './recibo.js';
-import { estado } from '../../core/store.js';
-import { devolucionesDeVenta, estaAnulada, buscarClientePorNombre, impuestosDe, TIPOS_DOCUMENTO, ETIQUETA_NOTA } from '../../services/ventas.service.js';
+import { buscarVenta, listarNotas, devolucionesDeVenta, estaAnulada, buscarClientePorNombre, impuestosDe, TIPOS_DOCUMENTO, ETIQUETA_NOTA } from '../../services/ventas.service.js';
 import { esCredito, esEfectivo } from '../../services/catalogos.service.js';
 import { buscarCliente, deudaDeCliente, vencimientoDe } from '../../services/clientes.service.js';
 import { proveedoresConSaldo } from '../../services/pagos.service.js';
@@ -30,7 +29,6 @@ function totalesDeDescuento(documento) {
   return totales;
 }
 const unidades = (items) => items.reduce((acumulado, item) => acumulado + item.cantidad, 0);
-const buscarVentaPorId = (id) => estado.ventas.find((venta) => venta.id === id);
 
 // Datos del cliente registrado (teléfono y dirección) para completar el encabezado del comprobante
 function datosDelCliente(documento) {
@@ -121,9 +119,9 @@ export function mostrarReciboDeVenta(documento) {
 
 // Nota de devolución (ND) o de anulación (NA), anclada a la factura original
 export function mostrarComprobanteDeDevolucion(nota) {
-  const factura = buscarVentaPorId(nota.ventaId);
-  const acumulado = estado.devoluciones
-    .filter((otra) => otra.ventaId === nota.ventaId && estado.devoluciones.indexOf(otra) <= estado.devoluciones.indexOf(nota))
+  const factura = buscarVenta(nota.ventaId);
+  const acumulado = listarNotas()
+    .filter((otra, posicion, notas) => otra.ventaId === nota.ventaId && posicion <= notas.indexOf(nota))
     .reduce((suma, otra) => suma + otra.total, 0);
   const reembolso = esCredito(nota.metodoId) ? 'Se descontó de la deuda del cliente' : `Reembolso por ${nota.metodo}`;
   const datos = [
